@@ -1,0 +1,24 @@
+{
+  "name": "tunebank-frontend",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "output"
+  ],
+  "dependencies": {
+    "purescript-prelude": "^4.1.1",
+    "purescript-console": "^4.2.0",
+    "purescript-effect": "^2.0.1",
+    "purescript-routing": "^8.0.0",
+    "purescript-routing-duplex": "^0.2.0",
+    "purescript-halogen": "https://github.com/slamdata/purescript-halogen.git#5.0.0-rc.4",
+    "purescript-halogen-components": "https://github.com/newlandsvalley/purescript-halogen-components.git#halogen5",
+    "purescript-debug": "^4.0.0"
+  },
+  "devDependencies": {
+    "purescript-psci-support": "^4.0.0",
+    "purescript-test-unit": "^15.0.0",
+    "purescript-console": "^4.2.0"
+  }
+}
