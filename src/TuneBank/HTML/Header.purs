@@ -12,7 +12,6 @@ import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
 
 
-
 header :: forall i p. Maybe Credentials -> Route -> HH.HTML i p
 header mCredentials route =
   HH.header
@@ -23,6 +22,8 @@ header mCredentials route =
         [ css "nav" ]
         [ navItem Home
            [ HH.text "home" ]
+        , navItem SearchForm
+           [ HH.text "search" ]
         , navItem Upload
            [ HH.text "upload" ]
         , navItem Login

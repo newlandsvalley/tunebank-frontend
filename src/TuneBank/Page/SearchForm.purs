@@ -10,19 +10,15 @@ import TuneBank.Navigation.Navigate (class Navigate)
 import Effect.Ref (Ref)
 import Effect.Ref as Ref
 import Halogen as H
-import Halogen.Aff as HA
 import Halogen.HTML as HH
-import Halogen.HTML.Core (ClassName(..))
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
-import Partial.Unsafe (unsafePartial)
-import Web.DOM.ParentNode (QuerySelector(..))
-import Web.HTML.HTMLElement (offsetTop, offsetLeft)
 import TuneBank.HTML.Header (header)
 import TuneBank.HTML.Footer (footer)
 import TuneBank.Navigation.Route (Route(..))
-import TuneBank.Data.Genre (Genre(..), readGenre) 
+import TuneBank.Data.Genre (Genre(..))
 import TuneBank.Data.Session (Session)
+import TuneBank.Data.Types (BaseURL)
 import TuneBank.Data.Key (Key(..))
 import TuneBank.Data.Key as K
 import TuneBank.Data.Rhythm (Rhythm(..))
@@ -36,7 +32,7 @@ type Slot = H.Slot (Const Void) Void
 type State =
   { genre :: Genre
   , title :: Maybe String
-  , key :: Maybe String 
+  , key :: Maybe String
   , rhythm :: Maybe String
   , ordering :: String
   }
@@ -53,18 +49,18 @@ data Action
   | HandleOrdering String
 
 defaultOrdering :: String
-defaultOrdering = 
+defaultOrdering =
   "alpha"
 
 defaultOtherMenu :: String
-defaultOtherMenu = 
+defaultOtherMenu =
   "any"
 
 
 component
    :: ∀ i o m r
-    . MonadAff m 
-   => MonadAsk { session :: Session | r } m 
+    . MonadAff m
+   => MonadAsk { session :: Session, baseURL :: BaseURL | r } m
    => Navigate m
    => H.Component HH.HTML Query i o m
 component =
@@ -91,10 +87,10 @@ component =
   render :: State -> H.ComponentHTML Action ChildSlots m
   render state =
     HH.div_
-      [ header Nothing Home
+      [ header Nothing SearchForm
       , HH.h1
          [HP.class_ (H.ClassName "center") ]
-         [HH.text "Key" ]
+         [HH.text "Tune Search" ]
       , renderTuneName state
       , renderKeyMenu state
       , renderRhythmMenu state
@@ -108,18 +104,18 @@ component =
       genre <- getCurrentGenre
       H.modify_ (\state -> state { genre = genre } )
     HandleTitle title -> do
-      if (length title > 0) 
+      if (length title > 0)
         then H.modify_ (\state -> state { title = Just title } )
         else pure unit
-    HandleKey key -> 
-      if (key /= defaultOtherMenu) 
+    HandleKey key ->
+      if (key /= defaultOtherMenu)
         then H.modify_ (\state -> state { key = Just key } )
         else pure unit
-    HandleRhythm rhythm -> 
-      if (rhythm /= defaultOtherMenu) 
+    HandleRhythm rhythm ->
+      if (rhythm /= defaultOtherMenu)
         then H.modify_ (\state -> state { rhythm = Just rhythm } )
         else pure unit
-    HandleOrdering ordering ->  
+    HandleOrdering ordering ->
        H.modify_ (\state -> state { ordering = ordering } )
 
 renderTuneName :: forall m. State -> H.ComponentHTML Action ChildSlots m
@@ -139,7 +135,7 @@ renderTuneName state =
 
 renderKeyMenu :: forall m. State -> H.ComponentHTML Action ChildSlots m
 renderKeyMenu state =
-  let 
+  let
     defaultKey = maybe "any" identity state.key
   in
      HH.div
@@ -162,7 +158,7 @@ keyOptions default =
 
 renderRhythmMenu :: forall m. State -> H.ComponentHTML Action ChildSlots m
 renderRhythmMenu state =
-  let 
+  let
     default = maybe "any" identity state.rhythm
   in
      HH.div
@@ -182,12 +178,12 @@ renderRhythmMenu state =
 rhythmOptions :: forall i p. Genre -> String -> Array (HH.HTML i p)
 rhythmOptions genre default =
   map (menuOption default) (R.rhythms genre)
-        
+
 
 menuOption :: forall i p. String -> String -> HH.HTML i p
 menuOption default next  =
-  let 
-    selected = (next == default) 
+  let
+    selected = (next == default)
   in
     HH.option
       [ HP.disabled (selected) ]
@@ -195,7 +191,7 @@ menuOption default next  =
 
 renderOrderingMenu :: forall m. State -> H.ComponentHTML Action ChildSlots m
 renderOrderingMenu state =
-  let 
+  let
     default = "alpha"
   in
      HH.div

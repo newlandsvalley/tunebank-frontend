@@ -23,6 +23,7 @@ import TuneBank.Page.Tune as Tune
 import TuneBank.Page.TuneList as TuneList
 import TuneBank.Page.Home as Home
 import TuneBank.Data.Session (Session)
+import TuneBank.Data.Types (BaseURL)
 import Routing.Duplex as RD
 import Routing.Hash (getHash)
 
@@ -54,7 +55,7 @@ type ChildSlots =
 component ::
     ∀ m r
     . MonadAff m
-    => MonadAsk { session :: Session | r } m
+    => MonadAsk { session :: Session, baseURL :: BaseURL | r } m
     => Navigate m
     => H.Component HH.HTML Query Unit Void m
 component =
@@ -86,6 +87,8 @@ component =
          H.modify_ _ { route = Just dest }
       pure (Just a)
 
+  -- | Note - links are not well-typed.  Sproxy names must also match the
+  -- | child slot names AND the route codec initial URI name.
   render :: State -> H.ComponentHTML Action ChildSlots m
   render { route } = case route of
     Just r -> case r of

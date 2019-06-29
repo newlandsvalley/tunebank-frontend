@@ -16,7 +16,7 @@ import TuneBank.Data.Genre (Genre)
 getUser
   :: forall m r
    . MonadEffect m
-  => MonadAsk { session :: Session | r } m
+  => MonadAsk { session :: Session, baseURL :: BaseURL | r } m
   -- => Navigate m
   => m (Maybe Credentials)
 getUser = do
@@ -28,7 +28,7 @@ getUser = do
 getBaseURL
   :: forall m r
    . MonadEffect m
-  => MonadAsk { baseURL :: BaseURL | r } m
+  => MonadAsk { session :: Session, baseURL :: BaseURL | r } m
   -- => Navigate m
   => m BaseURL
 getBaseURL =
@@ -38,7 +38,7 @@ getBaseURL =
 getCurrentGenre
   :: forall m r
    . MonadEffect m
-  => MonadAsk { session :: Session | r } m
+  => MonadAsk { session :: Session, baseURL :: BaseURL | r } m
   -- => Navigate m
   => m Genre
 getCurrentGenre = do

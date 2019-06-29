@@ -20,4 +20,5 @@ Stretch Goal Improvements (requiring a server change)
   * Add role (e.g. admin) to the user profile,
   * Add preferred soundfont to the user profile and load it when the user logs in.
   * Possibly simplify the pagination interface.
+  * Add tune thumbnails of the initial part of the score in tune searches
   

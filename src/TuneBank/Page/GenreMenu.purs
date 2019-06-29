@@ -22,6 +22,7 @@ import TuneBank.HTML.Footer (footer)
 import TuneBank.Navigation.Route (Route(..))
 import TuneBank.Data.Genre (Genre(..), readGenre)
 import TuneBank.Data.Session (Session)
+import TuneBank.Data.Types (BaseURL)
 import TuneBank.HTML.Utils (css, safeHref)
 import TuneBank.Page.Utils.Environment (getCurrentGenre)
 
@@ -43,7 +44,7 @@ data Action
 component
    :: ∀ i o m r
     . MonadAff m
-   => MonadAsk { session :: Session | r } m
+   => MonadAsk { session :: Session, baseURL :: BaseURL  | r } m
    => Navigate m
    => H.Component HH.HTML Query i o m
 component =
