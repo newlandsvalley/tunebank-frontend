@@ -24,6 +24,8 @@ header mCredentials route =
            [ HH.text "home" ]
         , navItem SearchForm
            [ HH.text "search" ]
+        , navItem Genre
+           [ HH.text "genre" ]
         , navItem Upload
            [ HH.text "upload" ]
         , navItem Login

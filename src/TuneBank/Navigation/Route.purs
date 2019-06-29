@@ -39,9 +39,9 @@ instance showRoute :: Show Route where
 routeCodec :: RouteDuplex' Route
 routeCodec = root $ sum
   { "Home": noArgs
-  , "SearchForm" : "searchform" / noArgs
+  , "SearchForm" : "search" / noArgs
   , "Login": "login" / noArgs
-  , "Genre": noArgs
+  , "Genre": "genre" / noArgs
   , "Register": "register" / noArgs
   , "Upload": "upload" / noArgs
   , "Tune": "genre" / segment / "tune" / (tuneId segment)

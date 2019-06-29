@@ -6,24 +6,18 @@ import Data.Maybe (Maybe(..))
 import Effect.Aff.Class (class MonadAff)
 import Control.Monad.Reader (class MonadAsk, asks)
 import TuneBank.Navigation.Navigate (class Navigate)
-import Effect.Ref (Ref)
 import Effect.Ref as Ref
 import Halogen as H
-import Halogen.Aff as HA
 import Halogen.HTML as HH
-import Halogen.HTML.Core (ClassName(..))
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
-import Partial.Unsafe (unsafePartial)
-import Web.DOM.ParentNode (QuerySelector(..))
-import Web.HTML.HTMLElement (offsetTop, offsetLeft)
 import TuneBank.HTML.Header (header)
 import TuneBank.HTML.Footer (footer)
 import TuneBank.Navigation.Route (Route(..))
 import TuneBank.Data.Genre (Genre(..), readGenre)
 import TuneBank.Data.Session (Session)
 import TuneBank.Data.Types (BaseURL)
-import TuneBank.HTML.Utils (css, safeHref)
+import TuneBank.HTML.Utils (css)
 import TuneBank.Page.Utils.Environment (getCurrentGenre)
 
 
@@ -99,7 +93,7 @@ renderGenreMenu state =
        [ css "nav-menu" ]
        [ HH.label
          [ css "nav-menu-label" ]
-         [ HH.text "genre:" ]
+         [ HH.text "select genre:" ]
          , HH.select
             [ css "nav-selection"
             , HP.id_  "genre-menu"

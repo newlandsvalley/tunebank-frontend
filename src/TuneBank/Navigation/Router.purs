@@ -43,7 +43,7 @@ data Action
 
 type ChildSlots =
   ( home :: OpaqueSlot Unit
-  , searchform :: SearchForm.Slot Unit
+  , search :: SearchForm.Slot Unit
   , genre :: GenreMenu.Slot Unit
   , login :: Login.Slot Unit
   , register :: Register.Slot Unit
@@ -95,7 +95,7 @@ component =
       Home ->
         HH.slot (SProxy :: _ "home") unit Home.component unit absurd
       SearchForm ->
-        HH.slot (SProxy :: _ "searchform") unit SearchForm.component unit absurd
+        HH.slot (SProxy :: _ "search") unit SearchForm.component unit absurd
       Genre ->
         HH.slot (SProxy :: _ "genre") unit GenreMenu.component unit absurd
       Login ->
