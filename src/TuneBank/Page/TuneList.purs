@@ -16,7 +16,7 @@ import TuneBank.HTML.Footer (footer)
 import TuneBank.Navigation.Route (Route(..))
 import TuneBank.Navigation.SearchParams (SearchParams)
 import TuneBank.Data.Types (BaseURL)
-import TuneBank.Data.Genre (Genre(..))
+import TuneBank.Data.Genre (Genre(..), asUriComponent)
 import TuneBank.Data.Session (Session)
 import TuneBank.Page.Utils.Environment (getBaseURL, getCurrentGenre)
 import TuneBank.Api.Codec.TunesPage (TunesPage, decodeTunesPage)
@@ -94,5 +94,5 @@ component =
       state <- H.get
       genre <- getCurrentGenre
       baseURL <- getBaseURL
-      searchResult <- requestTuneSearch baseURL (show genre) state.searchParams
+      searchResult <- requestTuneSearch baseURL (asUriComponent genre) state.searchParams
       H.modify_ (\state -> state { genre = genre, searchResult = searchResult } )

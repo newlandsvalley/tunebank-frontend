@@ -94,11 +94,3 @@ scottishRhythms =
   [ "schottische"
   , "strathspey"
   ]
-
-rhythmSearchTerm :: Rhythm -> Maybe String
-rhythmSearchTerm (Rhythm r) =
-  case r of
-    "any" ->
-       Nothing
-    _ ->
-       slice 0 4 r

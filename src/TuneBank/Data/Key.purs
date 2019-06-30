@@ -42,8 +42,16 @@ keys =
   , "Gmixolydian"
   ]
 
-keySearchTerm :: Key -> Maybe String
-keySearchTerm (Key k) =
+keySearchTerm' :: Key -> Maybe String
+keySearchTerm' (Key k) =
+  case k of
+    "any" ->
+       Nothing
+    _ ->
+       slice 0 4 k
+
+keySearchTerm :: String -> Maybe String
+keySearchTerm k =
   case k of
     "any" ->
        Nothing

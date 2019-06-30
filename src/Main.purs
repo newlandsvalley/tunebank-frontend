@@ -29,7 +29,7 @@ main = HA.runHalogenAff do
   -- Halogen only deals in Aff at the top level. We have to hoist our monad
   -- (which only adds Navigation to Aff) into Aff so Halogen can deal with it
   let
-    baseURL = BaseURL "http://www.tradtunedb.org.uk:8080/musicrest/"
+    baseURL = BaseURL "http://www.tradtunedb.org.uk:8080/musicrest"
     logLevel = Dev
     session = { user, genre }
     -- the basic environment

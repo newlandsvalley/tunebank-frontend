@@ -3,10 +3,11 @@ module TuneBank.Page.SearchForm where
 import Prelude (Unit, Void, ($), (==), (<<<), (>), (/=), bind, identity, pure, map, unit, show)
 import Data.Const (Const)
 import Data.String.CodePoints (length)
+import Data.String.CodeUnits (slice)
 import Data.Maybe (Maybe(..), maybe, fromMaybe)
 import Effect.Aff.Class (class MonadAff)
 import Control.Monad.Reader (class MonadAsk, asks)
-import TuneBank.Navigation.Navigate (class Navigate)
+import TuneBank.Navigation.Navigate (class Navigate, navigate)
 import Effect.Ref (Ref)
 import Effect.Ref as Ref
 import Halogen as H
@@ -16,10 +17,11 @@ import Halogen.HTML.Properties as HP
 import TuneBank.HTML.Header (header)
 import TuneBank.HTML.Footer (footer)
 import TuneBank.Navigation.Route (Route(..))
+import TuneBank.Navigation.SearchParams (SearchParams, defaultSearchParams)
 import TuneBank.Data.Genre (Genre(..))
 import TuneBank.Data.Session (Session)
 import TuneBank.Data.Types (BaseURL)
-import TuneBank.Data.Key (Key(..))
+import TuneBank.Data.Key (Key(..), keySearchTerm)
 import TuneBank.Data.Key as K
 import TuneBank.Data.Rhythm (Rhythm(..))
 import TuneBank.Data.Rhythm as R
@@ -31,6 +33,7 @@ type Slot = H.Slot (Const Void) Void
 
 type State =
   { genre :: Genre
+  , searchParams :: SearchParams
   , title :: Maybe String
   , key :: Maybe String
   , rhythm :: Maybe String
@@ -47,6 +50,7 @@ data Action
   | HandleKey String
   | HandleRhythm String
   | HandleOrdering String
+  | Search
 
 defaultOrdering :: String
 defaultOrdering =
@@ -78,6 +82,7 @@ component =
   initialState :: i -> State
   initialState _ =
    { genre : Scandi
+   , searchParams : defaultSearchParams
    , title : Nothing
    , key : Nothing
    , rhythm : Nothing
@@ -95,6 +100,7 @@ component =
       , renderKeyMenu state
       , renderRhythmMenu state
       , renderOrderingMenu state
+      , renderSearchButton state
       , footer
       ]
 
@@ -105,18 +111,33 @@ component =
       H.modify_ (\state -> state { genre = genre } )
     HandleTitle title -> do
       if (length title > 0)
-        then H.modify_ (\state -> state { title = Just title } )
+        then do
+          state <- H.get
+          let
+            searchParams = state.searchParams { title = Just title }
+          H.modify_ (\st -> st { searchParams = searchParams } )
         else pure unit
-    HandleKey key ->
-      if (key /= defaultOtherMenu)
-        then H.modify_ (\state -> state { key = Just key } )
+    HandleKey keyName ->
+      if (keyName /= defaultOtherMenu)
+        then do
+          state <- H.get
+          let
+            searchParams = state.searchParams { key = keySearchTerm keyName }
+          H.modify_ (\st -> st { searchParams = searchParams } )
         else pure unit
     HandleRhythm rhythm ->
       if (rhythm /= defaultOtherMenu)
-        then H.modify_ (\state -> state { rhythm = Just rhythm } )
+        then do
+          state <- H.get
+          let
+            searchParams = state.searchParams { rhythm = Just rhythm }
+          H.modify_ (\st -> st { searchParams = searchParams } )
         else pure unit
     HandleOrdering ordering ->
        H.modify_ (\state -> state { ordering = ordering } )
+    Search -> do
+      state <- H.get
+      navigate $ TuneList state.searchParams
 
 renderTuneName :: forall m. State -> H.ComponentHTML Action ChildSlots m
 renderTuneName state =
@@ -145,7 +166,7 @@ renderKeyMenu state =
          [ HH.text "key:" ]
          , HH.select
             [ css "page-selection"
-            , HP.id_  "genre-menu"
+            , HP.id_  "key-menu"
             , HP.value (fromMaybe defaultOtherMenu state.key)
             , HE.onValueChange  (Just <<< HandleKey)
             ]
@@ -168,7 +189,7 @@ renderRhythmMenu state =
          [ HH.text "rhythm:" ]
          , HH.select
             [ css "page-selection"
-            , HP.id_  "genre-menu"
+            , HP.id_  "rhythm-menu"
             , HP.value (fromMaybe defaultOtherMenu state.rhythm)
             , HE.onValueChange  (Just <<< HandleRhythm)
             ]
@@ -213,3 +234,12 @@ orderingOptions default =
   [ menuOption default "alpha"
   , menuOption default "most recent"
   ]
+
+renderSearchButton :: forall m. State -> H.ComponentHTML Action ChildSlots m
+renderSearchButton state =
+    HH.button
+      [ HE.onClick \_ -> Just Search
+      , css "hoverable"
+      , HP.enabled true
+      ]
+      [ HH.text "search" ]

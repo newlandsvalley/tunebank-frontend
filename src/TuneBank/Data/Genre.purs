@@ -1,14 +1,15 @@
 module TuneBank.Data.Genre
   ( Genre(..)
+  , asUriComponent
   , readGenre
   ) where
 
 import Prelude
 import Data.Maybe (Maybe(..))
-import Data.Generic.Rep (class Generic)
+import Data.String.Common (toLower)
 
 -- | the supported genres
-data Genre = 
+data Genre =
     Irish
   | Klezmer
   | Scandi
@@ -23,14 +24,15 @@ instance showGenre :: Show Genre where
 derive instance eqGenre :: Eq Genre
 derive instance ordGenre :: Ord Genre
 
-readGenre :: String -> Maybe Genre 
+readGenre :: String -> Maybe Genre
 readGenre genreStr =
-  case genreStr of 
+  case genreStr of
     "Irish"    -> Just Irish
     "Klezmer"  -> Just Klezmer
     "Scandi"   -> Just Scandi
     "Scottish" -> Just Scottish
     _ -> Nothing
 
-
-
+asUriComponent :: Genre -> String
+asUriComponent =
+  toLower <<< show
