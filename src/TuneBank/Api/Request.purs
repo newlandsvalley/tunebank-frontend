@@ -38,8 +38,9 @@ defaultJsonGetRequest :: BaseURL -> Maybe Credentials -> Endpoint -> Request Jso
 defaultJsonGetRequest (BaseURL baseUrl) mCredentials endpoint =
   { method: Left GET
   , url: baseUrl <> (fixSearchParams endpoint $ print endpointCodec endpoint)
-  , headers: [Accept (MediaType "application/json; charset=UTF-8") ] <>
-              (fromFoldable $ authorizationHeader mCredentials)
+  , headers: [  Accept (MediaType "application/json; charset=UTF-8")
+             ] <>
+               (fromFoldable $ authorizationHeader mCredentials)
   , content: Nothing
   , username: Nothing
   , password: Nothing
@@ -56,7 +57,7 @@ defaultAbcGetRequest (BaseURL baseUrl) endpoint =
   , content: Nothing
   , username: Nothing
   , password: Nothing
-  , withCredentials: false
+  , withCredentials: true
   , responseFormat: RF.string
   }
 -}
@@ -87,7 +88,7 @@ defaultJsonAsStrGetRequest (BaseURL baseUrl) mCredentials endpoint =
     , content: Nothing
     , username: map _.user mCredentials
     , password: map _.pass mCredentials
-    , withCredentials: isJust mCredentials
+    , withCredentials: false
     , responseFormat: RF.string
     }
 
