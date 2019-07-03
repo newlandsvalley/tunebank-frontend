@@ -10,6 +10,7 @@ import Data.Maybe (Maybe(..), fromMaybe)
 import Data.String (Pattern(..), Replacement(..), replaceAll)
 import Data.String.CodePoints (lastIndexOf, length)
 import Data.String.CodeUnits (slice)
+import TuneBank.Api.Codec.Utils (safeSlice)
 
 type Tune =
   { title :: String
@@ -34,10 +35,6 @@ fixJson s =
           (safeSlice 0 penultimate s) <>
           replaceAll (Pattern "\n") (Replacement "\\n") (safeSlice penultimate last s) <>
           (safeSlice last (length s) s)
-  where
-    safeSlice :: Int -> Int -> String -> String
-    safeSlice from to str =
-      fromMaybe "" $ slice from to str
 
 
 decodeJsonTune :: Json -> Either String Tune

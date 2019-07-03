@@ -2,87 +2,80 @@ module Test.Main where
 
 import Prelude
 import Control.Monad.Free (Free)
-import Data.List.NonEmpty (singleton)
 import Data.Array (length) as A
-import Data.Maybe (Maybe(..), fromMaybe)
-import Data.Either (Either(..), hush)
+import Data.Maybe (Maybe(..))
+import Data.Either (Either(..))
 import Data.Bifunctor (rmap)
 import Data.Tuple (Tuple(..))
-import Data.Argonaut.Core (toString, stringify)
-import Data.Validation.Semigroup (unV)
 import Effect (Effect)
 import Test.Unit (Test, TestF, suite, test, failure, success)
 import Test.Unit.Assert as Assert
 import Test.Unit.Main (runTest)
 import TuneBank.Data.Types (BaseURL(..), TuneId(..))
 import TuneBank.Data.Credentials (Role(..), Credentials)
-import TuneBank.Api.Request (requestTune, requestTuneAbc, requestCleanTune, requestTuneStr, 
-       requestTuneSearch, requestTuneSearchStr, checkUser, requestUsers, requestComments, 
+import TuneBank.Api.Request (requestTune, requestTuneAbc, requestCleanTune, requestTuneStr,
+       requestTuneSearch, requestTuneSearchStr, checkUser, requestUsers, requestComments,
        requestCommentsStr)
 import TuneBank.Navigation.Endpoint (PageParams)
 import TuneBank.Navigation.SearchParams (SearchParams, defaultSearchParams)
-import TuneBank.Api.Codec.TunesPage (TunesPage(..))
-import TuneBank.Api.Codec.UsersPage (UsersPage(..))
-import TuneBank.Api.Codec.Pagination (Pagination)
-import TuneBank.Api.Codec.SearchPredicate (SearchPredicate, parsePredicate, printPredicate)
 
-assertRight :: forall a b. Either a b -> Test 
-assertRight either = 
-  case either of 
+assertRight :: forall a b. Either a b -> Test
+assertRight either =
+  case either of
     Left _ -> failure ("Right expected")
     Right _ -> success
 
 baseURL :: BaseURL
 baseURL = BaseURL "http://www.tradtunedb.org.uk:8080/musicrest"
 
-sampleTune :: TuneId 
-sampleTune = 
+sampleTune :: TuneId
+sampleTune =
   TuneId $ { title : "antara", tuneType: "reel" }
 
-sampleCommentedTune :: TuneId 
-sampleCommentedTune = 
+sampleCommentedTune :: TuneId
+sampleCommentedTune =
   TuneId $ { title : "andet+brudestykke", tuneType: "marsch" }
 
 simpleSearch :: SearchParams
-simpleSearch = 
-  defaultSearchParams  
+simpleSearch =
+  defaultSearchParams
 
 complexSearch :: SearchParams
-complexSearch = 
+complexSearch =
   simpleSearch { key = Just "Dmaj", rhythm = Just "polska"}
 
 page1 :: PageParams
-page1 = 
+page1 =
   { page: 1 }
 
-adminUser :: Credentials 
-adminUser = 
+adminUser :: Credentials
+adminUser =
   { user : "administrator"
   , pass : "bubble123"
   , role : Administrator
   }
 
-unknownUser :: Credentials 
-unknownUser = 
+unknownUser :: Credentials
+unknownUser =
   { user : "unknown"
   , pass : "xyz123"
   , role : NormalUser
   }
-
-samplePredicateString :: String 
-samplePredicateString = 
+{-}
+samplePredicateString :: String
+samplePredicateString =
   "T=antara-reel&abc= F G A"
 
 samplePredicate :: SearchPredicate
-samplePredicate = 
+samplePredicate =
   [ { key: "R", value: "polska" }
-  , { key: "K", value: "Dmaj" } 
+  , { key: "K", value: "Dmaj" }
   ]
+-}
 
 main :: Effect Unit
 main = runTest do
   apiSuite
-  predicateSuite
 
 apiSuite :: Free TestF Unit
 apiSuite =
@@ -121,10 +114,10 @@ apiSuite =
     test "get tune comments" do
       resource <- requestCommentsStr baseURL "scandi" sampleCommentedTune
       Assert.equal (Left "error") resource
-    -}      
+    -}
     test "get tune comments" do
       comments <- requestComments baseURL "scandi" sampleCommentedTune
-      Assert.equal (Right 1) $ rmap A.length comments    
+      Assert.equal (Right 1) $ rmap A.length comments
     test "get tune empty comments" do
       comments <- requestComments baseURL "scandi" sampleTune
       Assert.equal (Right 0) $ rmap A.length comments
@@ -133,7 +126,9 @@ apiSuite =
       response <- requestTuneSearchStr baseURL "scandi" complexSearch
       -- Assert.equal (Left "error") $ response
       assertRight response
-   
+
+
+{-}
 predicateSuite :: Free TestF Unit
 predicateSuite =
   suite "Search predicate" do
@@ -141,10 +136,10 @@ predicateSuite =
       Assert.equal samplePredicateString $ (printPredicate <<< parsePredicateHushed) samplePredicateString
     test "round trip predicate" do
       Assert.equal samplePredicate $ (parsePredicateHushed <<< printPredicate) samplePredicate
-    
+
 
 
 parsePredicateHushed :: String -> SearchPredicate
-parsePredicateHushed s = 
+parsePredicateHushed s =
   fromMaybe [] $ hush $ parsePredicate s
-
+-}

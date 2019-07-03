@@ -5,18 +5,20 @@ module TuneBank.Data.Types
   , TuneId(..)
   , tuneIdFromString
   , tuneIdToString
+  , decodeTuneIdURIComponent
   ) where
 
 
 import Prelude
 import Data.Generic.Rep (class Generic)
-import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Either (Either(..))
 import Data.Tuple (Tuple(..))
-import Data.String.CodePoints (indexOf, length)
+import Data.String.CodePoints (indexOf, lastIndexOf, length)
 import Data.String.CodeUnits (slice)
 import Data.String.Pattern (Pattern(..))
 import TuneBank.Data.Session (Session)
+import TuneBank.Api.Codec.Utils (decodeURIComponent, safeSlice)
 
 -- | A flag to control the environment for logging messages.
 data LogLevel = Dev | Prod
@@ -62,3 +64,20 @@ tuneIdFromString s =
             Left $ "Not a TuneId: " <> s
     _ ->
       Left $ "Not a TuneId: " <> s
+
+-- not yet safe
+decodeTuneIdURIComponent :: String -> TuneId
+decodeTuneIdURIComponent s =
+  let
+    decodedS :: String
+    decodedS = fromMaybe "" $ decodeURIComponent s
+  in
+    case lastIndexOf (Pattern "-") decodedS of
+      Just ix ->
+        TuneId { title : safeSlice 0 ix decodedS
+               , tuneType : safeSlice (ix + 1) (length decodedS) decodedS
+               }
+      Nothing ->
+        TuneId { title : decodedS
+               , tuneType : ""
+               }
