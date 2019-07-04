@@ -2,10 +2,13 @@ module TuneBank.Data.Genre
   ( Genre(..)
   , asUriComponent
   , readGenre
+  , genreFromString
+  , genreToString
   ) where
 
 import Prelude
 import Data.Maybe (Maybe(..))
+import Data.Either (Either(..))
 import Data.String.Common (toLower)
 
 -- | the supported genres
@@ -32,6 +35,18 @@ readGenre genreStr =
     "Scandi"   -> Just Scandi
     "Scottish" -> Just Scottish
     _ -> Nothing
+
+genreToString :: Genre -> String
+genreToString =
+  asUriComponent
+
+genreFromString :: String -> Either String Genre
+genreFromString s =
+  case (readGenre s) of
+    Just genre ->
+      Right genre
+    Nothing ->
+      Left $ "Not a Genre: " <> s
 
 asUriComponent :: Genre -> String
 asUriComponent =

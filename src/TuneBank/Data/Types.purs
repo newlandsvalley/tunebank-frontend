@@ -29,6 +29,9 @@ derive instance ordLogLevel :: Ord LogLevel
 -- | the Base URL of the downstream server providing the API
 newtype BaseURL = BaseURL String
 
+instance showBaseURL :: Show BaseURL where
+  show (BaseURL s) = s
+
 -- | the environment of the app made available to ReaderT
 type Env =
   { logLevel :: LogLevel

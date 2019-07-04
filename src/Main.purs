@@ -29,12 +29,9 @@ main = HA.runHalogenAff do
   -- Halogen only deals in Aff at the top level. We have to hoist our monad
   -- (which only adds Navigation to Aff) into Aff so Halogen can deal with it
   let
-    -- | while developing we'll sidestep CORS errors by querying through a
-    -- | CORS proxy server
-    baseURL = BaseURL "https://cors-anywhere.herokuapp.com/http://www.tradtunedb.org.uk:8080/musicrest"
-    --  baseURL = BaseURL "http://www.tradtunedb.org.uk:8080/musicrest"
-    logLevel = Dev
+    baseURL = BaseURL "http://www.tradtunedb.org.uk:8080/musicrest"
     session = { user, genre }
+    logLevel = Dev
     -- the basic environment
     environment :: Env
     environment = { session, baseURL, logLevel }

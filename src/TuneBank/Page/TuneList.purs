@@ -17,13 +17,13 @@ import TuneBank.Api.Codec.TunesPage (TunesPage, TuneRef, TuneRefArray)
 import TuneBank.Api.Request (requestTuneSearch)
 import TuneBank.Data.Genre (Genre(..), asUriComponent)
 import TuneBank.Data.Session (Session)
-import TuneBank.Data.Types (BaseURL, TuneId(..), decodeTuneIdURIComponent)
+import TuneBank.Data.Types (BaseURL(..), TuneId(..), decodeTuneIdURIComponent)
 import TuneBank.HTML.Footer (footer)
 import TuneBank.HTML.Header (header)
 import TuneBank.Navigation.Navigate (class Navigate)
 import TuneBank.Navigation.Route (Route(..))
 import TuneBank.Navigation.SearchParams (SearchParams)
-import TuneBank.Page.Utils.Environment (getBaseURL, getCurrentGenre)
+import TuneBank.Page.Utils.Environment (getBaseURL, getCorsBaseURL, getCurrentGenre)
 
 currentUser = Nothing
 
@@ -92,11 +92,11 @@ component =
           0 ->
              HH.text "no matching tunes found"
           _ ->
-             renderTuneList tunesPage.tunes
+             renderTuneList state.genre tunesPage.tunes
 
 
-  renderTuneList :: TuneRefArray -> H.ComponentHTML Action ChildSlots m
-  renderTuneList tunes =
+  renderTuneList :: Genre -> TuneRefArray -> H.ComponentHTML Action ChildSlots m
+  renderTuneList genre tunes =
     let
       -- f :: forall w i. TuneRef -> HH.HTML w i
       f tuneRef =
@@ -104,7 +104,7 @@ component =
           tuneId = decodeTuneIdURIComponent tuneRef.uri
           (TuneId {title,  tuneType}) = tuneId
           route :: Route
-          route = Tune "Scandi" tuneId
+          route = Tune tuneRef.uri tuneId
         in
           linkItem route
             [ HH.text $ show title ]
@@ -128,6 +128,6 @@ component =
     Initialize -> do
       state <- H.get
       genre <- getCurrentGenre
-      baseURL <- getBaseURL
+      baseURL <- getCorsBaseURL
       searchResult <- requestTuneSearch baseURL (asUriComponent genre) state.searchParams
       H.modify_ (\state -> state { genre = genre, searchResult = searchResult } )

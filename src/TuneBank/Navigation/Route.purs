@@ -13,10 +13,14 @@ import Routing.Duplex.Generic (noArgs, sum)
 import Routing.Duplex.Generic.Syntax ((/), (?))
 import TuneBank.Data.Types (TuneId, tuneIdFromString, tuneIdToString)
 import TuneBank.Navigation.SearchParams (SearchParams)
+import TuneBank.Data.Genre (Genre, genreFromString, genreToString)
 
 
 tuneId :: RouteDuplex' String -> RouteDuplex' TuneId
 tuneId = as tuneIdToString tuneIdFromString
+
+genre :: RouteDuplex' String -> RouteDuplex' Genre
+genre = as genreToString genreFromString
 
 data Route
   = Home

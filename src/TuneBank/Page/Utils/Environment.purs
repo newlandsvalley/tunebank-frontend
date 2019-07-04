@@ -9,8 +9,15 @@ import Effect.Class (class MonadEffect, liftEffect)
 import Effect.Ref as Ref
 import TuneBank.Data.Credentials (Credentials)
 import TuneBank.Data.Session (Session)
-import TuneBank.Data.Types (BaseURL)
+import TuneBank.Data.Types (BaseURL(..))
 import TuneBank.Data.Genre (Genre)
+
+-- | while developing we'll sidestep CORS errors by querying through a
+-- | CORS proxy server
+corsAnywhere :: String
+corsAnywhere =
+  "https://cors-anywhere.herokuapp.com/"
+
 
 -- | get user
 getUser
@@ -29,10 +36,21 @@ getBaseURL
   :: forall m r
    . MonadEffect m
   => MonadAsk { session :: Session, baseURL :: BaseURL | r } m
-  -- => Navigate m
   => m BaseURL
 getBaseURL =
   asks _.baseURL
+
+-- | get the base URL routed through cors anywhere
+-- | this is only a temorary expedient whilst in development
+getCorsBaseURL
+  :: forall m r
+   . MonadEffect m
+  => MonadAsk { session :: Session, baseURL :: BaseURL | r } m
+  => m BaseURL
+getCorsBaseURL = do
+  (BaseURL base) <- getBaseURL
+  pure $ BaseURL (corsAnywhere <> base)
+
 
 -- | get the current genre
 getCurrentGenre

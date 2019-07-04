@@ -104,8 +104,8 @@ component =
         HH.slot (SProxy :: _ "register") unit Register.component unit absurd
       Upload ->
         HH.slot (SProxy :: _ "upload") unit Upload.component unit absurd
-      Tune genre tuneId ->
-        HH.slot (SProxy :: _ "tune") unit Tune.component { genre, tuneId } absurd
+      Tune tuneURI tuneId ->
+        HH.slot (SProxy :: _ "tune") unit Tune.component { tuneURI, tuneId } absurd
       TuneList searchParams ->
         HH.slot (SProxy :: _ "tunelist") unit TuneList.component { searchParams } absurd
 
