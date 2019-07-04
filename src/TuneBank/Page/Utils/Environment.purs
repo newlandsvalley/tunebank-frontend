@@ -11,6 +11,7 @@ import TuneBank.Data.Credentials (Credentials)
 import TuneBank.Data.Session (Session)
 import TuneBank.Data.Types (BaseURL(..))
 import TuneBank.Data.Genre (Genre)
+import Audio.SoundFont (Instrument)--
 
 -- | while developing we'll sidestep CORS errors by querying through a
 -- | CORS proxy server
@@ -63,3 +64,15 @@ getCurrentGenre = do
   session <- asks _.session
   genre <- (Ref.read >>> liftEffect) session.genre
   pure genre
+
+-- | get the instruments
+getInstruments
+  :: forall m r
+   . MonadEffect m
+  => MonadAsk { session :: Session, baseURL :: BaseURL | r } m
+  -- => Navigate m
+  => m (Array Instrument)
+getInstruments= do
+  session <- asks _.session
+  instruments <- (Ref.read >>> liftEffect) session.instruments
+  pure instruments

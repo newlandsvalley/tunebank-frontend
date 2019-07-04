@@ -4,6 +4,7 @@ import Prelude
 
 
 import Data.Maybe (Maybe(..))
+import Data.Array (singleton)
 import Effect (Effect)
 import Effect.Aff (Aff, launchAff_)
 import Effect.Class (liftEffect)
@@ -18,19 +19,23 @@ import TuneBank.Data.Types (BaseURL(..), LogLevel(..), Env)
 import TuneBank.Data.Genre (Genre(..))
 import Routing.Duplex (parse)
 import Routing.Hash (matchesWith)
+import Audio.SoundFont (loadPianoSoundFont)
 import AppM (runAppM)
 
 main :: Effect Unit
 main = HA.runHalogenAff do
   body <- HA.awaitBody
+  instrument <- loadPianoSoundFont "assets/soundfonts"
+
   user <- liftEffect $ Ref.new Nothing
   genre <- liftEffect $ Ref.new Scandi
+  instruments <- liftEffect $ Ref.new (singleton instrument)
 
   -- Halogen only deals in Aff at the top level. We have to hoist our monad
   -- (which only adds Navigation to Aff) into Aff so Halogen can deal with it
   let
     baseURL = BaseURL "http://www.tradtunedb.org.uk:8080/musicrest"
-    session = { user, genre }
+    session = { user, genre, instruments }
     logLevel = Dev
     -- the basic environment
     environment :: Env
