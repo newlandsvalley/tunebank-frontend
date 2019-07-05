@@ -26,7 +26,7 @@ import TuneBank.Data.Types (BaseURL(..), TuneId())
 import TuneBank.Data.Credentials (Credentials)
 import TuneBank.Api.Codec.TunesPage (TunesPage, decodeTunesPage)
 import TuneBank.Api.Codec.UsersPage (UsersPage, decodeUsersPage)
-import TuneBank.Api.Codec.Tune (Tune, fixJson, decodeTune)
+import TuneBank.Api.Codec.Tune (TuneMetadata, fixJson, decodeTune)
 import TuneBank.Api.Codec.CommentArray (CommentArray, decodeComments)
 import TuneBank.Api.Codec.Pagination (Pagination, defaultPagination, decodePagination)
 import TuneBank.Authorization.BasicAuth (authorizationHeader)
@@ -92,8 +92,8 @@ defaultJsonAsStrGetRequest (BaseURL baseUrl) mCredentials endpoint =
     , responseFormat: RF.string
     }
 
-
-requestTune :: forall m. MonadAff m => BaseURL -> String -> TuneId -> m (Either String Tune)
+-- | this gives a bad JSON error because it really is bad!
+requestTune :: forall m. MonadAff m => BaseURL -> String -> TuneId -> m (Either String TuneMetadata)
 requestTune baseUrl genre tuneId = do
   res <- H.liftAff $ request $ defaultJsonGetRequest baseUrl Nothing (Tune genre tuneId)
   let
@@ -101,7 +101,7 @@ requestTune baseUrl genre tuneId = do
       >>= decodeTune
   pure $ tune
 
-requestCleanTune :: forall m. MonadAff m => BaseURL -> String -> TuneId -> m (Either String Tune)
+requestCleanTune :: forall m. MonadAff m => BaseURL -> String -> TuneId -> m (Either String TuneMetadata)
 requestCleanTune baseUrl genre tuneId = do
   res <- H.liftAff $ request $ defaultJsonAsStrGetRequest baseUrl Nothing (Tune genre tuneId)
   let

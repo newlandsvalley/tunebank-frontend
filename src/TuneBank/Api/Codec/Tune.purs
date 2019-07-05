@@ -1,23 +1,32 @@
 module TuneBank.Api.Codec.Tune
-  ( Tune(..)
+  ( TuneMetadata(..)
+  , nullTuneMetadata
   , fixJson
   , decodeTune) where
 
 import Prelude
-import Data.Argonaut (class EncodeJson, class DecodeJson, Json, encodeJson, decodeJson, (.:))
+import Data.Argonaut (Json, decodeJson, (.:))
 import Data.Either (Either)
-import Data.Maybe (Maybe(..), fromMaybe)
+import Data.Maybe (Maybe(..))
 import Data.String (Pattern(..), Replacement(..), replaceAll)
 import Data.String.CodePoints (lastIndexOf, length)
-import Data.String.CodeUnits (slice)
 import TuneBank.Api.Codec.Utils (safeSlice)
 
-type Tune =
+type TuneMetadata =
   { title :: String
   , submitter :: String
   , tid :: String
   , ts :: String
   , abc :: String
+  }
+
+nullTuneMetadata :: TuneMetadata
+nullTuneMetadata =
+  { title : ""
+  , submitter : ""
+  , tid : ""
+  , ts : ""
+  , abc : ""
   }
 
 -- | Fix a bug in the JSON returned by MusicRest.  newlines in the ABC string (one of the strings returned in the JSON)
@@ -37,7 +46,7 @@ fixJson s =
           (safeSlice last (length s) s)
 
 
-decodeJsonTune :: Json -> Either String Tune
+decodeJsonTune :: Json -> Either String TuneMetadata
 decodeJsonTune json = do
   obj <- decodeJson json
   title <- obj .: "T"
@@ -48,6 +57,6 @@ decodeJsonTune json = do
   pure $ { title, submitter, tid, ts, abc }
 
 
-decodeTune :: Json -> Either String Tune
+decodeTune :: Json -> Either String TuneMetadata
 decodeTune json = do
   decodeJsonTune json

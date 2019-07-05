@@ -2,14 +2,16 @@ module TuneBank.Page.Tune where
 
 import Data.Const (Const)
 import Data.Maybe (Maybe(..))
-import Data.Either (Either(..))
+import Data.Array (length)
+import Data.Either (Either(..), either)
+import Data.Bifunctor (lmap)
 import Data.Symbol (SProxy(..))
 import Control.Monad.Reader (class MonadAsk)
 import Effect.Aff.Class (class MonadAff)
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
-import Prelude (Unit, Void, ($), (<>), (<<<), bind, pure, show, unit)
+import Prelude (Unit, Void, ($), (<>), (<<<), (>>=), bind, identity, pure, show, unit)
 import TuneBank.Navigation.Navigate (class Navigate)
 import TuneBank.Data.Genre (Genre(..), asUriComponent)
 import TuneBank.Data.Session (Session)
@@ -17,11 +19,13 @@ import TuneBank.Data.Types (BaseURL(..), TuneId(..))
 import TuneBank.HTML.Footer (footer)
 import TuneBank.HTML.Header (header)
 import TuneBank.Navigation.Route (Route(..))
-import TuneBank.Page.Utils.Environment (getBaseURL, getCurrentGenre, getInstruments)
+import TuneBank.Page.Utils.Environment (getBaseURL, getCorsBaseURL, getCurrentGenre, getInstruments)
+import TuneBank.Api.Codec.Tune (TuneMetadata, nullTuneMetadata)
+import TuneBank.Api.Request (requestCleanTune)
 import Audio.SoundFont (Instrument)
 import Audio.SoundFont.Melody.Class (MidiRecording(..))
 import Data.Abc (AbcTune)
-import Data.Abc.Parser (PositionedParseError(..))
+import Data.Abc.Parser (parse)
 import Data.Abc.Midi (toMidi)
 
 import Halogen.PlayerComponent as PC
@@ -30,9 +34,9 @@ import Halogen.PlayerComponent as PC
 currentUser = Nothing
 
 -- | there is no tune yet
-nullTune :: Either PositionedParseError AbcTune
-nullTune =
-  Left (PositionedParseError { pos : 0, error : "" })
+nullParsedTune :: Either String AbcTune
+nullParsedTune =
+  Left "no tune yet"
 
 -- type Slot = H.Slot Query Void
 type Slot = H.Slot (Const Void) Void
@@ -42,7 +46,8 @@ type State =
   , tuneURI :: String
   , tuneId :: TuneId
   , baseURL :: BaseURL
-  , tuneResult :: Either PositionedParseError AbcTune
+  , tuneMetadata :: TuneMetadata
+  , tuneResult :: Either String AbcTune
   , instruments :: Array Instrument
   }
 
@@ -86,7 +91,8 @@ component =
     , tuneURI : input.tuneURI
     , tuneId : input.tuneId
     , baseURL : BaseURL ""
-    , tuneResult: nullTune
+    , tuneMetadata : nullTuneMetadata
+    , tuneResult: nullParsedTune
     , instruments : []
     }
 
@@ -102,6 +108,7 @@ component =
            [HH.text ("Tune " <> title) ]
         , renderTuneScore state title
         , renderPlayer state
+        , renderDebug state
         , footer
         ]
 
@@ -136,17 +143,37 @@ component =
         toPlayable abcTune =
           MidiRecording $ toMidi abcTune
 
+  renderDebug ::  State -> H.ComponentHTML Action ChildSlots m
+  renderDebug state =
+    let
+      instrumentCount = length state.instruments
+      tuneResult = either identity (\_ -> "tune OK") state.tuneResult
+    in
+      HH.div_
+        [
+          HH.text ("instrument count: " <> show instrumentCount)
+        , HH.text (" tune result: " <> tuneResult)
+        ]
+
+
 
   handleAction ∷ Action -> H.HalogenM State Action ChildSlots o m Unit
   handleAction = case _ of
     Initialize -> do
-      -- state <- H.get
+      state <- H.get
       genre <- getCurrentGenre
       baseURL <- getBaseURL
+      corsBaseURL <- getCorsBaseURL
       instruments <- getInstruments
+      tuneMetadataResult <- requestCleanTune corsBaseURL (asUriComponent genre) state.tuneId
+      let
+        tuneResult =
+          tuneMetadataResult >>= (\x -> lmap show $ parse x.abc)
       H.modify_ (\st -> st
         { genre = genre
         , baseURL = baseURL
+        --, tuneMetadata = tuneMetadata
+        , tuneResult = tuneResult
         , instruments = instruments
         } )
     HandleTuneIsPlaying (PC.IsPlaying p) -> do
