@@ -1,50 +1,56 @@
 module TuneBank.Page.TuneList where
 
-import Control.Monad.Reader (class MonadAsk, asks)
-import Data.Array (length)
-import Data.Const (Const)
+import Prelude
+import Control.Monad.Reader (class MonadAsk)
+import Data.Array (length, range)
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
+import Data.Monoid (guard)
 import Data.Tuple (Tuple(..))
 import Effect.Aff.Class (class MonadAff)
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
-import Prelude (Unit, Void, ($), (<>), bind, map, pure, show, unit)
-import TuneBank.HTML.Utils (css, safeHref)
-import TuneBank.Api.Codec.Pagination (Pagination, defaultPagination, decodePagination)
-import TuneBank.Api.Codec.TunesPage (TunesPage, TuneRef, TuneRefArray)
+import Halogen.HTML.Events as HE
+import TuneBank.Api.Codec.Pagination (Pagination)
+import TuneBank.Api.Codec.TunesPage (TunesPage, TuneRefArray)
 import TuneBank.Api.Request (requestTuneSearch)
-import TuneBank.Data.Genre (Genre(..), asUriComponent)
+import TuneBank.Data.Genre (asUriComponent)
 import TuneBank.Data.Session (Session)
-import TuneBank.Data.Types (BaseURL(..), TuneId(..), decodeTuneIdURIComponent)
+import TuneBank.Data.Types (BaseURL, TuneId(..), decodeTuneIdURIComponent)
 import TuneBank.HTML.Footer (footer)
 import TuneBank.HTML.Header (header)
-import TuneBank.Navigation.Navigate (class Navigate)
+import TuneBank.HTML.Utils (css, safeHref)
+import TuneBank.Navigation.Navigate (class Navigate, navigate)
 import TuneBank.Navigation.Route (Route(..))
 import TuneBank.Navigation.SearchParams (SearchParams)
 import TuneBank.Page.Utils.Environment (getBaseURL, getCorsBaseURL, getCurrentGenre)
 
 currentUser = Nothing
 
--- type Slot = H.Slot Query Void
-type Slot = H.Slot (Const Void) Void
+type Slot = H.Slot Query Void
+-- type Slot = H.Slot (Const Void) Void
 
 type State =
-  { genre :: Genre
-  , searchParams :: SearchParams
+  { searchParams :: SearchParams
   , searchResult :: Either String (Tuple TunesPage Pagination)
   }
 
 type Input =
   { searchParams :: SearchParams }
 
-type Query = (Const Void)
+-- type Query = (Const Void)
+data Query a =
+  FetchResults a
 
 type ChildSlots = ()
 
 data Action
   = Initialize
+  | GoToPage Int
+
+maxPageLinks :: Int
+maxPageLinks = 10
 
 component
    :: ∀ o m r
@@ -58,6 +64,7 @@ component =
     , render
     , eval: H.mkEval $ H.defaultEval
         { handleAction = handleAction
+        , handleQuery = handleQuery
         , initialize = Just Initialize
         , finalize = Nothing
         }
@@ -66,8 +73,7 @@ component =
 
   initialState :: Input -> State
   initialState { searchParams } =
-     { genre : Scandi
-     , searchParams
+     { searchParams
      , searchResult : Left ""
      }
 
@@ -77,8 +83,9 @@ component =
       [ header Nothing Home
       , HH.h1
          [HP.class_ (H.ClassName "center") ]
-         [HH.text "Tune List" ]
+         [HH.text ("Tune List page " <> show state.searchParams.page) ]
       , renderSearchResult state
+      , renderPagination state
       , footer
       ]
 
@@ -86,17 +93,17 @@ component =
   renderSearchResult state =
     case state.searchResult of
       Left err ->
-        HH.text ("tune search error: " <> err )
+        HH.text err
       Right (Tuple tunesPage pagination) ->
         case (length tunesPage.tunes) of
           0 ->
              HH.text "no matching tunes found"
           _ ->
-             renderTuneList state.genre tunesPage.tunes
+             renderTuneList tunesPage.tunes
 
 
-  renderTuneList :: Genre -> TuneRefArray -> H.ComponentHTML Action ChildSlots m
-  renderTuneList genre tunes =
+  renderTuneList :: TuneRefArray -> H.ComponentHTML Action ChildSlots m
+  renderTuneList tunes =
     let
       -- f :: forall w i. TuneRef -> HH.HTML w i
       f tuneRef =
@@ -123,11 +130,91 @@ component =
             html
           ]
 
+  renderPagination :: State -> H.ComponentHTML Action ChildSlots m
+  renderPagination state =
+    case state.searchResult of
+      Left err ->
+        HH.text ""
+      Right (Tuple tunesPage pagination) ->
+        HH.ul
+          []
+          ( [ renderFirstPage pagination ] <>
+              renderNumberedPageLinks pagination <>
+            [ renderLastPage pagination ]
+          )
+    where
+
+      renderFirstPage pagination =
+        if (pagination.maxPages > maxPageLinks  && pagination.page > 1) then
+          paginationItem 1 pagination.page
+            [ HH.text "first" ]
+        else
+          HH.text "no first page needed"
+
+      renderLastPage pagination =
+        if (pagination.maxPages > maxPageLinks  && pagination.page < pagination.maxPages) then
+          paginationItem pagination.maxPages pagination.page
+            [ HH.text "last" ]
+          else
+            HH.text "no last page needed"
+            
+      renderNumberedPageLinks pagination =
+        let
+          pageLink n =
+            paginationItem n pagination.page
+              [ HH.text (show n) ]
+          first =
+            max 1 (pagination.page - (maxPageLinks / 2))
+          last =
+            min pagination.maxPages (first + maxPageLinks)
+        in
+          map pageLink (range first last)
+
+
   handleAction ∷ Action -> H.HalogenM State Action ChildSlots o m Unit
   handleAction = case _ of
     Initialize -> do
+      _ <- handleQuery (FetchResults unit)
+      pure unit
+    GoToPage page -> do
+      -- | This is a little awkward.  I had expected that all I needed to do in
+      -- | order to have pagination was to navigate to the same page but with
+      -- | the new page parameter.  Unfortunately, this does not work - the
+      -- | route changes OK (as indicated by the URL displayed by the browser)
+      -- | but the page does not refresh.  This is presumably a Halogen slot
+      -- | issue that I don't yet fully understand.
+      -- | so, as well as navigate, we refresh the page - presumably we just
+      -- | stay in the same slot.
+      state <- H.get
+      let
+        newSearchParams = state.searchParams { page = page}
+      _ <- H.modify (\st -> st { searchParams = newSearchParams } )
+      _ <- navigate $ TuneList newSearchParams
+      _ <- handleQuery (FetchResults unit)
+      pure unit
+
+  handleQuery :: ∀ a. Query a -> H.HalogenM State Action ChildSlots o m (Maybe a)
+  handleQuery = case _ of
+    FetchResults next -> do
       state <- H.get
       genre <- getCurrentGenre
       baseURL <- getCorsBaseURL
       searchResult <- requestTuneSearch baseURL (asUriComponent genre) state.searchParams
-      H.modify_ (\state -> state { genre = genre, searchResult = searchResult } )
+      H.modify_ (\st -> st { searchResult = searchResult } )
+      pure (Just next)
+
+paginationItem
+  :: ∀ m.
+  Int ->
+  Int ->
+  Array (H.ComponentHTML Action ChildSlots m) ->
+  H.ComponentHTML Action ChildSlots m
+paginationItem thisPage currentPage html =
+  HH.div
+    [ css "pagination-item" ]
+    [ HH.button
+      [ css $ guard (thisPage == currentPage) "current"
+      , HE.onClick \_ -> Just (GoToPage thisPage)
+      ]
+      html
+    ]
