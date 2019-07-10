@@ -1,8 +1,9 @@
 module TuneBank.Page.GenreMenu where
 
-import Prelude (Unit, Void, ($), (==), (<<<), bind, pure, unit, show)
+import Prelude (Unit, Void, ($), (==), (<<<), bind, map, pure, unit, show)
 import Data.Const (Const)
 import Data.Maybe (Maybe(..))
+import Data.Enum (enumFromTo)
 import Effect.Aff.Class (class MonadAff)
 import Control.Monad.Reader (class MonadAsk, asks)
 import TuneBank.Navigation.Navigate (class Navigate)
@@ -105,11 +106,16 @@ renderGenreMenu state =
 
 genreOptions :: forall i p. Genre -> Array (HH.HTML i p)
 genreOptions default =
+  map (\o -> genreOption o default) $ enumFromTo Irish Scottish
+
+
+{-}
   [ genreOption Irish default
   , genreOption Klezmer default
   , genreOption Scandi default
   , genreOption Scottish default
   ]
+-}
 
 genreOption :: forall i p. Genre -> Genre -> HH.HTML i p
 genreOption next default =
