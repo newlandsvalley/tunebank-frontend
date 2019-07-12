@@ -15,7 +15,7 @@ import Prelude (Unit, Void, ($), (<>), (<<<), (>>=), bind, identity, pure, show,
 import TuneBank.Navigation.Navigate (class Navigate)
 import TuneBank.Data.Genre (Genre(..), asUriComponent)
 import TuneBank.Data.Session (Session)
-import TuneBank.Data.Types (BaseURL(..), TuneId(..))
+import TuneBank.Data.Types (BaseURL(..), TuneId(..), encodeTuneIdURIComponent)
 import TuneBank.HTML.Footer (footer)
 import TuneBank.HTML.Header (header)
 import TuneBank.Navigation.Route (Route(..))
@@ -52,8 +52,8 @@ type State =
   }
 
 type Input =
-  { tuneURI :: String
-  , tuneId :: TuneId
+  {
+    tuneId :: TuneId
   }
 
 type Query = (Const Void)
@@ -88,7 +88,7 @@ component =
   initialState :: Input -> State
   initialState input =
     { genre : Scandi
-    , tuneURI : input.tuneURI
+    , tuneURI : encodeTuneIdURIComponent input.tuneId
     , tuneId : input.tuneId
     , baseURL : BaseURL ""
     , tuneMetadata : nullTuneMetadata
@@ -163,9 +163,9 @@ component =
       state <- H.get
       genre <- getCurrentGenre
       baseURL <- getBaseURL
-      corsBaseURL <- getCorsBaseURL
+      -- corsBaseURL <- getCorsBaseURL only temporary for live server
       instruments <- getInstruments
-      tuneMetadataResult <- requestCleanTune corsBaseURL (asUriComponent genre) state.tuneId
+      tuneMetadataResult <- requestCleanTune baseURL (asUriComponent genre) state.tuneId
       let
         tuneResult =
           tuneMetadataResult >>= (\x -> lmap show $ parse x.abc)

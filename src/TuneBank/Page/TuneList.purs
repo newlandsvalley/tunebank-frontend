@@ -111,7 +111,8 @@ component =
           tuneId = decodeTuneIdURIComponent tuneRef.uri
           (TuneId {title,  tuneType}) = tuneId
           route :: Route
-          route = Tune tuneRef.uri tuneId
+          -- route = Tune tuneRef.uri tuneId
+          route = Tune tuneId
         in
           linkItem route
             [ HH.text $ show title ]
@@ -157,7 +158,7 @@ component =
             [ HH.text "last" ]
           else
             HH.text "no last page needed"
-            
+
       renderNumberedPageLinks pagination =
         let
           pageLink n =
@@ -198,7 +199,8 @@ component =
     FetchResults next -> do
       state <- H.get
       genre <- getCurrentGenre
-      baseURL <- getCorsBaseURL
+      -- live server testing only baseURL <- getCorsBaseURL
+      baseURL <- getBaseURL
       searchResult <- requestTuneSearch baseURL (asUriComponent genre) state.searchParams
       H.modify_ (\st -> st { searchResult = searchResult } )
       pure (Just next)

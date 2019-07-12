@@ -29,7 +29,7 @@ data Route
   | Login
   | Register
   | Upload
-  | Tune String TuneId
+  | Tune TuneId
   | TuneList SearchParams
 
 derive instance genericRoute :: Generic Route _
@@ -48,7 +48,7 @@ routeCodec = root $ sum
   , "Genre": "genre" / noArgs
   , "Register": "register" / noArgs
   , "Upload": "upload" / noArgs
-  , "Tune": "genre" / segment / "tune" / (tuneId segment)
+  , "Tune": "tune" / (tuneId segment)
   , "TuneList":  "tunelist" ?
        { key : optional <<< string
        , rhythm : optional <<< string

@@ -6,6 +6,7 @@ module TuneBank.Data.Types
   , tuneIdFromString
   , tuneIdToString
   , decodeTuneIdURIComponent
+  , encodeTuneIdURIComponent
   ) where
 
 
@@ -18,7 +19,7 @@ import Data.String.CodePoints (indexOf, lastIndexOf, length)
 import Data.String.CodeUnits (slice)
 import Data.String.Pattern (Pattern(..))
 import TuneBank.Data.Session (Session)
-import TuneBank.Api.Codec.Utils (decodeURIComponent, safeSlice)
+import TuneBank.Api.Codec.Utils (decodeURIComponent, encodeURIComponent, safeSlice)
 
 -- | A flag to control the environment for logging messages.
 data LogLevel = Dev | Prod
@@ -84,3 +85,7 @@ decodeTuneIdURIComponent s =
         TuneId { title : decodedS
                , tuneType : ""
                }
+
+encodeTuneIdURIComponent :: TuneId -> String
+encodeTuneIdURIComponent =
+  encodeURIComponent <<< tuneIdToString
