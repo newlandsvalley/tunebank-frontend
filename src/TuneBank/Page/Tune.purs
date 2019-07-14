@@ -19,9 +19,9 @@ import TuneBank.Data.Types (BaseURL(..), TuneId(..), encodeTuneIdURIComponent)
 import TuneBank.HTML.Footer (footer)
 import TuneBank.HTML.Header (header)
 import TuneBank.Navigation.Route (Route(..))
-import TuneBank.Page.Utils.Environment (getBaseURL, getCorsBaseURL, getCurrentGenre, getInstruments)
+import TuneBank.Page.Utils.Environment (getBaseURL, getCurrentGenre, getInstruments)
 import TuneBank.Api.Codec.Tune (TuneMetadata, nullTuneMetadata)
-import TuneBank.Api.Request (requestCleanTune)
+import TuneBank.Api.Request (requestTune)
 import Audio.SoundFont (Instrument)
 import Audio.SoundFont.Melody.Class (MidiRecording(..))
 import Data.Abc (AbcTune)
@@ -165,7 +165,8 @@ component =
       baseURL <- getBaseURL
       -- corsBaseURL <- getCorsBaseURL only temporary for live server
       instruments <- getInstruments
-      tuneMetadataResult <- requestCleanTune baseURL (asUriComponent genre) state.tuneId
+      -- tuneMetadataResult <- requestCleanTune baseURL (asUriComponent genre) state.tuneId
+      tuneMetadataResult <- requestTune baseURL (asUriComponent genre) state.tuneId
       let
         tuneResult =
           tuneMetadataResult >>= (\x -> lmap show $ parse x.abc)

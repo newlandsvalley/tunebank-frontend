@@ -75,7 +75,7 @@ defaultStringGetRequest (BaseURL baseUrl) mCredentials endpoint mediaType =
   , responseFormat: RF.string
   }
 
-
+-- | only needed against pre v1.2.0 musicrest which exhibits JSON errors
 defaultJsonAsStrGetRequest :: BaseURL -> Maybe Credentials -> Endpoint -> Request String
 defaultJsonAsStrGetRequest (BaseURL baseUrl) mCredentials endpoint =
   let
@@ -101,6 +101,7 @@ requestTune baseUrl genre tuneId = do
       >>= decodeTune
   pure $ tune
 
+-- | only needed against pre v1.2.0 musicrest which exhibits JSON errors
 requestCleanTune :: forall m. MonadAff m => BaseURL -> String -> TuneId -> m (Either String TuneMetadata)
 requestCleanTune baseUrl genre tuneId = do
   res <- H.liftAff $ request $ defaultJsonAsStrGetRequest baseUrl Nothing (Tune genre tuneId)
