@@ -11,7 +11,7 @@ import Data.Generic.Rep.Show (genericShow)
 import Routing.Duplex (RouteDuplex', root, segment, as, int, optional, string)
 import Routing.Duplex.Generic (noArgs, sum)
 import Routing.Duplex.Generic.Syntax ((/), (?))
-import TuneBank.Data.Types (TuneId, tuneIdFromString, tuneIdToString)
+import TuneBank.Data.TuneId (TuneId, tuneIdFromString, tuneIdToString)
 import TuneBank.Navigation.SearchParams (SearchParams)
 
 type PageParams =

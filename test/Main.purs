@@ -11,7 +11,8 @@ import Effect (Effect)
 import Test.Unit (Test, TestF, suite, test, failure, success)
 import Test.Unit.Assert as Assert
 import Test.Unit.Main (runTest)
-import TuneBank.Data.Types (BaseURL(..), TuneId(..))
+import TuneBank.Data.Types (BaseURL(..))
+import TuneBank.Data.TuneId (TuneId(..))
 import TuneBank.Data.Credentials (Role(..), Credentials)
 import TuneBank.Api.Request (requestTune, requestTuneAbc, requestCleanTune, requestTuneStr,
        requestTuneSearch, requestTuneSearchStr, checkUser, requestUsers, requestComments,
