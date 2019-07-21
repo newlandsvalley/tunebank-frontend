@@ -2,16 +2,18 @@ module TuneBank.Page.Login where
 
 import Data.Const (Const)
 import Data.Maybe (Maybe(..))
-import Data.Either (Either(..), either)
+import Data.Either (Either(..), either, isRight)
 import Data.String.CodePoints (length)
-import Control.Monad.Reader (class MonadAsk)
+import Control.Monad.Reader (class MonadAsk, asks)
+import TuneBank.Navigation.Navigate (class Navigate, navigate)
 import Effect.Aff.Class (class MonadAff)
+import Effect.Ref as Ref
 import Halogen as H
 import Halogen.Aff as HA
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
-import Prelude (Unit, Void, ($), (<<<), (>), bind, pure, unit)
+import Prelude (Unit, Void, ($), (<<<), (>), bind, identity, pure, unit)
 import TuneBank.Data.Types (BaseURL)
 import TuneBank.Data.Session (Session)
 import TuneBank.HTML.Footer (footer)
@@ -21,15 +23,16 @@ import TuneBank.Navigation.Route (Route(..))
 import TuneBank.Data.Credentials (Credentials, blankCredentials)
 import TuneBank.Page.Utils.Environment (getBaseURL)
 import TuneBank.Api.Request (checkUser)
+import TuneBank.Page.Utils.Environment (getUser)
 
 
-currentUser = Nothing
 
 -- type Slot = H.Slot Query Void
 type Slot = H.Slot (Const Void) Void
 
 type State =
   { credentials :: Credentials
+  , currentUser :: Maybe Credentials
   , userCheckResult :: Either String String
   }
 
@@ -38,13 +41,15 @@ type Query = (Const Void)
 type ChildSlots = ()
 
 data Action
-  = HandleUserName String
+  = Initialize
+  | HandleUserName String
   | HandlePassword String
   | LoginUser
 
 component :: ∀ i o m r
   . MonadAff m
   => MonadAsk { session :: Session, baseURL :: BaseURL | r } m
+  => Navigate m
   => H.Component HH.HTML Query i o m
 component =
   H.mkComponent
@@ -52,6 +57,7 @@ component =
     , render
     , eval: H.mkEval $ H.defaultEval
         { handleAction = handleAction
+        , initialize = Just Initialize
         , finalize = Nothing
         }
     }
@@ -60,13 +66,14 @@ component =
   initialState :: i -> State
   initialState _ =
     { credentials : blankCredentials
+    , currentUser : Nothing
     , userCheckResult : Left ""
     }
 
   render :: State -> H.ComponentHTML Action ChildSlots m
   render state =
     HH.div_
-      [ header Nothing Login
+      [ header state.currentUser Login
       , HH.form
         [ HP.id_ "loginform" ]
         [ HH.fieldset
@@ -123,7 +130,7 @@ component =
   renderLoginError ::  State -> H.ComponentHTML Action ChildSlots m
   renderLoginError state =
     let
-      errorText = either (\x -> "login error") (\_ -> "login OK") state.userCheckResult
+      errorText = either identity (\_ -> "login OK") state.userCheckResult
     in
       HH.div_
         [
@@ -132,6 +139,10 @@ component =
 
   handleAction ∷ Action -> H.HalogenM State Action ChildSlots o m Unit
   handleAction = case _ of
+    Initialize -> do
+      mUser <- getUser
+      _ <- H.modify (\state -> state { currentUser = mUser } )
+      pure unit
     HandleUserName name -> do
       if (length name > 0)
         then do
@@ -153,4 +164,9 @@ component =
       baseURL <- getBaseURL
       userCheckResult <- checkUser baseURL state.credentials
       _ <- H.modify_ (\st -> st { userCheckResult = userCheckResult } )
-      pure unit
+      if (isRight userCheckResult)
+        then do
+          session <- asks _.session
+          _ <- H.liftEffect $ Ref.write (Just state.credentials) session.user
+          navigate Home
+        else  pure unit

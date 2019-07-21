@@ -6,7 +6,7 @@ import Prelude
 import TuneBank.Navigation.Route (Route(..))
 import TuneBank.HTML.Utils (css, safeHref)
 import TuneBank.Data.Credentials (Credentials)
-import Data.Maybe (Maybe)
+import Data.Maybe (Maybe, maybe)
 import Data.Monoid (guard)
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
@@ -29,7 +29,7 @@ header mCredentials route =
         , navItem Upload
            [ HH.text "upload" ]
         , navItem Login
-           [ HH.text "login" ]
+           [ HH.text $ maybe "login" (\credentials -> ("logout " <> credentials.user)) mCredentials ]
         ]
       ]
     ]
