@@ -1,10 +1,11 @@
 module TuneBank.Data.Credentials
   ( Credentials
-  , Role(..) 
+  , Role(..)
+  , blankCredentials
   ) where
 
 -- | the user role
-data Role = 
+data Role =
     NormalUser
   | Administrator
 
@@ -13,4 +14,12 @@ type Credentials =
   { user :: String
   , pass :: String
   , role :: Role
+  }
+
+-- | blanked out (uninitialised) credentials
+blankCredentials :: Credentials
+blankCredentials =
+  { user : ""
+  , pass : ""
+  , role : NormalUser
   }
