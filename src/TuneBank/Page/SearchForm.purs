@@ -3,13 +3,10 @@ module TuneBank.Page.SearchForm where
 import Prelude (Unit, Void, ($), (==), (<<<), (>), (/=), bind, identity, pure, map, unit, show)
 import Data.Const (Const)
 import Data.String.CodePoints (length)
-import Data.String.CodeUnits (slice)
 import Data.Maybe (Maybe(..), maybe, fromMaybe)
 import Effect.Aff.Class (class MonadAff)
-import Control.Monad.Reader (class MonadAsk, asks)
+import Control.Monad.Reader (class MonadAsk)
 import TuneBank.Navigation.Navigate (class Navigate, navigate)
-import Effect.Ref (Ref)
-import Effect.Ref as Ref
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
@@ -21,11 +18,10 @@ import TuneBank.Navigation.SearchParams (SearchParams, defaultSearchParams)
 import TuneBank.Data.Genre (Genre(..))
 import TuneBank.Data.Session (Session)
 import TuneBank.Data.Types (BaseURL)
-import TuneBank.Data.Key (Key(..), keySearchTerm)
+import TuneBank.Data.Key (keySearchTerm)
 import TuneBank.Data.Key as K
-import TuneBank.Data.Rhythm (Rhythm(..))
 import TuneBank.Data.Rhythm as R
-import TuneBank.HTML.Utils (css, safeHref)
+import TuneBank.HTML.Utils (css)
 import TuneBank.Page.Utils.Environment (getCurrentGenre)
 
 -- type Slot = H.Slot Query Void
@@ -93,14 +89,18 @@ component =
   render state =
     HH.div_
       [ header Nothing SearchForm
-      , HH.h1
-         [HP.class_ (H.ClassName "center") ]
-         [HH.text "Tune Search" ]
-      , renderTuneName state
-      , renderKeyMenu state
-      , renderRhythmMenu state
-      , renderOrderingMenu state
-      , renderSearchButton state
+      , HH.form
+        [ HP.id_ "searchform" ]
+        [ HH.fieldset
+            []
+            [ HH.legend_ [HH.text "Tune Search"]
+            , renderTuneName state
+            , renderKeyMenu state
+            , renderRhythmMenu state
+            , renderOrderingMenu state
+            , renderSearchButton state
+            ]
+        ]
       , footer
       ]
 
@@ -142,12 +142,12 @@ component =
 renderTuneName :: forall m. State -> H.ComponentHTML Action ChildSlots m
 renderTuneName state =
   HH.div
-    [ css "page-textinput" ]
+    [ css "textinput-div" ]
     [ HH.label
-      [ css "page-textinput-label" ]
+      [ css "textinput-label" ]
       [ HH.text "name:" ]
     , HH.input
-        [ css "page-textinput-field"
+        [ css "textinput"
         , HE.onValueInput  (Just <<< HandleTitle)
         , HP.value (fromMaybe "" state.title)
         , HP.type_ HP.InputText
@@ -160,12 +160,12 @@ renderKeyMenu state =
     defaultKey = maybe "any" identity state.key
   in
      HH.div
-       [ css "page-menu" ]
+       [ css "dropdown-div" ]
        [ HH.label
-         [ css "page-menu-label" ]
+         [ css "dropdown-label" ]
          [ HH.text "key:" ]
          , HH.select
-            [ css "page-selection"
+            [ css "dropdown-selection"
             , HP.id_  "key-menu"
             , HP.value (fromMaybe defaultOtherMenu state.key)
             , HE.onValueChange  (Just <<< HandleKey)
@@ -183,12 +183,12 @@ renderRhythmMenu state =
     default = maybe "any" identity state.rhythm
   in
      HH.div
-       [ css "page-menu" ]
+       [ css "dropdown-div" ]
        [ HH.label
-         [ css "page-menu-label" ]
+         [ css "dropdown-label" ]
          [ HH.text "rhythm:" ]
          , HH.select
-            [ css "page-selection"
+            [ css "dropdown-selection"
             , HP.id_  "rhythm-menu"
             , HP.value (fromMaybe defaultOtherMenu state.rhythm)
             , HE.onValueChange  (Just <<< HandleRhythm)
@@ -216,13 +216,13 @@ renderOrderingMenu state =
     default = "alpha"
   in
      HH.div
-       [ css "page-menu" ]
+       [ css "dropdown-div" ]
        [ HH.label
-         [ css "page-menu-label" ]
+         [ css "dropdown-label" ]
          [ HH.text "ordering:" ]
          , HH.select
-            [ css "page-selection"
-            , HP.id_  "genre-menu"
+            [ css "dropdown-selection"
+            , HP.id_  "ordering-menu"
             , HP.value state.ordering
             , HE.onValueChange  (Just <<< HandleOrdering)
             ]

@@ -1,3 +1,10 @@
+/* GENERAL
+---------------------------------------------- */
+body {
+	color: #1d3d76;
+	font: 100% "Trebuchet MS", Verdana, sans-serif;
+}
+
 /* Site Nav - the upper navigation bar */
 
 /* Banner Navigation */
@@ -40,6 +47,45 @@
 .nav li a:hover {
   color: white;
   background-color: #224422; /* hard dark green */
+}
+
+
+/* buttons */
+
+.hoverable {
+  border: none;
+  border-radius: 6px;
+  padding: 2px 10px;
+  margin: 10px 20px 10px 0;
+  font-size: 1.1em;
+  background-color: #67d665;  /* lighter green */
+  color: black;
+  box-shadow: 3px 3px #669966;  /* darker green */
+  transition: 500ms;
+}
+
+.hoverable:hover {
+  box-shadow: 0 0;
+  background-color: #669966;   /* darker green */
+}
+
+/* unhoverable means greyed and disabled */
+.unhoverable {
+  border: none;
+  border-radius: 6px;
+  padding: 2px 10px;
+  margin: 10px 20px 10px 0;
+  font-size: 1.1em;
+  background-color: lightGray;
+  color: darkGray;
+  transition: 500ms;
+}
+
+#canvas:hover {
+  box-shadow: 0 0;
+  /* background-color: #d2ed97;  */  /* very light green */
+  background-color: #daffa4;   /* very light green */
+  transition: 750ms;
 }
 
 /* dropdown menus within the navigation bar */
@@ -109,4 +155,113 @@
 	font-size: 125%;
   vertical-align: bottom;
   line-height: 70px;
+}
+
+/* FORMS
+---------------------------------------------- */
+
+fieldset {
+  background-color: #f1f1f1;
+  border: none;
+  border-radius: 2px;
+  margin-bottom: 12px;
+  overflow: hidden;
+  padding: 0 10px;
+}
+
+legend ul {
+  background-color: #fff;
+  border: 1px solid #eaeaea;
+  list-style: none;
+  margin: 12px;
+  padding: 12px;
+}
+
+
+fieldset ul li {
+  /* margin: 0.5em o; */
+  margin: 5px auto 5px auto;
+  list-style-type: none;
+}
+
+fieldset ul li:first-child {
+   padding-top: 0.5em;
+}
+
+label {
+  display: inline-block;
+  padding: 3px 6px;
+  text-align: right;
+  width: 100px;
+  vertical-align: top;
+	font-size: 1em;
+	margin-top: 8px; /* match with select (dropdown) */
+}
+
+
+/* label alignment in forms */
+label.search,
+.search label {
+  width: 75px;
+}
+
+legend {
+  background-color: #669966; /* dark green */
+  border-top: 1px solid #d4d4d4;
+  border-bottom: 1px solid #d4d4d4;
+  -moz-box-shadow: 3px 3px 3px #ccc;
+  -webkit-box-shadow: 3px 3px 3px #ccc;
+  box-shadow: 3px 3px 3px #ccc;
+  font-size: 1em;
+  padding: 0.3em 1em;
+}
+
+
+input[type="email"],
+input[type="password"],
+input[type="text"] {
+	padding: 2px 3px;
+  color: black;
+  background: #f3f6c6;
+	width: 200px;
+	margin-top: 8px;   /* match with label */
+}
+
+input[type="textarea"] {
+		background: #f3f6c6;
+}
+
+/* select dropdown on forms */
+select {
+   background-color: #cccc99;
+	 margin-top: 8px;   /* match with label */
+}
+
+/* the file button */
+
+/* the submit (and other) buttons */
+.button-link,
+input[type='submit'] {
+	background: #66cc66;
+	border: none;
+	border-radius: 4px;
+	box-shadow: 2px 2px 2px #333;
+	cursor: pointer;
+    font-size: 100%;
+	color: black;
+	margin: 12px;
+	/* padding: 8px; */
+	padding: 5px;
+  -webkit-transition-duration: 0.2s;
+  -moz-transition-duration: 0.2s;
+  transition-duration: 0.2s;
+}
+
+/* individual forms */
+#loginform,
+#searchform {
+  width: 400px;
+  text-align: middle;
+  margin-left: auto;
+  margin-right: auto;
 }
