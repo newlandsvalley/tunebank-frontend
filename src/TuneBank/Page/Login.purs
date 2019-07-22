@@ -1,34 +1,30 @@
 module TuneBank.Page.Login where
 
-import Data.Const (Const)
-import Data.Maybe (Maybe(..))
-import Data.Either (Either(..), either, isRight)
-import Data.String.CodePoints (length)
 import Control.Monad.Reader (class MonadAsk, asks)
-import TuneBank.Navigation.Navigate (class Navigate, navigate)
+import Data.Const (Const)
+import Data.Either (Either(..), either, isRight)
+import Data.Maybe (Maybe(..), maybe)
+import Data.String.CodePoints (length)
 import Effect.Aff.Class (class MonadAff)
 import Effect.Ref as Ref
 import Halogen as H
-import Halogen.Aff as HA
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
-import Prelude (Unit, Void, ($), (<<<), (>), bind, identity, pure, unit)
-import TuneBank.Data.Types (BaseURL)
+import Prelude (Unit, Void, ($), (<<<), (>), (<>), bind, const, identity, pure, unit)
+import TuneBank.Api.Request (checkUser)
+import TuneBank.Data.Credentials (Credentials, blankCredentials)
 import TuneBank.Data.Session (Session)
+import TuneBank.Data.Types (BaseURL)
 import TuneBank.HTML.Footer (footer)
 import TuneBank.HTML.Header (header)
 import TuneBank.HTML.Utils (css)
+import TuneBank.Navigation.Navigate (class Navigate, navigate)
 import TuneBank.Navigation.Route (Route(..))
-import TuneBank.Data.Credentials (Credentials, blankCredentials)
-import TuneBank.Page.Utils.Environment (getBaseURL)
-import TuneBank.Api.Request (checkUser)
-import TuneBank.Page.Utils.Environment (getUser)
+import TuneBank.Page.Utils.Environment (getBaseURL, getUser)
 
 
-
--- type Slot = H.Slot Query Void
-type Slot = H.Slot (Const Void) Void
+type Slot = H.Slot Query Void
 
 type State =
   { credentials :: Credentials
@@ -45,6 +41,7 @@ data Action
   | HandleUserName String
   | HandlePassword String
   | LoginUser
+  | LogoutUser
 
 component :: ∀ i o m r
   . MonadAff m
@@ -74,19 +71,30 @@ component =
   render state =
     HH.div_
       [ header state.currentUser Login
-      , HH.form
-        [ HP.id_ "loginform" ]
-        [ HH.fieldset
+      , logInOrOut state
+      , footer
+      ]
+
+  logInOrOut :: State -> H.ComponentHTML Action ChildSlots m
+  logInOrOut state =
+    case state.currentUser of
+      Nothing ->
+        HH.form
+          [ HP.id_ "loginform" ]
+          [ HH.fieldset
             []
             [ HH.legend_ [HH.text "Login"]
             , renderUserName state
             , renderPassword state
-            , renderLoginButton state
+            , renderLoginOutButton  state.currentUser
             ]
-        , renderLoginError state
-        ]
-      , footer
-      ]
+          , renderLoginError state
+          ]
+      Just cred ->
+        HH.div_
+         [ HH.text ("log out " <> cred.user <> " ?")
+         , renderLoginOutButton state.currentUser
+         ]
 
   renderUserName :: State -> H.ComponentHTML Action ChildSlots m
   renderUserName state =
@@ -118,14 +126,18 @@ component =
           ]
       ]
 
-  renderLoginButton :: State -> H.ComponentHTML Action ChildSlots m
-  renderLoginButton state =
+  renderLoginOutButton :: Maybe Credentials -> H.ComponentHTML Action ChildSlots m
+  renderLoginOutButton mCred =
+    let
+      action = maybe LoginUser (const LogoutUser) mCred
+      buttonText = maybe "login" (const "logout") mCred
+    in
       HH.button
-        [ HE.onClick \_ -> Just LoginUser
+        [ HE.onClick \_ -> Just action
         , css "hoverable"
         , HP.enabled true
         ]
-        [ HH.text "login" ]
+        [ HH.text buttonText ]
 
   renderLoginError ::  State -> H.ComponentHTML Action ChildSlots m
   renderLoginError state =
@@ -170,3 +182,8 @@ component =
           _ <- H.liftEffect $ Ref.write (Just state.credentials) session.user
           navigate Home
         else  pure unit
+    LogoutUser -> do
+      session <- asks _.session
+      _ <- H.liftEffect $ Ref.write Nothing session.user
+      _ <- H.modify (\st -> st { currentUser = Nothing } )
+      pure unit

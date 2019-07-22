@@ -7,7 +7,7 @@ body {
 
 /* Site Nav - the upper navigation bar */
 
-/* Banner Navigation */
+/* Banner Navigation in the first masthead line */
 .nav {
 	overflow: hidden;
 	list-style-type: none;  /* don't display the bullets in the nav bar */
@@ -37,7 +37,6 @@ body {
 	padding-left: 20px;
 }
 
-
 .nav li:last-child {
   float: right;
 	padding-right: 50px;
@@ -48,6 +47,15 @@ body {
   color: white;
   background-color: #224422; /* hard dark green */
 }
+
+/* the second masthead line showing login state */
+.masthead2-user {
+  text-align: right;
+  padding-right: 20px;
+  display: block;
+  color: blue;
+}
+
 
 
 /* buttons */

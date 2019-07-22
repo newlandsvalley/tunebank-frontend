@@ -16,21 +16,24 @@ header :: forall i p. Maybe Credentials -> Route -> HH.HTML i p
 header mCredentials route =
   HH.header
     [ css "masthead" ]
-    [ HH.nav
-      [ css "header-nav" ]
-      [ HH.ul
-        [ css "nav" ]
-        [ navItem Home
-           [ HH.text "home" ]
-        , navItem SearchForm
-           [ HH.text "search" ]
-        , navItem Genre
-           [ HH.text "genre" ]
-        , navItem Upload
-           [ HH.text "upload" ]
-        , navItem Login
-           [ HH.text $ maybe "login" (\credentials -> ("logout " <> credentials.user)) mCredentials ]
+    [ HH.div_
+      [ HH.nav
+        [ css "header-nav" ]
+        [ HH.ul
+          [ css "nav" ]
+          [ navItem Home
+             [ HH.text "home" ]
+          , navItem SearchForm
+             [ HH.text "search" ]
+          , navItem Genre
+             [ HH.text "genre" ]
+          , navItem Upload
+             [ HH.text "upload" ]
+          , navItem Login
+             [ HH.text $ maybe "login" (const "logout") mCredentials ]
+          ]
         ]
+      , userState
       ]
     ]
 
@@ -45,3 +48,15 @@ header mCredentials route =
         ]
         html
       ]
+
+  userState ::HH.HTML i p
+  userState  =
+    let
+      loginState = maybe "not logged in" (\credentials -> credentials.user) mCredentials
+    in
+      HH.ul
+        [ css "masthead2" ]
+        [ HH.li
+          [ css "masthead2-user" ]
+          [ HH.text loginState ]
+        ]
