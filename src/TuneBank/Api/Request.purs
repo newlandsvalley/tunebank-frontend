@@ -8,13 +8,13 @@ import Affjax.ResponseFormat as RF
 import Effect.Aff.Class (class MonadAff)
 import Halogen as H
 import Data.Either (Either(..))
-import Data.Maybe (Maybe(..), fromMaybe, isJust)
+import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Array (fromFoldable, head, filter)
 import Data.Tuple (Tuple(..))
 import Data.Bifunctor (bimap, lmap, rmap)
 import Data.HTTP.Method (Method(..))
 import Data.Argonaut.Core (Json)
-import Data.Argonaut.Decode (decodeJson, getField, (.:))
+import Data.Argonaut.Decode (decodeJson)
 import Data.Argonaut.Encode (encodeJson)
 import Data.Argonaut.Parser (jsonParser)
 import Data.MediaType (MediaType(..))
@@ -33,7 +33,7 @@ import TuneBank.Api.Codec.Pagination (Pagination, defaultPagination, decodePagin
 import TuneBank.Authorization.BasicAuth (authorizationHeader)
 import TuneBank.BugFix.Backend (fixSearchParams)
 
-import Debug.Trace (spy, traceM)
+import Debug.Trace (spy, trace, traceM)
 
 defaultJsonGetRequest :: BaseURL -> Maybe Credentials -> Endpoint -> Request Json
 defaultJsonGetRequest (BaseURL baseUrl) mCredentials endpoint =
@@ -148,6 +148,7 @@ checkUser baseUrl credentials = do
   res <- H.liftAff $ request $ defaultStringGetRequest baseUrl (Just credentials) UserCheck (MediaType "text/plain; charset=UTF-8")
   let
     response = (lmap printResponseFormatError res.body)
+    foo = trace "check user response " \_ -> response
   pure $ response
 
 

@@ -145,7 +145,7 @@ component =
   renderLoginError ::  State -> H.ComponentHTML Action ChildSlots m
   renderLoginError state =
     let
-      errorText = either identity (\_ -> "login OK") state.userCheckResult
+      errorText = either (\x -> ("login failed " <> x)) (\_ -> "login OK") state.userCheckResult
     in
       HH.div_
         [

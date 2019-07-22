@@ -29,7 +29,6 @@ import TuneBank.Navigation.SearchParams (SearchParams)
 import TuneBank.Page.Utils.Environment (getBaseURL, getCorsBaseURL, getCurrentGenre, getUser)
 
 type Slot = H.Slot Query Void
--- type Slot = H.Slot (Const Void) Void
 
 type State =
   { genre :: Genre

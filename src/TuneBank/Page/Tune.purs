@@ -1,36 +1,36 @@
 module TuneBank.Page.Tune where
 
-import Data.Const (Const)
-import Data.Maybe (Maybe(..))
-import Data.Array (length)
-import Data.Either (Either(..), either)
-import Data.Bifunctor (lmap)
-import Data.Symbol (SProxy(..))
+import Audio.SoundFont (Instrument)
+import Audio.SoundFont.Melody.Class (MidiRecording(..))
 import Control.Monad.Reader (class MonadAsk)
+import Data.Abc (AbcTune)
+import Data.Abc.Midi (toMidi)
+import Data.Abc.Parser (parse)
+import Data.Array (length)
+import Data.Bifunctor (lmap)
+import Data.Const (Const)
+import Data.Either (Either(..), either)
+import Data.Maybe (Maybe(..))
+import Data.Symbol (SProxy(..))
+import Data.MediaType (MediaType(..))
 import Effect.Aff.Class (class MonadAff)
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
+import Halogen.PlayerComponent as PC
 import Prelude (Unit, Void, ($), (<>), (<<<), (>>=), bind, identity, pure, show, unit)
-import TuneBank.Navigation.Navigate (class Navigate)
-import TuneBank.Data.Genre (Genre(..), asUriComponent)
-import TuneBank.Data.Session (Session)
-import TuneBank.Data.Types (BaseURL(..))
-import TuneBank.Data.Credentials (Credentials)
-import TuneBank.Data.TuneId (TuneId(..), encodeTuneIdURIComponent)
-import TuneBank.HTML.Footer (footer)
-import TuneBank.HTML.Header (header)
-import TuneBank.Navigation.Route (Route(..))
-import TuneBank.Page.Utils.Environment (getBaseURL, getCurrentGenre, getInstruments, getUser)
 import TuneBank.Api.Codec.Tune (TuneMetadata, nullTuneMetadata)
 import TuneBank.Api.Request (requestTune)
-import Audio.SoundFont (Instrument)
-import Audio.SoundFont.Melody.Class (MidiRecording(..))
-import Data.Abc (AbcTune)
-import Data.Abc.Parser (parse)
-import Data.Abc.Midi (toMidi)
-
-import Halogen.PlayerComponent as PC
+import TuneBank.Data.Credentials (Credentials)
+import TuneBank.Data.Genre (Genre(..), asUriComponent)
+import TuneBank.Data.Session (Session)
+import TuneBank.Data.TuneId (TuneId(..), encodeTuneIdURIComponent)
+import TuneBank.Data.Types (BaseURL(..))
+import TuneBank.HTML.Footer (footer)
+import TuneBank.HTML.Header (header)
+import TuneBank.Navigation.Navigate (class Navigate)
+import TuneBank.Navigation.Route (Route(..))
+import TuneBank.Page.Utils.Environment (getBaseURL, getCurrentGenre, getInstruments, getUser)
 
 -- | there is no tune yet
 nullParsedTune :: Either String AbcTune
@@ -108,6 +108,7 @@ component =
            [HP.class_ (H.ClassName "center") ]
            [HH.text ("Tune " <> title) ]
         , renderTuneScore state title
+        , renderTuneMetadata state
         , renderPlayer state
         , renderDebug state
         , footer
@@ -116,8 +117,7 @@ component =
   renderTuneScore :: State -> String -> H.ComponentHTML Action ChildSlots m
   renderTuneScore state title =
     let
-      imageURI = (show state.baseURL) <> "/genre/" <> (asUriComponent state.genre) <>
-                 "/tune/" <> state.tuneURI <> "/png"
+      imageURI = urlPreface state <> "/png"
     in
       HH.div_
         [HH.img
@@ -125,6 +125,54 @@ component =
           , HP.alt title
           ]
         ]
+
+  renderTuneMetadata :: State -> H.ComponentHTML Action ChildSlots m
+  renderTuneMetadata state  =
+    HH.dl
+      []
+      [ renderTuneSubmitter state
+      , HH.dt
+         []
+         [ HH.text "download"]
+      , HH.dd
+         []
+         [ HH.a
+            [ HP.href (urlPreface state <> "/abc")
+            , HP.type_ (MediaType "text/vnd.abc")
+            ]
+            [ HH.text "abc"]
+
+         , HH.a
+             [ HP.href (urlPreface state <> "/pdf")
+             , HP.type_ (MediaType "application/pdf")
+             ]
+             [ HH.text "pdf"]
+
+          , HH.a
+              [ HP.href (urlPreface state <> "/ps")
+              , HP.type_ (MediaType "application/postscript")
+              ]
+              [ HH.text "postscript"]
+
+           , HH.a
+               [ HP.href (urlPreface state <> "/midi")
+               , HP.type_ (MediaType "audio/midi")
+               ]
+               [ HH.text "midi"]
+         ]
+      ]
+
+  renderTuneSubmitter :: State -> H.ComponentHTML Action ChildSlots m
+  renderTuneSubmitter state =
+    HH.div_
+      [
+      HH.dt
+        []
+        [ HH.text "submitter" ]
+      , HH.dd
+        []
+        [ HH.text state.tuneMetadata.submitter ]
+      ]
 
   renderPlayer ::  State -> H.ComponentHTML Action ChildSlots m
   renderPlayer state =
@@ -152,11 +200,8 @@ component =
     in
       HH.div_
         [
-          HH.text ("instrument count: " <> show instrumentCount)
-        , HH.text (" tune result: " <> tuneResult)
+          HH.text (" tune result: " <> tuneResult)
         ]
-
-
 
   handleAction ∷ Action -> H.HalogenM State Action ChildSlots o m Unit
   handleAction = case _ of
@@ -184,3 +229,12 @@ component =
       -- disable any button that can alter the editor contents whilst the player
       -- is playing and re-enable when it stops playing
       pure unit
+
+
+urlPreface :: State -> String
+urlPreface state =
+  (show state.baseURL)
+  <> "/genre/"
+  <> (asUriComponent state.genre)
+  <> "/tune/"
+  <> state.tuneURI

@@ -19,7 +19,6 @@ corsAnywhere :: String
 corsAnywhere =
   "https://cors-anywhere.herokuapp.com/"
 
-
 -- | get user
 getUser
   :: forall m r

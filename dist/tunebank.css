@@ -285,3 +285,126 @@ input[type='submit'] {
   margin-left: auto;
   margin-right: auto;
 }
+
+
+/* link states */
+a {
+	padding: .2em;
+}
+
+a:link {
+	color: #597dbd;
+	text-decoration: underline;
+}
+
+a:visited {
+	text-decoration: none;
+	color: #597dbd;
+}
+
+a:focus,
+a:hover,
+a:active {
+        color: black;
+	background: #f3f6c6;
+	text-decoration: none;
+}
+
+
+a:hover.current {
+	cursor: default;
+	text-decoration: none;
+}
+
+/** definition lists */
+
+dl {
+    padding: 0.5em;
+  }
+  dt {
+    float: left;
+    clear: left;
+    font-weight: bold;
+    color: blue;
+  }
+  dt:after {
+    content: ":";
+  }
+  dd {
+    margin: 0 0 0 110px;
+    width: 400px;
+    padding: 0 0 0.3em 0;
+  }
+
+/** the metadata form */
+
+dl.metadata {
+    padding: 0;
+}
+
+.metadata dt {
+    float: left;
+    clear: left;
+}
+
+.metadata dt:after {
+    content: " :";
+}
+
+.metadata dd {
+    margin: 0 0 0 314px;
+    width: 400px;
+    padding: 0 0, 0.3em 0;
+}
+
+/* label alignment in metadata forms */
+.metadata dt label {
+  width: 275px;
+}
+
+/* links alignment */
+
+#download {
+    float: left;
+}
+
+
+/* TABLES
+---------------------------------------------- */
+
+table#samplesearch {
+    margin: 12px;
+    table-layout: fixed;
+    border-collapse:separate;
+    border-spacing:10px 2px;
+}
+
+td {
+    white-space: nowrap;
+}
+
+.tunelist table tr td {
+   padding: 0.25em 1em;
+}
+
+.tunelist table tr td a:hover {
+   color: black;
+   text-decoration: underline;
+   background: transparent;
+}
+
+
+.userlist table tr td {
+   padding: 0.25em 1em;
+}
+
+.userlist table tr td a:hover {
+   color: black;
+   text-decoration: underline;
+   background: transparent;
+}
+
+table.textalign tr td  {
+   padding-left: 2em;
+   padding-right: 2em;
+}
