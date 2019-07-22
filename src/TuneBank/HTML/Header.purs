@@ -3,17 +3,19 @@ module TuneBank.HTML.Header where
 
 import Prelude
 
-import TuneBank.Navigation.Route (Route(..))
-import TuneBank.HTML.Utils (css, safeHref)
-import TuneBank.Data.Credentials (Credentials)
+
+import Control.Monad.Reader (class MonadAsk)
 import Data.Maybe (Maybe, maybe)
 import Data.Monoid (guard)
 import Halogen.HTML as HH
-import Halogen.HTML.Properties as HP
+import TuneBank.Data.Credentials (Credentials)
+import TuneBank.Data.Genre (Genre)
+import TuneBank.HTML.Utils (css, safeHref)
+import TuneBank.Navigation.Route (Route(..))
 
 
-header :: forall i p. Maybe Credentials -> Route -> HH.HTML i p
-header mCredentials route =
+header  :: forall i p. Maybe Credentials -> Genre -> Route -> HH.HTML i p
+header mCredentials genre route =
   HH.header
     [ css "masthead" ]
     [ HH.div_
@@ -23,8 +25,6 @@ header mCredentials route =
           [ css "nav" ]
           [ navItem Home
              [ HH.text "home" ]
-          , navItem SearchForm
-             [ HH.text "search" ]
           , navItem Genre
              [ HH.text "genre" ]
           , navItem Upload
@@ -57,6 +57,9 @@ header mCredentials route =
       HH.ul
         [ css "masthead2" ]
         [ HH.li
+          [ css "masthead2-genre" ]
+          [ HH.text (show genre) ]
+        , HH.li
           [ css "masthead2-user" ]
           [ HH.text loginState ]
         ]

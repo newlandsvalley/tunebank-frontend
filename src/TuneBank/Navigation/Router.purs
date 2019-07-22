@@ -21,7 +21,6 @@ import TuneBank.Page.Register as Register
 import TuneBank.Page.Upload as Upload
 import TuneBank.Page.Tune as Tune
 import TuneBank.Page.TuneList as TuneList
-import TuneBank.Page.Home as Home
 import TuneBank.Data.Session (Session)
 import TuneBank.Data.Types (BaseURL)
 import Routing.Duplex as RD
@@ -42,8 +41,7 @@ data Action
   = Initialize
 
 type ChildSlots =
-  ( home :: OpaqueSlot Unit
-  , search :: SearchForm.Slot Unit
+  ( home ::  SearchForm.Slot  Unit
   , genre :: GenreMenu.Slot Unit
   , login :: Login.Slot Unit
   , register :: Register.Slot Unit
@@ -93,9 +91,7 @@ component =
   render { route } = case route of
     Just r -> case r of
       Home ->
-        HH.slot (SProxy :: _ "home") unit Home.component unit absurd
-      SearchForm ->
-        HH.slot (SProxy :: _ "search") unit SearchForm.component unit absurd
+        HH.slot (SProxy :: _ "home") unit SearchForm.component unit absurd
       Genre ->
         HH.slot (SProxy :: _ "genre") unit GenreMenu.component unit absurd
       Login ->

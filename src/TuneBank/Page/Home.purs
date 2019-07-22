@@ -19,6 +19,7 @@ import TuneBank.Navigation.Route (Route(..))
 import TuneBank.Data.Genre (Genre(..))
 import TuneBank.Data.Session (Session)
 
+
 -- type Slot = H.Slot Query Void
 type Slot = H.Slot (Const Void) Void
 
@@ -52,7 +53,7 @@ component =
   render :: State -> H.ComponentHTML Action ChildSlots m
   render state =
     HH.div_
-      [ header Nothing Home
+      [ header Nothing Scandi Home
       , HH.h1
          [HP.class_ (H.ClassName "center") ]
          [HH.text "Home" ]

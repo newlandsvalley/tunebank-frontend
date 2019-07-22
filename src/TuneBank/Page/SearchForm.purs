@@ -1,6 +1,6 @@
 module TuneBank.Page.SearchForm where
 
-import Prelude (Unit, Void, ($), (==), (<<<), (>), (/=), bind, identity, pure, map, unit, show)
+import Prelude (Unit, Void, ($), (==), (<<<), (>), (/=), bind, identity, pure, map, unit)
 import Data.Const (Const)
 import Data.String.CodePoints (length)
 import Data.Maybe (Maybe(..), maybe, fromMaybe)
@@ -22,13 +22,15 @@ import TuneBank.Data.Key (keySearchTerm)
 import TuneBank.Data.Key as K
 import TuneBank.Data.Rhythm as R
 import TuneBank.HTML.Utils (css)
-import TuneBank.Page.Utils.Environment (getCurrentGenre)
+import TuneBank.Page.Utils.Environment (getCurrentGenre, getUser)
+import TuneBank.Data.Credentials (Credentials)
 
 -- type Slot = H.Slot Query Void
 type Slot = H.Slot (Const Void) Void
 
 type State =
   { genre :: Genre
+  , currentUser :: Maybe Credentials
   , searchParams :: SearchParams
   , title :: Maybe String
   , key :: Maybe String
@@ -56,7 +58,6 @@ defaultOtherMenu :: String
 defaultOtherMenu =
   "any"
 
-
 component
    :: ∀ i o m r
     . MonadAff m
@@ -78,6 +79,7 @@ component =
   initialState :: i -> State
   initialState _ =
    { genre : Scandi
+   , currentUser : Nothing
    , searchParams : defaultSearchParams
    , title : Nothing
    , key : Nothing
@@ -88,7 +90,7 @@ component =
   render :: State -> H.ComponentHTML Action ChildSlots m
   render state =
     HH.div_
-      [ header Nothing SearchForm
+      [ header state.currentUser state.genre Home
       , HH.form
         [ HP.id_ "searchform" ]
         [ HH.fieldset
@@ -108,7 +110,9 @@ component =
   handleAction = case _ of
     Initialize -> do
       genre <- getCurrentGenre
-      H.modify_ (\state -> state { genre = genre } )
+      currentUser <- getUser
+      H.modify_ (\state -> state { genre = genre
+                                 , currentUser = currentUser } )
     HandleTitle title -> do
       if (length title > 0)
         then do

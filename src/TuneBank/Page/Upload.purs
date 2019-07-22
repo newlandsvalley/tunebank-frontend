@@ -5,20 +5,13 @@ import Data.Const (Const)
 import Data.Maybe (Maybe(..))
 import Effect.Aff.Class (class MonadAff)
 import Halogen as H
-import Halogen.Aff as HA
 import Halogen.HTML as HH
-import Halogen.HTML.Core (ClassName(..))
-import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
-import Partial.Unsafe (unsafePartial)
-import Web.DOM.ParentNode (QuerySelector(..))
-import Web.HTML.HTMLElement (offsetTop, offsetLeft)
 import TuneBank.HTML.Header (header)
 import TuneBank.HTML.Footer (footer)
 import TuneBank.Navigation.Route (Route(..))
 import TuneBank.Data.Genre (Genre(..))
 import TuneBank.Data.Session (Session)
-
 
 -- type Slot = H.Slot Query Void
 type Slot = H.Slot (Const Void) Void
@@ -53,7 +46,7 @@ component =
   render :: State -> H.ComponentHTML Action ChildSlots m
   render state =
     HH.div_
-      [ header Nothing Upload
+      [ header Nothing Scandi Upload
       , HH.h1
          [HP.class_ (H.ClassName "center") ]
          [HH.text "Upload" ]

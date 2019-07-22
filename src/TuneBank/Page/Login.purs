@@ -14,6 +14,7 @@ import Halogen.HTML.Properties as HP
 import Prelude (Unit, Void, ($), (<<<), (>), (<>), bind, const, identity, pure, unit)
 import TuneBank.Api.Request (checkUser)
 import TuneBank.Data.Credentials (Credentials, blankCredentials)
+import TuneBank.Data.Genre (Genre(..))
 import TuneBank.Data.Session (Session)
 import TuneBank.Data.Types (BaseURL)
 import TuneBank.HTML.Footer (footer)
@@ -21,13 +22,14 @@ import TuneBank.HTML.Header (header)
 import TuneBank.HTML.Utils (css)
 import TuneBank.Navigation.Navigate (class Navigate, navigate)
 import TuneBank.Navigation.Route (Route(..))
-import TuneBank.Page.Utils.Environment (getBaseURL, getUser)
+import TuneBank.Page.Utils.Environment (getBaseURL, getUser, getCurrentGenre)
 
 
 type Slot = H.Slot Query Void
 
 type State =
-  { credentials :: Credentials
+  { genre :: Genre
+  , credentials :: Credentials
   , currentUser :: Maybe Credentials
   , userCheckResult :: Either String String
   }
@@ -62,7 +64,8 @@ component =
 
   initialState :: i -> State
   initialState _ =
-    { credentials : blankCredentials
+    { genre : Scandi
+    , credentials : blankCredentials
     , currentUser : Nothing
     , userCheckResult : Left ""
     }
@@ -70,7 +73,7 @@ component =
   render :: State -> H.ComponentHTML Action ChildSlots m
   render state =
     HH.div_
-      [ header state.currentUser Login
+      [ header state.currentUser state.genre Login
       , logInOrOut state
       , footer
       ]
@@ -153,7 +156,9 @@ component =
   handleAction = case _ of
     Initialize -> do
       mUser <- getUser
-      _ <- H.modify (\state -> state { currentUser = mUser } )
+      genre <- getCurrentGenre
+      _ <- H.modify (\state -> state { genre = genre
+                                     , currentUser = mUser } )
       pure unit
     HandleUserName name -> do
       if (length name > 0)

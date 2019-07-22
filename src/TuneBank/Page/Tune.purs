@@ -16,11 +16,12 @@ import TuneBank.Navigation.Navigate (class Navigate)
 import TuneBank.Data.Genre (Genre(..), asUriComponent)
 import TuneBank.Data.Session (Session)
 import TuneBank.Data.Types (BaseURL(..))
+import TuneBank.Data.Credentials (Credentials)
 import TuneBank.Data.TuneId (TuneId(..), encodeTuneIdURIComponent)
 import TuneBank.HTML.Footer (footer)
 import TuneBank.HTML.Header (header)
 import TuneBank.Navigation.Route (Route(..))
-import TuneBank.Page.Utils.Environment (getBaseURL, getCurrentGenre, getInstruments)
+import TuneBank.Page.Utils.Environment (getBaseURL, getCurrentGenre, getInstruments, getUser)
 import TuneBank.Api.Codec.Tune (TuneMetadata, nullTuneMetadata)
 import TuneBank.Api.Request (requestTune)
 import Audio.SoundFont (Instrument)
@@ -30,9 +31,6 @@ import Data.Abc.Parser (parse)
 import Data.Abc.Midi (toMidi)
 
 import Halogen.PlayerComponent as PC
-
-
-currentUser = Nothing
 
 -- | there is no tune yet
 nullParsedTune :: Either String AbcTune
@@ -44,6 +42,7 @@ type Slot = H.Slot (Const Void) Void
 
 type State =
   { genre :: Genre
+  , currentUser :: Maybe Credentials
   , tuneURI :: String
   , tuneId :: TuneId
   , baseURL :: BaseURL
@@ -89,6 +88,7 @@ component =
   initialState :: Input -> State
   initialState input =
     { genre : Scandi
+    , currentUser : Nothing
     , tuneURI : encodeTuneIdURIComponent input.tuneId
     , tuneId : input.tuneId
     , baseURL : BaseURL ""
@@ -103,7 +103,7 @@ component =
       (TuneId {title, tuneType}) = state.tuneId
     in
       HH.div_
-        [ header Nothing Home
+        [ header state.currentUser state.genre Home
         , HH.h1
            [HP.class_ (H.ClassName "center") ]
            [HH.text ("Tune " <> title) ]
@@ -163,6 +163,7 @@ component =
     Initialize -> do
       state <- H.get
       genre <- getCurrentGenre
+      currentUser <- getUser
       baseURL <- getBaseURL
       -- corsBaseURL <- getCorsBaseURL only temporary for live server
       instruments <- getInstruments
@@ -173,8 +174,8 @@ component =
           tuneMetadataResult >>= (\x -> lmap show $ parse x.abc)
       H.modify_ (\st -> st
         { genre = genre
+        , currentUser = currentUser
         , baseURL = baseURL
-        --, tuneMetadata = tuneMetadata
         , tuneResult = tuneResult
         , instruments = instruments
         } )

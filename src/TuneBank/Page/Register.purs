@@ -5,14 +5,8 @@ import Data.Const (Const)
 import Data.Maybe (Maybe(..))
 import Effect.Aff.Class (class MonadAff)
 import Halogen as H
-import Halogen.Aff as HA
 import Halogen.HTML as HH
-import Halogen.HTML.Core (ClassName(..))
-import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
-import Partial.Unsafe (unsafePartial)
-import Web.DOM.ParentNode (QuerySelector(..))
-import Web.HTML.HTMLElement (offsetTop, offsetLeft)
 import TuneBank.HTML.Header (header)
 import TuneBank.HTML.Footer (footer)
 import TuneBank.Navigation.Route (Route(..))
@@ -55,7 +49,7 @@ component =
   render :: State -> H.ComponentHTML Action ChildSlots m
   render state =
     HH.div_
-      [ header Nothing Register
+      [ header Nothing Scandi Register
       , HH.h1
          [HP.class_ (H.ClassName "center") ]
          [HH.text "Register" ]

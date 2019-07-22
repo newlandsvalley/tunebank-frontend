@@ -15,9 +15,10 @@ import Halogen.HTML.Events as HE
 import TuneBank.Api.Codec.Pagination (Pagination)
 import TuneBank.Api.Codec.TunesPage (TunesPage, TuneRefArray)
 import TuneBank.Api.Request (requestTuneSearch)
-import TuneBank.Data.Genre (asUriComponent)
+import TuneBank.Data.Genre (Genre(..), asUriComponent)
 import TuneBank.Data.Session (Session)
 import TuneBank.Data.Types (BaseURL)
+import TuneBank.Data.Credentials (Credentials)
 import TuneBank.Data.TuneId (TuneId(..), decodeTuneIdURIComponent)
 import TuneBank.HTML.Footer (footer)
 import TuneBank.HTML.Header (header)
@@ -25,15 +26,15 @@ import TuneBank.HTML.Utils (css, safeHref)
 import TuneBank.Navigation.Navigate (class Navigate, navigate)
 import TuneBank.Navigation.Route (Route(..))
 import TuneBank.Navigation.SearchParams (SearchParams)
-import TuneBank.Page.Utils.Environment (getBaseURL, getCorsBaseURL, getCurrentGenre)
-
-currentUser = Nothing
+import TuneBank.Page.Utils.Environment (getBaseURL, getCorsBaseURL, getCurrentGenre, getUser)
 
 type Slot = H.Slot Query Void
 -- type Slot = H.Slot (Const Void) Void
 
 type State =
-  { searchParams :: SearchParams
+  { genre :: Genre
+  , currentUser :: Maybe Credentials
+  , searchParams :: SearchParams
   , searchResult :: Either String (Tuple TunesPage Pagination)
   }
 
@@ -74,14 +75,16 @@ component =
 
   initialState :: Input -> State
   initialState { searchParams } =
-     { searchParams
+     { genre : Scandi
+     , currentUser : Nothing
+     , searchParams
      , searchResult : Left ""
      }
 
   render :: State -> H.ComponentHTML Action ChildSlots m
   render state =
     HH.div_
-      [ header Nothing Home
+      [ header state.currentUser state.genre Home
       , HH.h1
          [HP.class_ (H.ClassName "center") ]
          [HH.text ("Tune List page " <> show state.searchParams.page) ]
@@ -176,6 +179,10 @@ component =
   handleAction ∷ Action -> H.HalogenM State Action ChildSlots o m Unit
   handleAction = case _ of
     Initialize -> do
+      genre <- getCurrentGenre
+      currentUser <- getUser
+      H.modify_ (\state -> state { genre = genre
+                                 , currentUser = currentUser } )
       _ <- handleQuery (FetchResults unit)
       pure unit
     GoToPage page -> do
@@ -199,10 +206,9 @@ component =
   handleQuery = case _ of
     FetchResults next -> do
       state <- H.get
-      genre <- getCurrentGenre
       -- live server testing only baseURL <- getCorsBaseURL
       baseURL <- getBaseURL
-      searchResult <- requestTuneSearch baseURL (asUriComponent genre) state.searchParams
+      searchResult <- requestTuneSearch baseURL (asUriComponent state.genre) state.searchParams
       H.modify_ (\st -> st { searchResult = searchResult } )
       pure (Just next)
 

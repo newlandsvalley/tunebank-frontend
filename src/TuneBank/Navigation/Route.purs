@@ -24,7 +24,6 @@ genre = as genreToString genreFromString
 
 data Route
   = Home
-  | SearchForm
   | Genre
   | Login
   | Register
@@ -43,7 +42,6 @@ instance showRoute :: Show Route where
 routeCodec :: RouteDuplex' Route
 routeCodec = root $ sum
   { "Home": noArgs
-  , "SearchForm" : "search" / noArgs
   , "Login": "login" / noArgs
   , "Genre": "genre" / noArgs
   , "Register": "register" / noArgs

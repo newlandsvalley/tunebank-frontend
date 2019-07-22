@@ -18,15 +18,18 @@ import TuneBank.Navigation.Route (Route(..))
 import TuneBank.Data.Genre (Genre(..), readGenre)
 import TuneBank.Data.Session (Session)
 import TuneBank.Data.Types (BaseURL)
+import TuneBank.Data.Credentials (Credentials)
 import TuneBank.HTML.Utils (css)
-import TuneBank.Page.Utils.Environment (getCurrentGenre)
+import TuneBank.Page.Utils.Environment (getCurrentGenre, getUser)
 
 
 -- type Slot = H.Slot Query Void
 type Slot = H.Slot (Const Void) Void
 
 type State =
-  { genre :: Genre }
+  { genre :: Genre
+  , currentUser :: Maybe Credentials
+  }
 
 type Query = (Const Void)
 
@@ -56,12 +59,14 @@ component =
 
   initialState :: i -> State
   initialState _ =
-    { genre : Scandi }
+    { genre : Scandi
+    , currentUser : Nothing
+    }
 
   render :: State -> H.ComponentHTML Action ChildSlots m
   render state =
     HH.div_
-      [ header Nothing Home
+      [ header state.currentUser state.genre Genre
       , HH.h1
          [HP.class_ (H.ClassName "center") ]
          [HH.text "Genre" ]
@@ -73,8 +78,9 @@ component =
   handleAction = case _ of
     Initialize -> do
       genre <- getCurrentGenre
-      _ <- H.modify (\state -> state { genre = genre } )
-      pure unit
+      currentUser <- getUser
+      H.modify_ (\state -> state { genre = genre
+                                 , currentUser = currentUser } )
     HandleGenre genreString ->
       case (readGenre genreString) of
         Nothing ->
@@ -107,15 +113,6 @@ renderGenreMenu state =
 genreOptions :: forall i p. Genre -> Array (HH.HTML i p)
 genreOptions default =
   map (\o -> genreOption o default) $ enumFromTo Irish Scottish
-
-
-{-}
-  [ genreOption Irish default
-  , genreOption Klezmer default
-  , genreOption Scandi default
-  , genreOption Scottish default
-  ]
--}
 
 genreOption :: forall i p. Genre -> Genre -> HH.HTML i p
 genreOption next default =
