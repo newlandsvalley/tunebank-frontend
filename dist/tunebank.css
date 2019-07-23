@@ -11,17 +11,34 @@ body {
 .nav {
 	overflow: hidden;
 	list-style-type: none;  /* don't display the bullets in the nav bar */
-    clear: both;
-  	float: left;
-    background-color: #224422; /* hard dark green */
-    width: 100%;
-  	height: 35px;
+  clear: both;
+  float: left;
+  background-color: #224422; /* hard dark green */
+  width: 97%;
+  height: 40px;
 }
 
-.nav li {
+/* an li used as a navigation link */
+.nav .nav-item {
 	float: left;
-	font-size: .75em; /* 12px/16px */  /* makes the bullets smaller */
-	padding: 3.3px 25px 3.3px 3px;
+	font-size: .75em;  /* makes the bullets smaller */
+	padding: 3.3px 3px 3.3px 25px;
+}
+
+/* an li used as information only */
+.nav .info-item {
+	font-size: 1.2em;
+	color: #e69900;
+	display: inline-block;
+	padding: 11.3px 23px 3.3px 2px;
+}
+
+/* used as additional text to a nav item */
+.nav .nav-item .additional-info {
+	font-size: 1.7em;
+	color: #e69900;
+	display: inline-block;
+	padding: 6.3px 23px 3.3px 2px;
 }
 
 .nav li a {
@@ -34,12 +51,12 @@ body {
 
 .nav li:first-child {
 	list-style: none;
-	padding-left: 20px;
+	padding-left: 2px;
 }
 
 .nav li:last-child {
   float: right;
-	padding-right: 50px;
+	padding-right: 30px;
 }
 
 .nav li a.current,
@@ -305,7 +322,7 @@ a:visited {
 a:focus,
 a:hover,
 a:active {
-        color: black;
+  color: black;
 	background: #f3f6c6;
 	text-decoration: none;
 }

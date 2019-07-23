@@ -3,8 +3,7 @@ module TuneBank.HTML.Header where
 
 import Prelude
 
-
-import Data.Maybe (Maybe, maybe)
+import Data.Maybe (Maybe(..), maybe)
 import Data.Monoid (guard)
 import Halogen.HTML as HH
 import TuneBank.Data.Credentials (Credentials)
@@ -26,13 +25,13 @@ header mCredentials genre route =
              [ HH.text "home" ]
           , navItem Genre
              [ HH.text "genre" ]
+          , infoItem
+             [ HH.text $ show genre ]
           , loggedInUserNavItem Upload
              [ HH.text "upload" ]
-          , navItem Login
-             [ HH.text $ maybe "login" (const "logout") mCredentials ]
+          , navLogInOut
           ]
         ]
-      , userState
       ]
     ]
 
@@ -55,17 +54,35 @@ header mCredentials genre route =
   loggedInUserNavItem r html =
     maybe (HH.text "") (const $ navItem r html) mCredentials
 
-  userState ::HH.HTML i p
-  userState  =
-    let
-      loginState = maybe "not logged in" (\credentials -> credentials.user) mCredentials
-    in
-      HH.ul
-        [ css "masthead2" ]
-        [ HH.li
-          [ css "masthead2-genre" ]
-          [ HH.text (show genre) ]
-        , HH.li
-          [ css "masthead2-user" ]
-          [ HH.text loginState ]
-        ]
+  -- | a 'special' navigation item for Login/Logout
+  navLogInOut :: HH.HTML i p
+  navLogInOut  =
+    case mCredentials of
+      Just credentials ->
+        HH.li
+         [ css "nav-item" ]
+         [ HH.a
+           [ css $ guard (route == Login) "current"
+           , safeHref Login
+           ]
+           [ HH.text "logout" ]
+         , HH.span
+           [ css "additional-info" ]
+           [ HH.text credentials.user ]
+         ]
+      Nothing ->
+         HH.li
+          [ css "nav-item" ]
+          [ HH.a
+            [ css $ guard (route == Login) "current"
+            , safeHref Login
+            ]
+            [ HH.text "login" ]
+          ]
+
+  -- | an information item in the navigation bar
+  infoItem :: Array (HH.HTML i p) -> HH.HTML i p
+  infoItem html =
+    HH.li
+      [ css "info-item" ]
+      html
