@@ -408,3 +408,39 @@ table.textalign tr td  {
    padding-left: 2em;
    padding-right: 2em;
 }
+
+/** navigation for pagination */
+
+.pagination ul {
+    padding-left: 15px;
+}
+
+.pagination li {
+   float: left;
+   padding: 3.5px 4px 3.5px 4px;
+   font-size: .90em;
+   list-style-type: none;
+   display: inline;
+}
+
+.pagination li:last-child {
+    float: left;
+    padding-right: 20px;
+}
+
+.pagination li a {
+   color: blue;
+   text-decoration: none;
+   display: inline-block;
+}
+
+.pagination li a:hover {
+   color: black;
+   text-decoration: underline;
+   background: transparent;
+}
+
+.pagination li a.current {
+   color: black;
+   text-decoration: none;
+}

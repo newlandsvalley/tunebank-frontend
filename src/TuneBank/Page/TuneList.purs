@@ -1,16 +1,20 @@
 module TuneBank.Page.TuneList where
 
 import Prelude
+import Global (readFloat)
+import Partial.Unsafe (unsafePartial)
 import Control.Monad.Reader (class MonadAsk)
 import Data.Array (length, range)
-import Data.Either (Either(..))
-import Data.Maybe (Maybe(..))
+import Data.Either (Either(..), fromRight)
+import Data.Maybe (Maybe(..), maybe)
 import Data.Monoid (guard)
 import Data.Tuple (Tuple(..))
+import Data.DateTime.Instant (instant, toDateTime)
+import Data.Time.Duration (Milliseconds(..))
+import Data.Formatter.DateTime (Formatter, parseFormatString, format)
 import Effect.Aff.Class (class MonadAff)
 import Halogen as H
 import Halogen.HTML as HH
-import Halogen.HTML.Properties as HP
 import Halogen.HTML.Events as HE
 import TuneBank.Api.Codec.Pagination (Pagination)
 import TuneBank.Api.Codec.TunesPage (TunesPage, TuneRefArray)
@@ -84,11 +88,7 @@ component =
   render state =
     HH.div_
       [ header state.currentUser state.genre Home
-      , HH.h1
-         [HP.class_ (H.ClassName "center") ]
-         [HH.text ("Tune List page " <> show state.searchParams.page) ]
       , renderSearchResult state
-      , renderPagination state
       , footer
       ]
 
@@ -102,8 +102,19 @@ component =
           0 ->
              HH.text "no matching tunes found"
           _ ->
-             renderTuneList tunesPage.tunes
-
+            HH.div_
+              [
+              HH.h4
+                 [ css "center" ]
+                 [HH.text ("page "
+                           <> show state.searchParams.page
+                           <> " of "
+                           <> show pagination.maxPages
+                           )
+                 ]
+              , renderTuneList tunesPage.tunes
+              , renderPagination state
+              ]
 
   renderTuneList :: TuneRefArray -> H.ComponentHTML Action ChildSlots m
   renderTuneList tunes =
@@ -112,27 +123,36 @@ component =
       f tuneRef =
         let
           tuneId = decodeTuneIdURIComponent tuneRef.uri
+          dateString = tsToDateString tuneRef.ts
+        in
+          tableRow tuneId dateString
+    in
+      HH.table_ $
+        map f tunes
+    where
+
+      tableRow tuneId dateString =
+        let
           (TuneId {title,  tuneType}) = tuneId
           route :: Route
           -- route = Tune tuneRef.uri tuneId
           route = Tune tuneId
         in
-          linkItem route
-            [ HH.text $ show title ]
-    in
-      HH.ul_ $
-        map f tunes
-    where
-
-      linkItem r html =
-        HH.li
-          [ css "link-item" ]
-          [ HH.a
-            [ -- css $ guard (route == r) "current"
-              safeHref r
+          HH.tr
+            []
+            [ HH.td
+              []
+              [ HH.a
+                [ safeHref route ]
+                [ HH.text title]
+              ]
+            , HH.td
+              []
+              [ HH.text tuneType]
+            , HH.td
+              []
+              [ HH.text dateString]
             ]
-            html
-          ]
 
   renderPagination :: State -> H.ComponentHTML Action ChildSlots m
   renderPagination state =
@@ -141,7 +161,7 @@ component =
         HH.text ""
       Right (Tuple tunesPage pagination) ->
         HH.ul
-          []
+          [ css "pagination"]
           ( [ renderFirstPage pagination ] <>
               renderNumberedPageLinks pagination <>
             [ renderLastPage pagination ]
@@ -153,14 +173,14 @@ component =
           paginationItem 1 pagination.page
             [ HH.text "first" ]
         else
-          HH.text "no first page needed"
+          HH.text ""
 
       renderLastPage pagination =
         if (pagination.maxPages > maxPageLinks  && pagination.page < pagination.maxPages) then
           paginationItem pagination.maxPages pagination.page
             [ HH.text "last" ]
           else
-            HH.text "no last page needed"
+            HH.text ""
 
       renderNumberedPageLinks pagination =
         let
@@ -218,11 +238,21 @@ paginationItem
   Array (H.ComponentHTML Action ChildSlots m) ->
   H.ComponentHTML Action ChildSlots m
 paginationItem thisPage currentPage html =
-  HH.div
+  HH.li
     [ css "pagination-item" ]
-    [ HH.button
+    [ HH.a
       [ css $ guard (thisPage == currentPage) "current"
       , HE.onClick \_ -> Just (GoToPage thisPage)
       ]
       html
     ]
+
+tsToDateString :: String-> String
+tsToDateString tsString =
+  let
+     mInstant = instant $ Milliseconds $ readFloat tsString
+     dateTime = maybe (bottom) (toDateTime) mInstant
+     displayFormatter :: Formatter
+     displayFormatter =  unsafePartial fromRight $ parseFormatString "DD MMM YYYY"
+  in
+    format displayFormatter dateTime
