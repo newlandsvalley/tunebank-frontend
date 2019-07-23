@@ -48,6 +48,10 @@ readGenre genreStr =
     "Klezmer"  -> Just Klezmer
     "Scandi"   -> Just Scandi
     "Scottish" -> Just Scottish
+    "irish"    -> Just Irish
+    "klezmer"  -> Just Klezmer
+    "scandi"   -> Just Scandi
+    "scottish" -> Just Scottish
     _ -> Nothing
 
 toEnum :: Int -> Maybe Genre

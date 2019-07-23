@@ -26,11 +26,12 @@ import TuneBank.Data.Credentials (Credentials)
 import TuneBank.Data.TuneId (TuneId(..), decodeTuneIdURIComponent)
 import TuneBank.HTML.Footer (footer)
 import TuneBank.HTML.Header (header)
-import TuneBank.HTML.Utils (css, safeHref)
+import TuneBank.HTML.Utils (css, safeHref, debugHref)
 import TuneBank.Navigation.Navigate (class Navigate, navigate)
 import TuneBank.Navigation.Route (Route(..))
 import TuneBank.Navigation.SearchParams (SearchParams)
 import TuneBank.Page.Utils.Environment (getBaseURL, getCorsBaseURL, getCurrentGenre, getUser)
+
 
 type Slot = H.Slot Query Void
 
@@ -112,12 +113,12 @@ component =
                            <> show pagination.maxPages
                            )
                  ]
-              , renderTuneList tunesPage.tunes
+              , renderTuneList state tunesPage.tunes
               , renderPagination state
               ]
 
-  renderTuneList :: TuneRefArray -> H.ComponentHTML Action ChildSlots m
-  renderTuneList tunes =
+  renderTuneList :: State -> TuneRefArray -> H.ComponentHTML Action ChildSlots m
+  renderTuneList state tunes =
     let
       -- f :: forall w i. TuneRef -> HH.HTML w i
       f tuneRef =
@@ -135,8 +136,8 @@ component =
         let
           (TuneId {title,  tuneType}) = tuneId
           route :: Route
-          -- route = Tune tuneRef.uri tuneId
-          route = Tune tuneId
+          route = Tune state.genre tuneId
+          -- route = Tune state.genre tuneId
         in
           HH.tr
             []
@@ -152,6 +153,9 @@ component =
             , HH.td
               []
               [ HH.text dateString]
+            , HH.td
+              []
+              [ HH.text $ debugHref route ]
             ]
 
   renderPagination :: State -> H.ComponentHTML Action ChildSlots m

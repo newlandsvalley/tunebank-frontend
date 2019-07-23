@@ -4,7 +4,6 @@ module TuneBank.Data.Types
   , Env
   ) where
 
-
 import Prelude
 import TuneBank.Data.Session (Session)
 

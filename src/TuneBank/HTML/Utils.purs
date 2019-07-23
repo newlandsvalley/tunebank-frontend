@@ -17,6 +17,11 @@ css = HP.class_ <<< HH.ClassName
 safeHref :: forall r i. Route -> HH.IProp ( href :: String | r) i
 safeHref = HP.href <<< append "#" <<< print routeCodec
 
+-- | We must provide a `String` to the "href" attribute, but we represent routes with the much
+-- | better `Route` type. This utility is a drop-in replacement for `href` that uses `Route`.
+debugHref :: Route -> String
+debugHref = print routeCodec
+
 -- | Sometimes we need to deal with elements which may or may not exist. This function lets us
 -- | provide rendering for the element if it exists, and renders an empty node otherwise.
 maybeElem :: forall p i a. Maybe a -> (a -> HH.HTML p i) -> HH.HTML p i

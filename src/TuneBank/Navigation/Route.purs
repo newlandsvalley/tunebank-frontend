@@ -29,8 +29,15 @@ data Route
   | Register
   | Upload
   | UserList
-  | Tune TuneId
+  | Tune Genre TuneId
   | TuneList SearchParams
+
+
+-- | This seems to fail silently at runtime
+-- |    | Tune TuneId
+-- | togther with
+-- |    "Tune": "genre" / (genre segment) / "tune" / (tuneId segment)
+-- | togther with approprite consructor in the router
 
 derive instance genericRoute :: Generic Route _
 derive instance eqRoute :: Eq Route
@@ -47,7 +54,7 @@ routeCodec = root $ sum
   , "Genre": "genre" / noArgs
   , "Register": "register" / noArgs
   , "Upload": "upload" / noArgs
-  , "Tune": "tune" / (tuneId segment)
+  , "Tune": "genre" / (genre segment)  / "tune" / (tuneId segment)
   , "UserList": "users" / noArgs
   , "TuneList":  "tunelist" ?
        { key : optional <<< string

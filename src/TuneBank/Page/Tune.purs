@@ -2,7 +2,8 @@ module TuneBank.Page.Tune where
 
 import Audio.SoundFont (Instrument)
 import Audio.SoundFont.Melody.Class (MidiRecording(..))
-import Control.Monad.Reader (class MonadAsk)
+import Control.Monad.Reader (class MonadAsk, asks)
+import Effect.Ref as Ref
 import Data.Abc (AbcTune)
 import Data.Abc.Midi (toMidi)
 import Data.Abc.Parser (parse)
@@ -22,7 +23,7 @@ import Prelude (Unit, Void, ($), (<>), (<<<), (>>=), bind, const, identity, pure
 import TuneBank.Api.Codec.Tune (TuneMetadata, nullTuneMetadata)
 import TuneBank.Api.Request (requestTune)
 import TuneBank.Data.Credentials (Credentials)
-import TuneBank.Data.Genre (Genre(..), asUriComponent)
+import TuneBank.Data.Genre (Genre, asUriComponent)
 import TuneBank.Data.Session (Session)
 import TuneBank.Data.TuneId (TuneId(..), encodeTuneIdURIComponent)
 import TuneBank.Data.Types (BaseURL(..))
@@ -51,9 +52,10 @@ type State =
   , instruments :: Array Instrument
   }
 
+
 type Input =
-  {
-    tuneId :: TuneId
+  { genre :: Genre
+  , tuneId :: TuneId
   }
 
 type Query = (Const Void)
@@ -87,7 +89,7 @@ component =
 
   initialState :: Input -> State
   initialState input =
-    { genre : Scandi
+    { genre : input.genre
     , currentUser : Nothing
     , tuneURI : encodeTuneIdURIComponent input.tuneId
     , tuneId : input.tuneId
@@ -207,21 +209,25 @@ component =
   handleAction = case _ of
     Initialize -> do
       state <- H.get
-      genre <- getCurrentGenre
+      -- but the full URL won't render!!!
+      -- we save the genre to Ref state to cater for instances where we want
+      -- to share tune URLS and ensure that both the user sees the right genre
+      -- and can carry on browsing with that genre as the default
+      session <- asks _.session
+      _ <- H.liftEffect $ Ref.write state.genre session.genre
       currentUser <- getUser
       baseURL <- getBaseURL
       -- corsBaseURL <- getCorsBaseURL only temporary for live server
       instruments <- getInstruments
       -- tuneMetadataResult <- requestCleanTune baseURL (asUriComponent genre) state.tuneId
-      tuneMetadataResult <- requestTune baseURL (asUriComponent genre) state.tuneId
+      tuneMetadataResult <- requestTune baseURL (asUriComponent state.genre) state.tuneId
       let
         tuneResult =
           tuneMetadataResult >>= (\x -> lmap show $ parse x.abc)
         tuneMetadata =
           either (const state.tuneMetadata) identity tuneMetadataResult
       H.modify_ (\st -> st
-        { genre = genre
-        , currentUser = currentUser
+        { currentUser = currentUser
         , baseURL = baseURL
         , tuneMetadata = tuneMetadata
         , tuneResult = tuneResult

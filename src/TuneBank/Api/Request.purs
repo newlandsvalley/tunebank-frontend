@@ -37,17 +37,20 @@ import Debug.Trace (spy, trace, traceM)
 
 defaultJsonGetRequest :: BaseURL -> Maybe Credentials -> Endpoint -> Request Json
 defaultJsonGetRequest (BaseURL baseUrl) mCredentials endpoint =
-  { method: Left GET
-  , url: baseUrl <> (fixSearchParams endpoint $ print endpointCodec endpoint)
-  , headers: [  Accept (MediaType "application/json; charset=UTF-8")
-             ] <>
-               (fromFoldable $ authorizationHeader mCredentials)
-  , content: Nothing
-  , username: Nothing
-  , password: Nothing
-  , withCredentials: false
-  , responseFormat: RF.json
-  }
+  let
+    foo = spy "endpoint" $ fixSearchParams endpoint $ print endpointCodec endpoint
+  in
+    { method: Left GET
+    , url: baseUrl <> (fixSearchParams endpoint $ print endpointCodec endpoint)
+    , headers: [  Accept (MediaType "application/json; charset=UTF-8")
+               ] <>
+                 (fromFoldable $ authorizationHeader mCredentials)
+    , content: Nothing
+    , username: Nothing
+    , password: Nothing
+    , withCredentials: false
+    , responseFormat: RF.json
+    }
 
 {-
 defaultAbcGetRequest :: BaseURL -> Endpoint -> Request String

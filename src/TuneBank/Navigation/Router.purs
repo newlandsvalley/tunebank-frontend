@@ -24,8 +24,12 @@ import TuneBank.Page.Tune as Tune
 import TuneBank.Page.TuneList as TuneList
 import TuneBank.Data.Session (Session)
 import TuneBank.Data.Types (BaseURL)
+import TuneBank.Data.Genre (Genre(..))
 import Routing.Duplex as RD
 import Routing.Hash (getHash)
+
+
+import Debug.Trace (spy, trace, traceM)
 
 -- | When a component has no queries or messages, it has no public interface and can be
 -- | considered an "opaque" component. The only way for a parent to interact with the component
@@ -90,24 +94,28 @@ component =
   -- | Note - links are not well-typed.  Sproxy names must also match the
   -- | child slot names AND the route codec initial URI name.
   render :: State -> H.ComponentHTML Action ChildSlots m
-  render { route } = case route of
-    Just r -> case r of
-      Home ->
-        HH.slot (SProxy :: _ "home") unit SearchForm.component unit absurd
-      Genre ->
-        HH.slot (SProxy :: _ "genre") unit GenreMenu.component unit absurd
-      Login ->
-        HH.slot (SProxy :: _ "login") unit Login.component unit absurd
-      Register ->
-        HH.slot (SProxy :: _ "register") unit Register.component unit absurd
-      Upload ->
-        HH.slot (SProxy :: _ "upload") unit Upload.component unit absurd
-      UserList->
-        HH.slot (SProxy :: _ "userlist") unit UserList.component unit absurd
-      Tune tuneId ->
-        HH.slot (SProxy :: _ "tune") unit Tune.component { tuneId } absurd
-      TuneList searchParams ->
-        HH.slot (SProxy :: _ "tunelist") unit TuneList.component { searchParams } absurd
+  render { route } =
+    let
+      foo = spy "rendering route: " $ show route
+    in
+      case route of
+        Just r -> case r of
+          Home ->
+            HH.slot (SProxy :: _ "home") unit SearchForm.component unit absurd
+          Genre ->
+            HH.slot (SProxy :: _ "genre") unit GenreMenu.component unit absurd
+          Login ->
+            HH.slot (SProxy :: _ "login") unit Login.component unit absurd
+          Register ->
+            HH.slot (SProxy :: _ "register") unit Register.component unit absurd
+          Upload ->
+            HH.slot (SProxy :: _ "upload") unit Upload.component unit absurd
+          UserList->
+            HH.slot (SProxy :: _ "userlist") unit UserList.component unit absurd
+          Tune genre tuneId   ->
+            HH.slot (SProxy :: _ "tune") unit Tune.component { genre, tuneId } absurd
+          TuneList searchParams ->
+            HH.slot (SProxy :: _ "tunelist") unit TuneList.component { searchParams } absurd
 
-    Nothing ->
-      HH.div_ [ HH.text "Oh no! That page wasn't found." ]
+        Nothing ->
+          HH.div_ [ HH.text "Oh no! That page wasn't found." ]
