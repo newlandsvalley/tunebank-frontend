@@ -28,6 +28,7 @@ data Route
   | Login
   | Register
   | Upload
+  | UserList
   | Tune TuneId
   | TuneList SearchParams
 
@@ -47,6 +48,7 @@ routeCodec = root $ sum
   , "Register": "register" / noArgs
   , "Upload": "upload" / noArgs
   , "Tune": "tune" / (tuneId segment)
+  , "UserList": "users" / noArgs
   , "TuneList":  "tunelist" ?
        { key : optional <<< string
        , rhythm : optional <<< string

@@ -1,4 +1,4 @@
-module TuneBank.Page.Home where
+module TuneBank.Page.UserList where
 
 import Prelude (Unit, Void, ($), pure, unit)
 import Data.Const (Const)
@@ -7,7 +7,6 @@ import Effect.Aff.Class (class MonadAff)
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
-import Partial.Unsafe (unsafePartial)
 import TuneBank.HTML.Header (header)
 import TuneBank.HTML.Footer (footer)
 import TuneBank.Navigation.Route (Route(..))
@@ -48,7 +47,7 @@ component =
   render :: State -> H.ComponentHTML Action ChildSlots m
   render state =
     HH.div_
-      [ header Nothing Scandi Home
+      [ header Nothing Scandi UserList
       , HH.h1
          [HP.class_ (H.ClassName "center") ]
          [HH.text "Home" ]

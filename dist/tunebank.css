@@ -25,14 +25,6 @@ body {
 	padding: 3.3px 3px 3.3px 25px;
 }
 
-/* an li used as information only */
-.nav .info-item {
-	font-size: 1.2em;
-	color: #e69900;
-	display: inline-block;
-	padding: 11.3px 23px 3.3px 2px;
-}
-
 /* used as additional text to a nav item */
 .nav .nav-item .additional-info {
 	font-size: 1.7em;

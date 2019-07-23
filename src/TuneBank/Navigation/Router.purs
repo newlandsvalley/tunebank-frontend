@@ -19,6 +19,7 @@ import TuneBank.Page.SearchForm as SearchForm
 import TuneBank.Page.GenreMenu as GenreMenu
 import TuneBank.Page.Register as Register
 import TuneBank.Page.Upload as Upload
+import TuneBank.Page.UserList as UserList
 import TuneBank.Page.Tune as Tune
 import TuneBank.Page.TuneList as TuneList
 import TuneBank.Data.Session (Session)
@@ -46,6 +47,7 @@ type ChildSlots =
   , login :: Login.Slot Unit
   , register :: Register.Slot Unit
   , upload :: Upload.Slot Unit
+  , userlist :: UserList.Slot Unit
   , tune :: Tune.Slot Unit
   , tunelist :: TuneList.Slot Unit
   )
@@ -100,6 +102,8 @@ component =
         HH.slot (SProxy :: _ "register") unit Register.component unit absurd
       Upload ->
         HH.slot (SProxy :: _ "upload") unit Upload.component unit absurd
+      UserList->
+        HH.slot (SProxy :: _ "userlist") unit UserList.component unit absurd
       Tune tuneId ->
         HH.slot (SProxy :: _ "tune") unit Tune.component { tuneId } absurd
       TuneList searchParams ->

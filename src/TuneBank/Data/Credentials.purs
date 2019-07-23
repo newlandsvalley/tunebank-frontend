@@ -4,10 +4,15 @@ module TuneBank.Data.Credentials
   , blankCredentials
   ) where
 
+import Prelude (class Eq)
+
 -- | the user role
 data Role =
     NormalUser
   | Administrator
+
+derive instance eqRole :: Eq Role
+
 
 -- | the credentials of a user
 type Credentials =

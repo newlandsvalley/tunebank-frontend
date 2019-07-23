@@ -11,9 +11,9 @@ import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
-import Prelude (Unit, Void, ($), (<<<), (>), (<>), bind, const, identity, pure, unit)
+import Prelude (Unit, Void, ($), (<<<), (>), (<>), (==), bind, const, pure, unit)
 import TuneBank.Api.Request (checkUser)
-import TuneBank.Data.Credentials (Credentials, blankCredentials)
+import TuneBank.Data.Credentials (Credentials, Role(..), blankCredentials)
 import TuneBank.Data.Genre (Genre(..))
 import TuneBank.Data.Session (Session)
 import TuneBank.Data.Types (BaseURL)
@@ -165,7 +165,13 @@ component =
         then do
           state <- H.get
           let
-            credentials = state.credentials { user = name }
+            -- temporary setup of Role until MusicRest supports it
+            role =
+              if (name == "administrator") then
+                Administrator
+              else
+                NormalUser
+            credentials = state.credentials { user = name, role = role }
           H.modify_ (\st -> st { credentials = credentials } )
         else pure unit
     HandlePassword pass -> do
