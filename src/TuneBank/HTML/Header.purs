@@ -4,7 +4,6 @@ module TuneBank.HTML.Header where
 import Prelude
 
 
-import Control.Monad.Reader (class MonadAsk)
 import Data.Maybe (Maybe, maybe)
 import Data.Monoid (guard)
 import Halogen.HTML as HH
@@ -27,7 +26,7 @@ header mCredentials genre route =
              [ HH.text "home" ]
           , navItem Genre
              [ HH.text "genre" ]
-          , navItem Upload
+          , loggedInUserNavItem Upload
              [ HH.text "upload" ]
           , navItem Login
              [ HH.text $ maybe "login" (const "logout") mCredentials ]
@@ -39,6 +38,8 @@ header mCredentials genre route =
 
   where
 
+  -- | a navigation item available at any time
+  navItem :: Route -> Array (HH.HTML i p) -> HH.HTML i p
   navItem r html =
     HH.li
       [ css "nav-item" ]
@@ -48,6 +49,11 @@ header mCredentials genre route =
         ]
         html
       ]
+
+  -- | a navigation item available to any logged-in user
+  loggedInUserNavItem :: Route -> Array (HH.HTML i p) -> HH.HTML i p
+  loggedInUserNavItem r html =
+    maybe (HH.text "") (const $ navItem r html) mCredentials
 
   userState ::HH.HTML i p
   userState  =

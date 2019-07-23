@@ -18,7 +18,7 @@ import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
 import Halogen.PlayerComponent as PC
-import Prelude (Unit, Void, ($), (<>), (<<<), (>>=), bind, identity, pure, show, unit)
+import Prelude (Unit, Void, ($), (<>), (<<<), (>>=), bind, const, identity, pure, show, unit)
 import TuneBank.Api.Codec.Tune (TuneMetadata, nullTuneMetadata)
 import TuneBank.Api.Request (requestTune)
 import TuneBank.Data.Credentials (Credentials)
@@ -106,7 +106,7 @@ component =
         [ header state.currentUser state.genre Home
         , HH.h1
            [HP.class_ (H.ClassName "center") ]
-           [HH.text ("Tune " <> title) ]
+           [HH.text title ]
         , renderTuneScore state title
         , renderTuneMetadata state
         , renderPlayer state
@@ -143,22 +143,22 @@ component =
             [ HH.text "abc"]
 
          , HH.a
-             [ HP.href (urlPreface state <> "/pdf")
-             , HP.type_ (MediaType "application/pdf")
-             ]
-             [ HH.text "pdf"]
+            [ HP.href (urlPreface state <> "/pdf")
+            , HP.type_ (MediaType "application/pdf")
+            ]
+            [ HH.text "pdf"]
+
+         , HH.a
+            [ HP.href (urlPreface state <> "/ps")
+            , HP.type_ (MediaType "application/postscript")
+            ]
+            [ HH.text "postscript"]
 
           , HH.a
-              [ HP.href (urlPreface state <> "/ps")
-              , HP.type_ (MediaType "application/postscript")
-              ]
-              [ HH.text "postscript"]
-
-           , HH.a
-               [ HP.href (urlPreface state <> "/midi")
-               , HP.type_ (MediaType "audio/midi")
-               ]
-               [ HH.text "midi"]
+            [ HP.href (urlPreface state <> "/midi")
+            , HP.type_ (MediaType "audio/midi")
+            ]
+            [ HH.text "midi"]
          ]
       ]
 
@@ -217,10 +217,13 @@ component =
       let
         tuneResult =
           tuneMetadataResult >>= (\x -> lmap show $ parse x.abc)
+        tuneMetadata =
+          either (const state.tuneMetadata) identity tuneMetadataResult
       H.modify_ (\st -> st
         { genre = genre
         , currentUser = currentUser
         , baseURL = baseURL
+        , tuneMetadata = tuneMetadata
         , tuneResult = tuneResult
         , instruments = instruments
         } )
