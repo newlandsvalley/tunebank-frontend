@@ -27,8 +27,6 @@ import TuneBank.Data.Genre (Genre, asUriComponent)
 import TuneBank.Data.Session (Session)
 import TuneBank.Data.TuneId (TuneId(..), encodeTuneIdURIComponent)
 import TuneBank.Data.Types (BaseURL(..))
-import TuneBank.HTML.Footer (footer)
-import TuneBank.HTML.Header (header)
 import TuneBank.Navigation.Navigate (class Navigate)
 import TuneBank.Navigation.Route (Route(..))
 import TuneBank.Page.Utils.Environment (getBaseURL, getCurrentGenre, getInstruments, getUser)
@@ -105,15 +103,13 @@ component =
       (TuneId {title, tuneType}) = state.tuneId
     in
       HH.div_
-        [ header state.currentUser state.genre Home
-        , HH.h1
+        [ HH.h1
            [HP.class_ (H.ClassName "center") ]
            [HH.text title ]
         , renderTuneScore state title
         , renderTuneMetadata state
         , renderPlayer state
         , renderDebug state
-        , footer
         ]
 
   renderTuneScore :: State -> String -> H.ComponentHTML Action ChildSlots m

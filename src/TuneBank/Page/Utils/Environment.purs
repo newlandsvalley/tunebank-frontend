@@ -24,7 +24,6 @@ getUser
   :: forall m r
    . MonadEffect m
   => MonadAsk { session :: Session, baseURL :: BaseURL | r } m
-  -- => Navigate m
   => m (Maybe Credentials)
 getUser = do
   session <- asks _.session
@@ -57,7 +56,6 @@ getCurrentGenre
   :: forall m r
    . MonadEffect m
   => MonadAsk { session :: Session, baseURL :: BaseURL | r } m
-  -- => Navigate m
   => m Genre
 getCurrentGenre = do
   session <- asks _.session
@@ -69,7 +67,6 @@ getInstruments
   :: forall m r
    . MonadEffect m
   => MonadAsk { session :: Session, baseURL :: BaseURL | r } m
-  -- => Navigate m
   => m (Array Instrument)
 getInstruments= do
   session <- asks _.session

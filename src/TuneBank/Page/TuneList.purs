@@ -22,22 +22,18 @@ import TuneBank.Api.Request (requestTuneSearch)
 import TuneBank.Data.Genre (Genre(..), asUriComponent)
 import TuneBank.Data.Session (Session)
 import TuneBank.Data.Types (BaseURL)
-import TuneBank.Data.Credentials (Credentials)
 import TuneBank.Data.TuneId (TuneId(..), decodeTuneIdURIComponent)
-import TuneBank.HTML.Footer (footer)
-import TuneBank.HTML.Header (header)
 import TuneBank.HTML.Utils (css, safeHref, debugHref)
 import TuneBank.Navigation.Navigate (class Navigate, navigate)
 import TuneBank.Navigation.Route (Route(..))
 import TuneBank.Navigation.SearchParams (SearchParams)
-import TuneBank.Page.Utils.Environment (getBaseURL, getCorsBaseURL, getCurrentGenre, getUser)
+import TuneBank.Page.Utils.Environment (getBaseURL, getCorsBaseURL, getCurrentGenre)
 
 
 type Slot = H.Slot Query Void
 
 type State =
   { genre :: Genre
-  , currentUser :: Maybe Credentials
   , searchParams :: SearchParams
   , searchResult :: Either String (Tuple TunesPage Pagination)
   }
@@ -80,7 +76,6 @@ component =
   initialState :: Input -> State
   initialState { searchParams } =
      { genre : Scandi
-     , currentUser : Nothing
      , searchParams
      , searchResult : Left ""
      }
@@ -88,9 +83,7 @@ component =
   render :: State -> H.ComponentHTML Action ChildSlots m
   render state =
     HH.div_
-      [ header state.currentUser state.genre Home
-      , renderSearchResult state
-      , footer
+      [ renderSearchResult state
       ]
 
   renderSearchResult :: State -> H.ComponentHTML Action ChildSlots m
@@ -203,9 +196,7 @@ component =
   handleAction = case _ of
     Initialize -> do
       genre <- getCurrentGenre
-      currentUser <- getUser
-      H.modify_ (\state -> state { genre = genre
-                                 , currentUser = currentUser } )
+      H.modify_ (\state -> state { genre = genre } )
       _ <- handleQuery (FetchResults unit)
       pure unit
     GoToPage page -> do

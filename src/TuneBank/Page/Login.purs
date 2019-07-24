@@ -14,22 +14,18 @@ import Halogen.HTML.Properties as HP
 import Prelude (Unit, Void, ($), (<<<), (>), (<>), (==), bind, const, pure, unit)
 import TuneBank.Api.Request (checkUser)
 import TuneBank.Data.Credentials (Credentials, Role(..), blankCredentials)
-import TuneBank.Data.Genre (Genre(..))
 import TuneBank.Data.Session (Session)
 import TuneBank.Data.Types (BaseURL)
-import TuneBank.HTML.Footer (footer)
-import TuneBank.HTML.Header (header)
 import TuneBank.HTML.Utils (css)
 import TuneBank.Navigation.Navigate (class Navigate, navigate)
 import TuneBank.Navigation.Route (Route(..))
-import TuneBank.Page.Utils.Environment (getBaseURL, getUser, getCurrentGenre)
+import TuneBank.Page.Utils.Environment (getBaseURL, getUser)
 
 
 type Slot = H.Slot Query Void
 
 type State =
-  { genre :: Genre
-  , credentials :: Credentials
+  { credentials :: Credentials
   , currentUser :: Maybe Credentials
   , userCheckResult :: Either String String
   }
@@ -64,8 +60,7 @@ component =
 
   initialState :: i -> State
   initialState _ =
-    { genre : Scandi
-    , credentials : blankCredentials
+    { credentials : blankCredentials
     , currentUser : Nothing
     , userCheckResult : Left ""
     }
@@ -73,9 +68,7 @@ component =
   render :: State -> H.ComponentHTML Action ChildSlots m
   render state =
     HH.div_
-      [ header state.currentUser state.genre Login
-      , logInOrOut state
-      , footer
+      [ logInOrOut state
       ]
 
   logInOrOut :: State -> H.ComponentHTML Action ChildSlots m
@@ -156,9 +149,7 @@ component =
   handleAction = case _ of
     Initialize -> do
       mUser <- getUser
-      genre <- getCurrentGenre
-      _ <- H.modify (\state -> state { genre = genre
-                                     , currentUser = mUser } )
+      _ <- H.modify (\state -> state { currentUser = mUser } )
       pure unit
     HandleUserName name -> do
       if (length name > 0)
@@ -191,10 +182,12 @@ component =
         then do
           session <- asks _.session
           _ <- H.liftEffect $ Ref.write (Just state.credentials) session.user
+          -- if the user logs in, we MUST navigate in order to update the headers
           navigate Home
         else  pure unit
     LogoutUser -> do
       session <- asks _.session
       _ <- H.liftEffect $ Ref.write Nothing session.user
       _ <- H.modify (\st -> st { currentUser = Nothing } )
-      pure unit
+      -- again, we MUST navigate in order to update the headers
+      navigate Home

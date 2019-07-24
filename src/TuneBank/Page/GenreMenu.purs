@@ -6,30 +6,25 @@ import Data.Maybe (Maybe(..))
 import Data.Enum (enumFromTo)
 import Effect.Aff.Class (class MonadAff)
 import Control.Monad.Reader (class MonadAsk, asks)
-import TuneBank.Navigation.Navigate (class Navigate)
+import TuneBank.Navigation.Navigate (class Navigate, navigate)
 import Effect.Ref as Ref
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
-import TuneBank.HTML.Header (header)
-import TuneBank.HTML.Footer (footer)
 import TuneBank.Navigation.Route (Route(..))
 import TuneBank.Data.Genre (Genre(..), readGenre)
 import TuneBank.Data.Session (Session)
 import TuneBank.Data.Types (BaseURL)
-import TuneBank.Data.Credentials (Credentials)
 import TuneBank.HTML.Utils (css)
-import TuneBank.Page.Utils.Environment (getCurrentGenre, getUser)
+import TuneBank.Page.Utils.Environment (getCurrentGenre)
 
 
 -- type Slot = H.Slot Query Void
 type Slot = H.Slot (Const Void) Void
 
 type State =
-  { genre :: Genre
-  , currentUser :: Maybe Credentials
-  }
+  { genre :: Genre  }
 
 type Query = (Const Void)
 
@@ -59,28 +54,22 @@ component =
 
   initialState :: i -> State
   initialState _ =
-    { genre : Scandi
-    , currentUser : Nothing
-    }
+    { genre : Scandi  }
 
   render :: State -> H.ComponentHTML Action ChildSlots m
   render state =
     HH.div_
-      [ header state.currentUser state.genre Genre
-      , HH.h1
+      [ HH.h1
          [HP.class_ (H.ClassName "center") ]
          [HH.text "Genre" ]
       , renderGenreMenu state
-      , footer
       ]
 
   handleAction ∷ Action -> H.HalogenM State Action ChildSlots o m Unit
   handleAction = case _ of
     Initialize -> do
       genre <- getCurrentGenre
-      currentUser <- getUser
-      H.modify_ (\state -> state { genre = genre
-                                 , currentUser = currentUser } )
+      H.modify_ (\state -> state { genre = genre } )
     HandleGenre genreString ->
       case (readGenre genreString) of
         Nothing ->
@@ -91,7 +80,8 @@ component =
           -- save globally - in the reference in the session
           session <- asks _.session
           _ <- H.liftEffect $ Ref.write genre session.genre
-          pure unit
+          -- we MUST navigate in order to update the headers
+          navigate Home
 
 
 renderGenreMenu :: forall m. State -> H.ComponentHTML Action ChildSlots m

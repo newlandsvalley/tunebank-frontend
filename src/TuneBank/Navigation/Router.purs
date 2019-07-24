@@ -5,7 +5,7 @@ module TuneBank.Navigation.Router where
 
 import Prelude
 import Data.Const (Const)
-import Data.Maybe (Maybe(..), fromMaybe)
+import Data.Maybe (Maybe(..), fromMaybe, maybe)
 import Data.Either (hush)
 import Effect.Aff.Class (class MonadAff)
 import Control.Monad.Reader (class MonadAsk)
@@ -25,6 +25,10 @@ import TuneBank.Page.TuneList as TuneList
 import TuneBank.Data.Session (Session)
 import TuneBank.Data.Types (BaseURL)
 import TuneBank.Data.Genre (Genre(..))
+import TuneBank.Data.Credentials (Credentials)
+import TuneBank.HTML.Footer (footer)
+import TuneBank.HTML.Header (header)
+import TuneBank.Page.Utils.Environment (getUser, getCurrentGenre)
 import Routing.Duplex as RD
 import Routing.Hash (getHash)
 
@@ -37,7 +41,10 @@ import Debug.Trace (spy, trace, traceM)
 type OpaqueSlot = H.Slot (Const Void) Void
 
 type State =
-  { route :: Maybe Route }
+  { route :: Maybe Route
+  , genre :: Genre
+  , currentUser :: Maybe Credentials
+  }
 
 data Query a
   = Navigate Route a
@@ -64,7 +71,9 @@ component ::
     => H.Component HH.HTML Query Unit Void m
 component =
   H.mkComponent
-    { initialState: \_ -> { route: Nothing }
+    { initialState: \_ -> { route: Nothing
+                          , genre : Scandi
+                          , currentUser : Nothing }
     , render
     , eval: H.mkEval $ H.defaultEval
         { handleQuery = handleQuery
@@ -85,16 +94,31 @@ component =
   handleQuery :: forall a. Query a -> H.HalogenM State Action ChildSlots Void m (Maybe a)
   handleQuery = case _ of
     Navigate dest a -> do
-      { route } <- H.get
-      -- don't re-render unnecessarily if the route is unchanged
-      when (route /= Just dest) do
-         H.modify_ _ { route = Just dest }
+      state <- H.get
+      user <- getUser
+      genre <- getCurrentGenre
+      -- don't re-render unnecessarily if the state is unchanged
+      when ((state.route /= Just dest)
+           || (state.genre /= genre)
+           || (state.currentUser /= user)
+           ) do
+         H.modify_ _ { route = Just dest, genre = genre, currentUser = user }
       pure (Just a)
+
+  render :: State -> H.ComponentHTML Action ChildSlots m
+  render state = do
+    let
+      route = maybe Home identity state.route
+    HH.div_
+        [  header state.currentUser state.genre route
+        ,  renderRoute state
+        ,  footer
+        ]
 
   -- | Note - links are not well-typed.  Sproxy names must also match the
   -- | child slot names AND the route codec initial URI name.
-  render :: State -> H.ComponentHTML Action ChildSlots m
-  render { route } =
+  renderRoute :: State -> H.ComponentHTML Action ChildSlots m
+  renderRoute { route } =
     let
       foo = spy "rendering route: " $ show route
     in

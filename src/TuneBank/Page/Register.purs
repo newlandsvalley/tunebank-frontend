@@ -7,14 +7,11 @@ import Effect.Aff.Class (class MonadAff)
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
-import TuneBank.HTML.Header (header)
-import TuneBank.HTML.Footer (footer)
 import TuneBank.Navigation.Route (Route(..))
 import TuneBank.Data.Genre (Genre(..))
 import TuneBank.Data.Session (Session)
 
 
-currentUser = Nothing
 
 -- type Slot = H.Slot Query Void
 type Slot = H.Slot (Const Void) Void
@@ -49,11 +46,9 @@ component =
   render :: State -> H.ComponentHTML Action ChildSlots m
   render state =
     HH.div_
-      [ header Nothing Scandi Register
-      , HH.h1
+      [ HH.h1
          [HP.class_ (H.ClassName "center") ]
          [HH.text "Register" ]
-      , footer
       ]
 
   handleAction ∷ Action -> H.HalogenM State Action ChildSlots o m Unit
