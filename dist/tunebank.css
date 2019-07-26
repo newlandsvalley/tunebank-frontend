@@ -229,10 +229,6 @@ label {
 
 
 /* label alignment in forms */
-label.search,
-.search label {
-  width: 75px;
-}
 
 legend {
   background-color: #669966; /* dark green */
@@ -266,7 +262,10 @@ select {
 	 margin-top: 8px;   /* match with label */
 }
 
-/* the file button */
+/* the upload file button */
+.uploadselectfile label {
+	width: 500px;
+}
 
 /* the submit (and other) buttons */
 .button-link,
@@ -289,6 +288,13 @@ input[type='submit'] {
 /* individual forms */
 #loginform,
 #searchform {
+  width: 400px;
+  text-align: middle;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#uploadform {
   width: 400px;
   text-align: middle;
   margin-left: auto;

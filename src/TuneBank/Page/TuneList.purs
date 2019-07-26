@@ -29,7 +29,6 @@ import TuneBank.Navigation.Route (Route(..))
 import TuneBank.Navigation.SearchParams (SearchParams)
 import TuneBank.Page.Utils.Environment (getBaseURL, getCorsBaseURL, getCurrentGenre)
 
-
 type Slot = H.Slot Query Void
 
 type State =

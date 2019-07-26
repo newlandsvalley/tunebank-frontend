@@ -13,6 +13,7 @@ import Routing.Duplex.Generic (noArgs, sum)
 import Routing.Duplex.Generic.Syntax ((/), (?))
 import TuneBank.Data.TuneId (TuneId, tuneIdFromString, tuneIdToString)
 import TuneBank.Navigation.SearchParams (SearchParams)
+import TuneBank.Data.Genre (Genre, genreFromString, genreToString)
 
 type PageParams =
   { page :: Int }
@@ -20,13 +21,18 @@ type PageParams =
 tuneId :: RouteDuplex' String -> RouteDuplex' TuneId
 tuneId = as tuneIdToString tuneIdFromString
 
+genre :: RouteDuplex' String -> RouteDuplex' Genre
+genre = as genreToString genreFromString
+
+
 data Endpoint
   = Search String SearchParams
   | Users PageParams
   | UserCheck
   | Register
-  | Tune String TuneId
-  | Comments String TuneId
+  | Tune Genre TuneId
+  | NewTune Genre
+  | Comments Genre TuneId
 
 derive instance genericEndpoint :: Generic Endpoint _
 derive instance eqEndpoint :: Eq Endpoint
@@ -34,7 +40,6 @@ derive instance ordEndpoint :: Ord Endpoint
 
 instance showEndpoint :: Show Endpoint where
   show = genericShow
-
 
 -- | Our codec will cause a compile-time error if we fail to handle any of our endpoint cases.
 endpointCodec :: RouteDuplex' Endpoint
@@ -51,6 +56,7 @@ endpointCodec = root $ sum
   , "Users": "user" ? { page: int }
   , "UserCheck": "user" / "check" / noArgs
   , "Register": "register" / noArgs
-  , "Tune": "genre" / segment / "tune" / (tuneId segment)
-  , "Comments": "genre" / segment / "tune" / (tuneId segment) / "comments"
+  , "Tune": "genre" /  (genre segment) / "tune" / (tuneId segment)
+  , "NewTune": "genre" / (genre segment) / "tune"
+  , "Comments": "genre" / (genre segment) / "tune" / (tuneId segment) / "comments"
   }

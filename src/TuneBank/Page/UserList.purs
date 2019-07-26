@@ -22,8 +22,6 @@ import TuneBank.Navigation.Route (Route(..))
 import TuneBank.Page.Utils.Environment (getBaseURL, getUser)
 import TuneBank.HTML.PaginationRendering  (renderPagination)
 
-
--- type Slot = H.Slot Query Void
 type Slot = H.Slot Query Void
 
 type State =
@@ -111,11 +109,6 @@ component =
               []
               [ HH.text email]
             ]
-{-}
-  renderPagination :: Route -> Pagination -> H.ComponentHTML Action ChildSlots m
-  renderPagination route pagination =
-    HH.text "pagination here"
--}
 
 
   handleAction ∷ Action -> H.HalogenM State Action ChildSlots o m Unit

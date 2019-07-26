@@ -3,8 +3,10 @@ module TuneBank.Api.Request where
 import Prelude
 import Affjax (Request, printResponseFormatError, request)
 import Affjax.RequestHeader (RequestHeader(..))
+import Affjax.RequestBody (formURLEncoded)
 import Affjax.ResponseHeader (ResponseHeader, name, value)
 import Affjax.ResponseFormat as RF
+import Data.FormURLEncoded (FormURLEncoded, fromArray) as FUE
 import Effect.Aff.Class (class MonadAff)
 import Halogen as H
 import Data.Either (Either(..))
@@ -15,7 +17,6 @@ import Data.Bifunctor (bimap, lmap, rmap)
 import Data.HTTP.Method (Method(..))
 import Data.Argonaut.Core (Json)
 import Data.Argonaut.Decode (decodeJson)
-import Data.Argonaut.Encode (encodeJson)
 import Data.Argonaut.Parser (jsonParser)
 import Data.MediaType (MediaType(..))
 import Data.MediaType.Common (applicationJSON)
@@ -25,6 +26,7 @@ import TuneBank.Navigation.SearchParams (SearchParams)
 import TuneBank.Data.Types (BaseURL(..))
 import TuneBank.Data.TuneId (TuneId())
 import TuneBank.Data.Credentials (Credentials)
+import TuneBank.Data.Genre (Genre)
 import TuneBank.Api.Codec.TunesPage (TunesPage, decodeTunesPage)
 import TuneBank.Api.Codec.UsersPage (UsersPage, decodeUsersPage)
 import TuneBank.Api.Codec.Tune (TuneMetadata, fixJson, decodeTune)
@@ -33,7 +35,7 @@ import TuneBank.Api.Codec.Pagination (Pagination, defaultPagination, decodePagin
 import TuneBank.Authorization.BasicAuth (authorizationHeader)
 import TuneBank.BugFix.Backend (fixSearchParams)
 
-import Debug.Trace (spy, trace, traceM)
+import Debug.Trace (spy, trace)
 
 defaultJsonGetRequest :: BaseURL -> Maybe Credentials -> Endpoint -> Request Json
 defaultJsonGetRequest (BaseURL baseUrl) mCredentials endpoint =
@@ -96,8 +98,20 @@ defaultJsonAsStrGetRequest (BaseURL baseUrl) mCredentials endpoint =
     , responseFormat: RF.string
     }
 
+defaultPostRequest :: BaseURL -> Maybe Credentials -> FUE.FormURLEncoded -> Endpoint -> Request String
+defaultPostRequest (BaseURL baseUrl) mCredentials fue endpoint  =
+  { method: Left POST
+  , url: baseUrl <> print endpointCodec endpoint
+  , headers: (fromFoldable $ authorizationHeader mCredentials)
+  , content: Just $ formURLEncoded fue
+  , username: Nothing
+  , password: Nothing
+  , withCredentials: false
+  , responseFormat: RF.string
+  }
+
 -- | this gives a bad JSON error because it really is bad!
-requestTune :: forall m. MonadAff m => BaseURL -> String -> TuneId -> m (Either String TuneMetadata)
+requestTune :: forall m. MonadAff m => BaseURL -> Genre -> TuneId -> m (Either String TuneMetadata)
 requestTune baseUrl genre tuneId = do
   res <- H.liftAff $ request $ defaultJsonGetRequest baseUrl Nothing (Tune genre tuneId)
   let
@@ -106,7 +120,7 @@ requestTune baseUrl genre tuneId = do
   pure $ tune
 
 -- | only needed against pre v1.2.0 musicrest which exhibits JSON errors
-requestCleanTune :: forall m. MonadAff m => BaseURL -> String -> TuneId -> m (Either String TuneMetadata)
+requestCleanTune :: forall m. MonadAff m => BaseURL -> Genre -> TuneId -> m (Either String TuneMetadata)
 requestCleanTune baseUrl genre tuneId = do
   res <- H.liftAff $ request $ defaultJsonAsStrGetRequest baseUrl Nothing (Tune genre tuneId)
   let
@@ -116,12 +130,12 @@ requestCleanTune baseUrl genre tuneId = do
       >>= decodeTune
   pure $ tune
 
-requestTuneStr :: forall m. MonadAff m => BaseURL -> String -> TuneId -> m (Either String String)
+requestTuneStr :: forall m. MonadAff m => BaseURL -> Genre -> TuneId -> m (Either String String)
 requestTuneStr baseUrl genre tuneId = do
   res <- H.liftAff $ request $ defaultJsonAsStrGetRequest baseUrl Nothing (Tune genre tuneId)
   pure $ lmap printResponseFormatError res.body
 
-requestTuneAbc :: forall m. MonadAff m => BaseURL -> String -> TuneId -> m (Either String String)
+requestTuneAbc :: forall m. MonadAff m => BaseURL -> Genre -> TuneId -> m (Either String String)
 requestTuneAbc baseUrl genre tuneId = do
   res <- H.liftAff $ request $ defaultStringGetRequest baseUrl Nothing (Tune genre tuneId)  (MediaType "text/vnd.abc")
   pure $ lmap printResponseFormatError res.body
@@ -155,14 +169,13 @@ checkUser baseUrl credentials = do
   pure $ response
 
 
-requestComments :: forall m. MonadAff m => BaseURL -> String -> TuneId -> m (Either String CommentArray)
+requestComments :: forall m. MonadAff m => BaseURL -> Genre -> TuneId -> m (Either String CommentArray)
 requestComments baseUrl genre tuneId = do
   res <- H.liftAff $ request $ defaultJsonGetRequest baseUrl Nothing (Comments genre tuneId)
   let
     comments = (lmap printResponseFormatError res.body)
       >>= decodeComments
   pure $ comments
-
 
 
 
@@ -182,12 +195,23 @@ requestTuneSearchStr baseUrl genre searchParams = do
     tunesPage = (lmap printResponseFormatError res.body)
   pure $ tunesPage
 
-requestCommentsStr :: forall m. MonadAff m => BaseURL -> String -> TuneId -> m (Either String String)
+requestCommentsStr :: forall m. MonadAff m => BaseURL -> Genre -> TuneId -> m (Either String String)
 requestCommentsStr baseUrl genre tuneId = do
   res <- H.liftAff $ request $ defaultJsonAsStrGetRequest baseUrl Nothing (Comments genre tuneId)
   let
     commentsPage = (lmap printResponseFormatError res.body)
   pure $ commentsPage
+
+postTune :: forall m. MonadAff m => String -> BaseURL -> Genre -> Credentials -> m (Either String String)
+postTune tuneAbc baseUrl genre credentials =
+  H.liftAff do
+    let
+      formData = FUE.fromArray [ Tuple "abc"  (Just tuneAbc)]
+    res <- request $ defaultPostRequest baseUrl (Just credentials) formData (NewTune genre)
+    let
+      result = (lmap printResponseFormatError res.body)
+    pure result
+
 
 getPagination :: Array ResponseHeader-> Pagination
 getPagination headers =

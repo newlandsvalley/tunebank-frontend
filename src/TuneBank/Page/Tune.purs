@@ -28,7 +28,6 @@ import TuneBank.Data.Session (Session)
 import TuneBank.Data.TuneId (TuneId(..), encodeTuneIdURIComponent)
 import TuneBank.Data.Types (BaseURL(..))
 import TuneBank.Navigation.Navigate (class Navigate)
-import TuneBank.Navigation.Route (Route(..))
 import TuneBank.Page.Utils.Environment (getBaseURL, getCurrentGenre, getInstruments, getUser)
 
 -- | there is no tune yet
@@ -49,7 +48,6 @@ type State =
   , tuneResult :: Either String AbcTune
   , instruments :: Array Instrument
   }
-
 
 type Input =
   { genre :: Genre
@@ -216,7 +214,7 @@ component =
       -- corsBaseURL <- getCorsBaseURL only temporary for live server
       instruments <- getInstruments
       -- tuneMetadataResult <- requestCleanTune baseURL (asUriComponent genre) state.tuneId
-      tuneMetadataResult <- requestTune baseURL (asUriComponent state.genre) state.tuneId
+      tuneMetadataResult <- requestTune baseURL state.genre state.tuneId
       let
         tuneResult =
           tuneMetadataResult >>= (\x -> lmap show $ parse x.abc)
