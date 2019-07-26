@@ -107,7 +107,7 @@ component =
                            )
                  ]
               , renderTuneList state tunesPage.tunes
-              , renderPagination state
+              , renderPagination pagination
               ]
 
   renderTuneList :: State -> TuneRefArray -> H.ComponentHTML Action ChildSlots m
@@ -151,35 +151,33 @@ component =
               [ HH.text $ debugHref route ]
             ]
 
-  renderPagination :: State -> H.ComponentHTML Action ChildSlots m
-  renderPagination state =
-    case state.searchResult of
-      Left err ->
-        HH.text ""
-      Right (Tuple tunesPage pagination) ->
+
+
+  renderPagination :: Pagination -> H.ComponentHTML Action ChildSlots m
+  renderPagination pagination =
         HH.ul
           [ css "pagination"]
-          ( [ renderFirstPage pagination ] <>
-              renderNumberedPageLinks pagination <>
-            [ renderLastPage pagination ]
+          ( [ renderFirstPage  ] <>
+              renderNumberedPageLinks  <>
+            [ renderLastPage  ]
           )
     where
 
-      renderFirstPage pagination =
+      renderFirstPage  =
         if (pagination.maxPages > maxPageLinks  && pagination.page > 1) then
           paginationItem 1 pagination.page
             [ HH.text "first" ]
         else
           HH.text ""
 
-      renderLastPage pagination =
+      renderLastPage  =
         if (pagination.maxPages > maxPageLinks  && pagination.page < pagination.maxPages) then
           paginationItem pagination.maxPages pagination.page
             [ HH.text "last" ]
           else
             HH.text ""
 
-      renderNumberedPageLinks pagination =
+      renderNumberedPageLinks  =
         let
           pageLink n =
             paginationItem n pagination.page

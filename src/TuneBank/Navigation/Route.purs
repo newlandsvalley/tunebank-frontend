@@ -13,6 +13,7 @@ import Routing.Duplex.Generic (noArgs, sum)
 import Routing.Duplex.Generic.Syntax ((/), (?))
 import TuneBank.Data.TuneId (TuneId, tuneIdFromString, tuneIdToString)
 import TuneBank.Navigation.SearchParams (SearchParams)
+import TuneBank.Navigation.Endpoint (PageParams)
 import TuneBank.Data.Genre (Genre, genreFromString, genreToString)
 
 
@@ -28,7 +29,7 @@ data Route
   | Login
   | Register
   | Upload
-  | UserList
+  | UserList PageParams
   | Tune Genre TuneId
   | TuneList SearchParams
 
@@ -55,7 +56,8 @@ routeCodec = root $ sum
   , "Register": "register" / noArgs
   , "Upload": "upload" / noArgs
   , "Tune": "genre" / (genre segment)  / "tune" / (tuneId segment)
-  , "UserList": "users" / noArgs
+  , "UserList": "users" ?
+       { page: int }
   , "TuneList":  "tunelist" ?
        { key : optional <<< string
        , rhythm : optional <<< string
