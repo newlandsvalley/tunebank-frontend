@@ -13,6 +13,7 @@ import Test.Unit.Assert as Assert
 import Test.Unit.Main (runTest)
 import TuneBank.Data.Types (BaseURL(..))
 import TuneBank.Data.TuneId (TuneId(..))
+import TuneBank.Data.Genre (Genre(..))
 import TuneBank.Data.Credentials (Role(..), Credentials)
 import TuneBank.Api.Request (requestTune, requestTuneAbc, requestCleanTune, requestTuneStr,
        requestTuneSearch, requestTuneSearchStr, checkUser, requestUsers, requestComments,
@@ -28,6 +29,7 @@ assertRight either =
 
 baseURL :: BaseURL
 baseURL = BaseURL "http://www.tradtunedb.org.uk:8080/musicrest"
+-- baseURL = BaseURL "http://192.168.0.113:8080/musicrest"
 
 sampleTune :: TuneId
 sampleTune =
@@ -82,7 +84,7 @@ apiSuite :: Free TestF Unit
 apiSuite =
   suite "Endpoint API" do
     test "get tune" do
-      resource <- requestCleanTune baseURL "irish" sampleTune
+      resource <- requestCleanTune baseURL Irish sampleTune
       assertRight resource
     {-
     test "get tune" do
@@ -90,7 +92,7 @@ apiSuite =
       Assert.equal (Left "error") resource
     -}
     test "get tune ABC" do
-      resource <- requestTuneAbc baseURL "irish" sampleTune
+      resource <- requestTuneAbc baseURL Irish sampleTune
       assertRight resource
     test "simple search" do
       response <- requestTuneSearch baseURL "irish" simpleSearch
@@ -117,10 +119,10 @@ apiSuite =
       Assert.equal (Left "error") resource
     -}
     test "get tune comments" do
-      comments <- requestComments baseURL "scandi" sampleCommentedTune
+      comments <- requestComments baseURL Scandi sampleCommentedTune
       Assert.equal (Right 1) $ rmap A.length comments
     test "get tune empty comments" do
-      comments <- requestComments baseURL "scandi" sampleTune
+      comments <- requestComments baseURL Scandi sampleTune
       Assert.equal (Right 0) $ rmap A.length comments
 
     test "complex search str" do

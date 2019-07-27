@@ -6,10 +6,12 @@ import Affjax.RequestHeader (RequestHeader(..))
 import Affjax.RequestBody (formURLEncoded)
 import Affjax.ResponseHeader (ResponseHeader, name, value)
 import Affjax.ResponseFormat as RF
+import Affjax.StatusCode (StatusCode(..))
 import Data.FormURLEncoded (FormURLEncoded, fromArray) as FUE
 import Effect.Aff.Class (class MonadAff)
+import Effect.Aff (try)
 import Halogen as H
-import Data.Either (Either(..))
+import Data.Either (Either(..), either, isLeft)
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Array (fromFoldable, head, filter)
 import Data.Tuple (Tuple(..))
@@ -35,6 +37,7 @@ import TuneBank.Api.Codec.Pagination (Pagination, defaultPagination, decodePagin
 import TuneBank.Authorization.BasicAuth (authorizationHeader)
 import TuneBank.BugFix.Backend (fixSearchParams)
 
+import Data.Foldable (intercalate)
 import Debug.Trace (spy, trace)
 
 defaultJsonGetRequest :: BaseURL -> Maybe Credentials -> Endpoint -> Request Json
@@ -142,6 +145,10 @@ requestTuneAbc baseUrl genre tuneId = do
 
 requestTuneSearch :: forall m. MonadAff m => BaseURL -> String -> SearchParams -> m (Either String (Tuple TunesPage Pagination))
 requestTuneSearch baseUrl genre searchParams = do
+  {-}
+  let
+    foo = spy "search params" searchParams
+  -}
   res <- H.liftAff $ request $ defaultJsonGetRequest baseUrl Nothing (Search genre searchParams)
   let
     pagination = getPagination res.headers
@@ -208,9 +215,23 @@ postTune tuneAbc baseUrl genre credentials =
     let
       formData = FUE.fromArray [ Tuple "abc"  (Just tuneAbc)]
     res <- request $ defaultPostRequest baseUrl (Just credentials) formData (NewTune genre)
+    case res.body of
+      Left err ->
+        pure $ Left $ printResponseFormatError err
+      Right str ->
+        if (res.status == StatusCode 200)
+          then pure $ Right str
+          else pure $ Left str
+
+
+    {-}
     let
+      foo = spy "status text" res.statusText
+      bar = spy "status code" res.status
+      baz = spy "is left" (isLeft res.body)
+      bozo = spy "body" res.body
       result = (lmap printResponseFormatError res.body)
-    pure result
+    -}
 
 
 getPagination :: Array ResponseHeader-> Pagination

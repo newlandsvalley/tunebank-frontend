@@ -2,28 +2,30 @@ module TuneBank.Page.Upload where
 
 import Control.Monad.Reader (class MonadAsk)
 import DOM.HTML.Indexed.InputAcceptType (mediaType)
-import Data.Const (Const)
-import Data.Maybe (Maybe(..))
-import Data.Tuple (Tuple(..))
-import Data.Either (Either(..))
+import Data.Abc.Metadata (getTitle)
+import Data.Abc.Parser (parse)
+import Data.Either (Either(..), either)
+import Data.Maybe (Maybe(..), maybe)
 import Data.MediaType (MediaType(..))
 import Data.Symbol (SProxy(..))
+import Data.Tuple (Tuple(..))
 import Effect.Aff.Class (class MonadAff)
 import Halogen as H
 import Halogen.FileInputComponent as FIC
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
-import Prelude (Unit, Void, ($), (<<<), (<>), bind, discard, pure, show, unit)
+import Prelude (Unit, Void, ($), (<<<), (<>), bind, const, discard, identity, pure, show, unit)
+import TuneBank.Api.Request (postTune)
 import TuneBank.Data.Credentials (Credentials)
 import TuneBank.Data.Genre (Genre(..))
 import TuneBank.Data.Session (Session)
+import TuneBank.Data.TuneId (tuneIdFromString)
 import TuneBank.Data.Types (BaseURL(..))
 import TuneBank.HTML.Utils (css)
 import TuneBank.Navigation.Navigate (class Navigate, navigate)
 import TuneBank.Navigation.Route (Route(..))
 import TuneBank.Page.Utils.Environment (getBaseURL, getCurrentGenre, getUser)
-import TuneBank.Api.Request (postTune)
 
 -- type Slot = H.Slot Query Void
 type Slot = H.Slot Query Void
@@ -33,8 +35,8 @@ type State =
   , currentUser :: Maybe Credentials
   , baseURL :: BaseURL
   , fileName :: Maybe String
-  , abc :: Maybe String
-  , postResult :: Either String String
+  , abc :: String
+  , errorText :: String
   }
 
 data Query a =
@@ -83,8 +85,8 @@ component =
     , currentUser : Nothing
     , baseURL : BaseURL ""
     , fileName : Nothing
-    , abc : Nothing
-    , postResult : Left ""
+    , abc : ""
+    , errorText : ""
     }
 
   render :: State -> H.ComponentHTML Action ChildSlots m
@@ -99,6 +101,7 @@ component =
             , renderSelectFile state
             , renderUploadButton state
             ]
+        , renderError state
         ]
       ]
   handleAction ∷ Action -> H.HalogenM State Action ChildSlots o m Unit
@@ -113,7 +116,8 @@ component =
       pure unit
     HandleABCFile (FIC.FileLoaded filespec) -> do
       _ <- H.modify (\st -> st { fileName = Just filespec.name
-                                ,  abc = Just filespec.contents} )
+                                ,  abc = filespec.contents
+                                , errorText = "" } )
       pure unit
     UploadFile -> do
       _ <- handleQuery (PostTune unit)
@@ -124,10 +128,34 @@ component =
     PostTune next -> do
       state <- H.get
       baseURL <- getBaseURL
-      case (Tuple state.currentUser state.abc) of
-        (Tuple (Just credentials) (Just abc) ) -> do
-          postResult <- postTune abc baseURL state.genre credentials
-          H.modify_ (\st -> st { postResult = postResult } )
+      -- basic validation - the ABC tune parses and has a title
+      let
+        eTuneTitle = getTuneTitle state.abc
+      case (Tuple state.currentUser eTuneTitle) of
+        (Tuple (Just credentials) (Right title) ) -> do
+          postResult <- postTune state.abc baseURL state.genre credentials
+          let
+            errorText = either identity (const "") postResult
+          H.modify_ (\st -> st { errorText = errorText } )
+          case postResult of
+            -- we posted OK and got a good response
+            Right tuneIdStr -> do
+              let
+                eTuneId = tuneIdFromString tuneIdStr
+              case eTuneId of
+                -- the response is not a valid tuneIf - shouldn;t happen -
+                -- just navigate home
+                Left _ -> do
+                  _ <- navigate Home
+                  pure (Just next)
+                -- we got a valid tuneId so navigate to that tune
+                Right tuneId -> do
+                  _ <- navigate $ Tune state.genre tuneId
+                  pure (Just next)
+            Left _ ->
+              pure (Just next)
+        (Tuple _ (Left err) ) -> do
+          H.modify_ (\st -> st { errorText = err } )
           pure (Just next)
         _ ->
           pure (Just next)
@@ -170,3 +198,16 @@ renderUploadButton state =
       , HP.enabled true
       ]
       [ HH.text "upload" ]
+
+renderError :: forall m. State -> H.ComponentHTML Action ChildSlots m
+renderError state =
+  HH.div
+    []
+    [ HH.text state.errorText ]
+
+getTuneTitle :: String -> Either String String
+getTuneTitle abc =
+  case parse abc of
+    Left _ -> Left "invalid ABC"
+    Right tune ->
+      maybe (Left "invalid ABC") (\t -> Right t) $ getTitle tune

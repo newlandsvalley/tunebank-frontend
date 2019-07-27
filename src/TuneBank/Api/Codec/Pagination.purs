@@ -7,12 +7,13 @@ module TuneBank.Api.Codec.Pagination
 
 
 import Prelude
-import Data.Argonaut (class EncodeJson, class DecodeJson, Json, encodeJson, decodeJson, (.:))
+import Data.Argonaut (Json, decodeJson, (.:))
 import Data.Either (Either, hush)
 import Data.Maybe (fromMaybe)
 import Text.Parsing.StringParser (Parser, runParser)
 import Text.Parsing.StringParser.String (string, char, regex, skipSpaces)
 import Data.Int (fromString)
+
 
 -- | a page number in results from a search request
 type PageNum =
@@ -20,7 +21,7 @@ type PageNum =
   , size :: String
   }
 
---| decode the JSON results of a search request page number
+-- | decode the JSON results of a search request page number
 decodeJsonPageNum :: Json -> Either String PageNum
 decodeJsonPageNum json = do
    obj <- decodeJson json
