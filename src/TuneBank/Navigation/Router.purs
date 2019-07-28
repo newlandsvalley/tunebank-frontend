@@ -29,6 +29,7 @@ import TuneBank.Data.Credentials (Credentials)
 import TuneBank.HTML.Footer (footer)
 import TuneBank.HTML.Header (header)
 import TuneBank.Page.Utils.Environment (getUser, getCurrentGenre)
+import TuneBank.HTML.Credits (credits)
 import Routing.Duplex as RD
 import Routing.Hash (getHash)
 
@@ -140,6 +141,7 @@ component =
             HH.slot (SProxy :: _ "tune") unit Tune.component { genre, tuneId } absurd
           TuneList searchParams ->
             HH.slot (SProxy :: _ "tunelist") unit TuneList.component { searchParams } absurd
+          Credits -> credits
 
         Nothing ->
           HH.div_ [ HH.text "Oh no! That page wasn't found." ]

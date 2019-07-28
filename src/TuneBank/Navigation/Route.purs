@@ -32,6 +32,7 @@ data Route
   | UserList PageParams
   | Tune Genre TuneId
   | TuneList SearchParams
+  | Credits
 
 
 -- | This seems to fail silently at runtime
@@ -67,4 +68,5 @@ routeCodec = root $ sum
        , abc : optional <<< string
        , page: int
        , sort : string }
+  , "Credits" : "credits" / noArgs
   }

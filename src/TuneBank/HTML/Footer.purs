@@ -1,8 +1,9 @@
 module TuneBank.HTML.Footer (footer) where
 
+import Prelude (($), (==))
 import Halogen.HTML as HH
-import Halogen.HTML.Properties as HP
-import TuneBank.HTML.Utils (css)
+import TuneBank.HTML.Utils (css, safeHref)
+import TuneBank.Navigation.Route (Route(..))
 
 
 footer :: forall i p. HH.HTML i p
@@ -22,12 +23,22 @@ footer =
       , HH.div_
          [ HH.nav
            [ css "footer-nav"]
-           [ HH.a
-             [ css "logo-font"
-             , HP.href "/"
-             ]
-             [ HH.text "credits" ]
+           [ navItem Credits
+              [ HH.text "credits" ]
            ]
          ]
       ]
     ]
+
+    where
+
+    -- | a navigation item available at any time
+    navItem :: Route -> Array (HH.HTML i p) -> HH.HTML i p
+    navItem r html =
+      HH.li
+        [ css "nav-item" ]
+        [ HH.a
+          [ safeHref r
+          ]
+          html
+        ]
