@@ -26,6 +26,11 @@ footer =
            [ navItem Credits
               [ HH.text "credits" ]
            ]
+         , HH.nav
+           [ css "footer-nav"]
+           [ navItem Help
+              [ HH.text "help" ]              
+           ]
          ]
       ]
     ]

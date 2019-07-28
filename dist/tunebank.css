@@ -5,6 +5,27 @@ body {
 	font: 100% "Trebuchet MS", Verdana, sans-serif;
 }
 
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+	color: #b74e07;
+	font-weight: bold;
+}
+
+h1 {
+	font-size: 1.5em; /* 24px/16px */
+	margin-bottom: .75em;
+	text-transform: lowercase;
+}
+
+h2 {
+	font-size: 1.375em; /* 22px/16px */
+	margin-bottom: .50em;
+}
+
 /* Site Nav - the upper navigation bar */
 
 /* Banner Navigation in the first masthead line */

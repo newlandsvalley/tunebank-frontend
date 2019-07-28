@@ -33,6 +33,7 @@ data Route
   | Tune Genre TuneId
   | TuneList SearchParams
   | Credits
+  | Help
 
 
 -- | This seems to fail silently at runtime
@@ -69,4 +70,5 @@ routeCodec = root $ sum
        , page: int
        , sort : string }
   , "Credits" : "credits" / noArgs
+  , "Help" : "help" / noArgs
   }
