@@ -32,6 +32,7 @@ data Route
   | UserList PageParams
   | Tune Genre TuneId
   | TuneList SearchParams
+  | About
   | Credits
   | Help
 
@@ -69,6 +70,7 @@ routeCodec = root $ sum
        , abc : optional <<< string
        , page: int
        , sort : string }
+  , "About" : "about" / noArgs
   , "Credits" : "credits" / noArgs
   , "Help" : "help" / noArgs
   }

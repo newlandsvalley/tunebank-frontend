@@ -29,6 +29,7 @@ import TuneBank.Data.Credentials (Credentials)
 import TuneBank.HTML.Footer (footer)
 import TuneBank.HTML.Header (header)
 import TuneBank.Page.Utils.Environment (getUser, getCurrentGenre)
+import TuneBank.HTML.About (about)
 import TuneBank.HTML.Credits (credits)
 import TuneBank.HTML.Help (help)
 import Routing.Duplex as RD
@@ -138,12 +139,16 @@ component =
             HH.slot (SProxy :: _ "upload") unit Upload.component unit absurd
           UserList pageParams  ->
             HH.slot (SProxy :: _ "userlist") unit UserList.component pageParams absurd
-          Tune genre tuneId   ->
+          Tune genre tuneId  ->
             HH.slot (SProxy :: _ "tune") unit Tune.component { genre, tuneId } absurd
           TuneList searchParams ->
             HH.slot (SProxy :: _ "tunelist") unit TuneList.component { searchParams } absurd
-          Credits -> credits
-          Help -> help
+          About ->
+            about
+          Credits ->
+            credits
+          Help ->
+            help
 
         Nothing ->
           HH.div_ [ HH.text "Oh no! That page wasn't found." ]
