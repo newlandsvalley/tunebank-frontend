@@ -32,7 +32,7 @@ import TuneBank.Data.Genre (Genre)
 import TuneBank.Api.Codec.TunesPage (TunesPage, decodeTunesPage)
 import TuneBank.Api.Codec.UsersPage (UsersPage, decodeUsersPage)
 import TuneBank.Api.Codec.Tune (TuneMetadata, fixJson, decodeTune)
-import TuneBank.Api.Codec.CommentArray (CommentArray, decodeComments)
+import TuneBank.Api.Codec.Comments (Comments, decodeComments)
 import TuneBank.Api.Codec.Pagination (Pagination, defaultPagination, decodePagination)
 import TuneBank.Authorization.BasicAuth (authorizationHeader)
 import TuneBank.BugFix.Backend (fixSearchParams)
@@ -172,11 +172,14 @@ checkUser baseUrl credentials = do
   res <- H.liftAff $ request $ defaultStringGetRequest baseUrl (Just credentials) UserCheck (MediaType "text/plain; charset=UTF-8")
   let
     response = (lmap printResponseFormatError res.body)
-    foo = trace "check user response " \_ -> response
+    foo = spy "status text" res.statusText
+    bar = spy "status code" res.status
+    baz = spy "is left" (isLeft res.body)
+    bozo = spy "body" res.body
   pure $ response
 
 
-requestComments :: forall m. MonadAff m => BaseURL -> Genre -> TuneId -> m (Either String CommentArray)
+requestComments :: forall m. MonadAff m => BaseURL -> Genre -> TuneId -> m (Either String Comments)
 requestComments baseUrl genre tuneId = do
   res <- H.liftAff $ request $ defaultJsonGetRequest baseUrl Nothing (Comments genre tuneId)
   let
@@ -222,17 +225,6 @@ postTune tuneAbc baseUrl genre credentials =
         if (res.status == StatusCode 200)
           then pure $ Right str
           else pure $ Left str
-
-
-    {-}
-    let
-      foo = spy "status text" res.statusText
-      bar = spy "status code" res.status
-      baz = spy "is left" (isLeft res.body)
-      bozo = spy "body" res.body
-      result = (lmap printResponseFormatError res.body)
-    -}
-
 
 getPagination :: Array ResponseHeader-> Pagination
 getPagination headers =

@@ -19,16 +19,18 @@ import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
 import Halogen.PlayerComponent as PC
-import Prelude (Unit, Void, ($), (<>), (<<<), (>>=), bind, const, identity, pure, show, unit)
+import Html.Parser.Halogen as PH
+import Prelude (Unit, Void, ($), (<>), (<<<), (>>=), (==), bind, const, identity, map, pure, show, unit)
 import TuneBank.Api.Codec.Tune (TuneMetadata, nullTuneMetadata)
-import TuneBank.Api.Request (requestTune)
+import TuneBank.Api.Request (requestTune, requestComments)
 import TuneBank.Data.Credentials (Credentials)
 import TuneBank.Data.Genre (Genre, asUriComponent)
 import TuneBank.Data.Session (Session)
 import TuneBank.Data.TuneId (TuneId(..), encodeTuneIdURIComponent)
 import TuneBank.Data.Types (BaseURL(..))
 import TuneBank.Navigation.Navigate (class Navigate)
-import TuneBank.Page.Utils.Environment (getBaseURL, getCurrentGenre, getInstruments, getUser)
+import TuneBank.Api.Codec.Comments (Comments, Comment)
+import TuneBank.Page.Utils.Environment (getBaseURL, getInstruments, getUser)
 
 -- | there is no tune yet
 nullParsedTune :: Either String AbcTune
@@ -46,6 +48,7 @@ type State =
   , baseURL :: BaseURL
   , tuneMetadata :: TuneMetadata
   , tuneResult :: Either String AbcTune
+  , comments :: Comments
   , instruments :: Array Instrument
   }
 
@@ -92,6 +95,7 @@ component =
     , baseURL : BaseURL ""
     , tuneMetadata : nullTuneMetadata
     , tuneResult: nullParsedTune
+    , comments : []
     , instruments : []
     }
 
@@ -107,6 +111,7 @@ component =
         , renderTuneScore state title
         , renderTuneMetadata state
         , renderPlayer state
+        , renderComments state
         , renderDebug state
         ]
 
@@ -188,6 +193,36 @@ component =
         toPlayable abcTune =
           MidiRecording $ toMidi abcTune
 
+  renderComments ::  State -> H.ComponentHTML Action ChildSlots m
+  renderComments state =
+    let
+      commentCount = length state.comments
+      header =
+        case commentCount of
+          0 ->
+            "No comments"
+          1 ->
+            "1 comment"
+          _ ->
+            show commentCount <> " comments"
+    in
+    HH.div_
+      [
+        HH.text header
+      , HH.div_ $ map renderComment state.comments
+      ]
+
+  renderComment :: Comment -> H.ComponentHTML Action ChildSlots m
+  renderComment comment =
+    HH.div
+      []
+      [ HH.h2
+        []
+        [ HH.text comment.subject]
+      , PH.render comment.text
+      --, HH.text comment.text
+      ]
+
   renderDebug ::  State -> H.ComponentHTML Action ChildSlots m
   renderDebug state =
     let
@@ -220,11 +255,13 @@ component =
           tuneMetadataResult >>= (\x -> lmap show $ parse x.abc)
         tuneMetadata =
           either (const state.tuneMetadata) identity tuneMetadataResult
+      comments <- requestComments baseURL state.genre state.tuneId
       H.modify_ (\st -> st
         { currentUser = currentUser
         , baseURL = baseURL
         , tuneMetadata = tuneMetadata
         , tuneResult = tuneResult
+        , comments = either (const []) identity comments
         , instruments = instruments
         } )
     HandleTuneIsPlaying (PC.IsPlaying p) -> do

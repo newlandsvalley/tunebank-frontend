@@ -1,5 +1,5 @@
-module TuneBank.Api.Codec.CommentArray
-  ( CommentArray
+module TuneBank.Api.Codec.Comments
+  ( Comments
   , Comment
   , decodeComments) where
 
@@ -25,13 +25,13 @@ decodeJsonComment json = do
     text <- obj .: "text"
     pure $ { user, cid, subject, text }
 
-type CommentArray = Array Comment
+type Comments = Array Comment
 
-decodeCommentArray :: Json -> Either String CommentArray
+decodeCommentArray :: Json -> Either String Comments
 decodeCommentArray json = decodeJson json >>= traverse decodeJsonComment
 
-decodeComments :: Json -> Either String CommentArray
+decodeComments :: Json -> Either String Comments
 decodeComments json = do
   obj <- decodeJson json
-  commentArray <- obj .: "comment" >>= decodeCommentArray
-  pure commentArray
+  comments <- obj .: "comment" >>= decodeCommentArray
+  pure comments
