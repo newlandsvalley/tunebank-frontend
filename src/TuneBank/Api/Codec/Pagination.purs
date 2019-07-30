@@ -11,7 +11,7 @@ import Data.Argonaut (Json, decodeJson, (.:))
 import Data.Either (Either, hush)
 import Data.Maybe (fromMaybe)
 import Text.Parsing.StringParser (Parser, runParser)
-import Text.Parsing.StringParser.String (string, char, regex, skipSpaces)
+import Text.Parsing.StringParser.CodePoints (string, char, regex, skipSpaces)
 import Data.Int (fromString)
 
 
