@@ -4,11 +4,10 @@ import Prelude
 import Global (readFloat)
 import Partial.Unsafe (unsafePartial)
 import Control.Monad.Reader (class MonadAsk)
-import Data.Array (length, range)
+import Data.Array (length, mapWithIndex, range, unsafeIndex)
 import Data.Either (Either(..), fromRight)
 import Data.Maybe (Maybe(..), maybe)
 import Data.Monoid (guard)
-import Data.String (take)
 import Data.Tuple (Tuple(..))
 import Data.DateTime.Instant (instant, toDateTime)
 import Data.Time.Duration (Milliseconds(..))
@@ -16,7 +15,13 @@ import Data.Formatter.DateTime (Formatter, parseFormatString, format)
 import Effect.Aff.Class (class MonadAff)
 import Halogen as H
 import Halogen.HTML as HH
+import Halogen.HTML.Properties as HP
 import Halogen.HTML.Events as HE
+import Data.Abc.Parser (parse)
+import Data.Abc.Metadata (thumbnail)
+import VexFlow.Types (Config)
+import VexFlow.Score (clearCanvas, createScore, renderScore, initialiseCanvas)
+import VexFlow.Abc.Alignment (justifiedScoreConfig, rightJustify)
 import TuneBank.Api.Codec.Pagination (Pagination)
 import TuneBank.Api.Codec.TunesPage (TunesPage, TuneRefArray)
 import TuneBank.Api.Request (requestTuneSearch)
@@ -24,11 +29,14 @@ import TuneBank.Data.Genre (Genre(..), asUriComponent)
 import TuneBank.Data.Session (Session)
 import TuneBank.Data.Types (BaseURL)
 import TuneBank.Data.TuneId (TuneId(..), decodeTuneIdURIComponent)
-import TuneBank.HTML.Utils (css, safeHref, debugHref)
+import TuneBank.HTML.Utils (css, safeHref)
 import TuneBank.Navigation.Navigate (class Navigate, navigate)
 import TuneBank.Navigation.Route (Route(..))
 import TuneBank.Navigation.SearchParams (SearchParams)
 import TuneBank.Page.Utils.Environment (getBaseURL, getCorsBaseURL, getCurrentGenre)
+
+
+import Debug.Trace (spy, trace)
 
 type Slot = H.Slot Query Void
 
@@ -44,6 +52,7 @@ type Input =
 -- type Query = (Const Void)
 data Query a =
   FetchResults a
+  | Thumbnail Int a
 
 type ChildSlots = ()
 
@@ -53,6 +62,24 @@ data Action
 
 maxPageLinks :: Int
 maxPageLinks = 10
+
+canvasWidth :: Int
+canvasWidth = 1000
+
+canvasDepth :: Int
+canvasDepth = 30
+
+scale :: Number
+scale = 0.6
+
+
+defaultVexConfig :: Int -> Config
+defaultVexConfig index =
+  { canvasDivId : ("canvas" <> show index)
+  , canvasWidth : canvasWidth
+  , canvasHeight : canvasDepth
+  , scale : scale
+  }
 
 component
    :: ∀ o m r
@@ -114,19 +141,18 @@ component =
   renderTuneList state tunes =
     let
       -- f :: forall w i. TuneRef -> HH.HTML w i
-      f tuneRef =
+      f i tuneRef =
         let
           tuneId = decodeTuneIdURIComponent tuneRef.uri
           dateString = tsToDateString tuneRef.ts
-          abcThumb = take 10 tuneRef.abc
         in
-          tableRow tuneId dateString abcThumb
+          tableRow tuneId dateString i
     in
       HH.table_ $
-        map f tunes
+        mapWithIndex f tunes
     where
 
-      tableRow tuneId dateString abcThumb =
+      tableRow tuneId dateString index =
         let
           (TuneId {title,  tuneType}) = tuneId
           route :: Route
@@ -149,10 +175,15 @@ component =
               [ HH.text dateString]
             , HH.td
               []
-              [ HH.text abcThumb]
+              [ HH.div
+                [ HP.id_ ("canvas" <> show index)]
+                []
+              ]
+            {-}
             , HH.td
               []
               [ HH.text $ debugHref route ]
+            -}
             ]
 
 
@@ -226,7 +257,49 @@ component =
       baseURL <- getBaseURL
       searchResult <- requestTuneSearch baseURL (asUriComponent state.genre) state.searchParams
       H.modify_ (\st -> st { searchResult = searchResult } )
+      _ <- handleQuery (Thumbnail 0 unit)
       pure (Just next)
+    Thumbnail index next -> do
+      let
+        bazz =
+          spy "Thumbnail Query for index: " index
+      state <- H.get
+      case state.searchResult of
+        Left err ->
+          pure (Just next)
+        Right (Tuple tunesPage pagination) ->
+          if (index >= (length $ tunesPage.tunes) )
+            then do
+              let
+                bar =
+                  spy "thumbnail index out of range: " index
+              pure (Just next)
+            else do
+              let
+                tuneRef = unsafePartial $ unsafeIndex tunesPage.tunes index
+              case (parse tuneRef.abc ) of
+                Right abcTune -> do
+                  let
+                    foo =
+                      spy "rendering thumbnail for" index
+                    unjustifiedScore = createScore (defaultVexConfig index) (thumbnail abcTune)
+                    score = rightJustify canvasWidth scale unjustifiedScore
+                    config = justifiedScoreConfig score (defaultVexConfig index)
+                  _ <- H.liftEffect $ initialiseCanvas config
+                  -- _ <- H.liftEffect $ clearCanvas -- needs fixing in abc-scores
+                  _ <- H.liftEffect $ renderScore config score
+                  _ <- handleQuery (Thumbnail (index + 1) unit)
+                  pure (Just next)
+                  -- Thumbnail (index + 1) next
+                _ -> do
+                  let
+                    baz =
+                      spy "tuneRef not parsed for index: " index
+                    baz1 =
+                        spy "abc: " tuneRef.abc
+                  _ <- handleQuery (Thumbnail (index + 1) unit)
+                  pure (Just next)
+
 
 paginationItem
   :: ∀ m.
