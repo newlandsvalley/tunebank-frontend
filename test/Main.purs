@@ -21,6 +21,9 @@ import TuneBank.Api.Request (requestTune, requestTuneAbc, requestCleanTune, requ
 import TuneBank.Navigation.Endpoint (PageParams)
 import TuneBank.Navigation.SearchParams (SearchParams, defaultSearchParams)
 
+
+import Debug.Trace (spy, trace)
+
 assertRight :: forall a b. Either a b -> Test
 assertRight either =
   case either of
@@ -28,8 +31,9 @@ assertRight either =
     Right _ -> success
 
 baseURL :: BaseURL
-baseURL = BaseURL "http://www.tradtunedb.org.uk:8080/musicrest"
--- baseURL = BaseURL "http://192.168.0.113:8080/musicrest"
+-- production server
+-- baseURL = BaseURL "http://www.tradtunedb.org.uk:8080/musicrest"
+baseURL = BaseURL "http://192.168.0.113:8080/musicrest"
 
 sampleTune :: TuneId
 sampleTune =
@@ -37,7 +41,9 @@ sampleTune =
 
 sampleCommentedTune :: TuneId
 sampleCommentedTune =
-  TuneId $ { title : "andet+brudestykke", tuneType: "marsch" }
+  -- production server
+  -- TuneId $ { title : "andet+brudestykke", tuneType: "marsch" }
+  TuneId $ { title : "vals+a+lulu", tuneType: "waltz" }
 
 simpleSearch :: SearchParams
 simpleSearch =
@@ -54,9 +60,16 @@ page1 =
 adminUser :: Credentials
 adminUser =
   { user : "administrator"
-  , pass : "bubble123"
+  , pass : "h0rsf0rth"
   , role : Administrator
   }
+  {- production server
+    { user : "administrator"
+    , pass : "b*"
+    , role : Administrator
+    }
+  -}
+
 
 unknownUser :: Credentials
 unknownUser =
@@ -98,7 +111,9 @@ apiSuite =
       response <- requestTuneSearch baseURL "irish" simpleSearch
       Assert.equal (Right "15") $ rmap (\(Tuple tunes pagination) -> tunes.pageNum.size) response
       Assert.equal (Right 1) $  rmap (\(Tuple tunes pagination) -> pagination.page) response
-      Assert.equal (Right 6) $  rmap (\(Tuple tunes pagination) -> pagination.maxPages) response
+      Assert.equal (Right 5) $  rmap (\(Tuple tunes pagination) -> pagination.maxPages) response
+      -- production server
+      -- Assert.equal (Right 6) $  rmap (\(Tuple tunes pagination) -> pagination.maxPages) response
     test "complex search" do
       response <- requestTuneSearch baseURL "scandi" complexSearch
       Assert.equal (Right "15") $ rmap (\(Tuple tunes pagination) -> tunes.pageNum.size) response
@@ -127,6 +142,11 @@ apiSuite =
 
     test "complex search str" do
       response <- requestTuneSearchStr baseURL "scandi" complexSearch
+      foo <- case response of
+          Right tunes ->
+            pure $ spy "tunes list" tunes
+          Left _ ->
+            pure ""
       -- Assert.equal (Left "error") $ response
       assertRight response
 

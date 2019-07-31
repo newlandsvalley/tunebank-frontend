@@ -8,6 +8,7 @@ import Data.Array (length, range)
 import Data.Either (Either(..), fromRight)
 import Data.Maybe (Maybe(..), maybe)
 import Data.Monoid (guard)
+import Data.String (take)
 import Data.Tuple (Tuple(..))
 import Data.DateTime.Instant (instant, toDateTime)
 import Data.Time.Duration (Milliseconds(..))
@@ -117,14 +118,15 @@ component =
         let
           tuneId = decodeTuneIdURIComponent tuneRef.uri
           dateString = tsToDateString tuneRef.ts
+          abcThumb = take 10 tuneRef.abc
         in
-          tableRow tuneId dateString
+          tableRow tuneId dateString abcThumb
     in
       HH.table_ $
         map f tunes
     where
 
-      tableRow tuneId dateString =
+      tableRow tuneId dateString abcThumb =
         let
           (TuneId {title,  tuneType}) = tuneId
           route :: Route
@@ -145,6 +147,9 @@ component =
             , HH.td
               []
               [ HH.text dateString]
+            , HH.td
+              []
+              [ HH.text abcThumb]
             , HH.td
               []
               [ HH.text $ debugHref route ]
