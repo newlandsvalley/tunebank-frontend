@@ -502,3 +502,20 @@ table.textalign tr td  {
   margin-left: auto;
   margin-right: auto;
 }
+
+/* thumbnail images */
+
+.tunelist {
+	float: left;
+}
+
+.thumbnail {
+  height: 60px;
+  overflow: hidden;
+  /* border: 1px solid deeppink; */
+}
+
+.thumbnail > div {
+  height: 60px;
+  /* white-space: nowrap; */
+}

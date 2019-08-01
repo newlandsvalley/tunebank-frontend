@@ -4,11 +4,12 @@ import Prelude
 import Global (readFloat)
 import Partial.Unsafe (unsafePartial)
 import Control.Monad.Reader (class MonadAsk)
-import Data.Array (length, mapWithIndex, range, unsafeIndex)
+import Data.Array (index, length, mapWithIndex, range, unsafeIndex)
 import Data.Either (Either(..), fromRight)
 import Data.Maybe (Maybe(..), maybe)
 import Data.Monoid (guard)
 import Data.Tuple (Tuple(..))
+import Data.Traversable (traverse)
 import Data.DateTime.Instant (instant, toDateTime)
 import Data.Time.Duration (Milliseconds(..))
 import Data.Formatter.DateTime (Formatter, parseFormatString, format)
@@ -20,7 +21,7 @@ import Halogen.HTML.Events as HE
 import Data.Abc.Parser (parse)
 import Data.Abc.Metadata (thumbnail)
 import VexFlow.Types (Config)
-import VexFlow.Score (clearCanvas, createScore, renderScore, initialiseCanvas)
+import VexFlow.Score (Renderer, clearCanvas, createScore, renderScore, initialiseCanvas, resizeCanvas)
 import VexFlow.Abc.Alignment (justifiedScoreConfig, rightJustify)
 import TuneBank.Api.Codec.Pagination (Pagination)
 import TuneBank.Api.Codec.TunesPage (TunesPage, TuneRefArray)
@@ -44,6 +45,7 @@ type State =
   { genre :: Genre
   , searchParams :: SearchParams
   , searchResult :: Either String (Tuple TunesPage Pagination)
+  , vexRenderers :: Array Renderer
   }
 
 type Input =
@@ -52,6 +54,7 @@ type Input =
 -- type Query = (Const Void)
 data Query a =
   FetchResults a
+  | InitializeVex a
   | Thumbnail Int a
 
 type ChildSlots = ()
@@ -63,21 +66,18 @@ data Action
 maxPageLinks :: Int
 maxPageLinks = 10
 
-canvasWidth :: Int
-canvasWidth = 1000
-
-canvasDepth :: Int
-canvasDepth = 30
-
 scale :: Number
 scale = 0.6
 
+canvasWidth :: Int
+canvasWidth =
+  900
 
 defaultVexConfig :: Int -> Config
 defaultVexConfig index =
   { canvasDivId : ("canvas" <> show index)
   , canvasWidth : canvasWidth
-  , canvasHeight : canvasDepth
+  , canvasHeight : 70
   , scale : scale
   }
 
@@ -105,6 +105,7 @@ component =
      { genre : Scandi
      , searchParams
      , searchResult : Left ""
+     , vexRenderers : []
      }
 
   render :: State -> H.ComponentHTML Action ChildSlots m
@@ -133,8 +134,9 @@ component =
                            <> show pagination.maxPages
                            )
                  ]
-              , renderTuneList state tunesPage.tunes
               , renderPagination pagination
+              , HH.h5_ [ HH.text "..."]
+              , renderTuneList state tunesPage.tunes
               ]
 
   renderTuneList :: State -> TuneRefArray -> H.ComponentHTML Action ChildSlots m
@@ -148,8 +150,11 @@ component =
         in
           tableRow tuneId dateString i
     in
-      HH.table_ $
-        mapWithIndex f tunes
+      HH.div
+        [css "tunelist"]
+        [ HH.table_ $
+          mapWithIndex f tunes
+        ]
     where
 
       tableRow tuneId dateString index =
@@ -160,7 +165,7 @@ component =
           -- route = Tune state.genre tuneId
         in
           HH.tr
-            []
+            [  ]
             [ HH.td
               []
               [ HH.a
@@ -176,7 +181,9 @@ component =
             , HH.td
               []
               [ HH.div
-                [ HP.id_ ("canvas" <> show index)]
+                [ HP.id_ ("canvas" <> show index)
+                , css "thumbnail"
+                ]
                 []
               ]
             {-}
@@ -190,12 +197,14 @@ component =
 
   renderPagination :: Pagination -> H.ComponentHTML Action ChildSlots m
   renderPagination pagination =
-        HH.ul
+    HH.div_
+      [ HH.ul
           [ css "pagination"]
           ( [ renderFirstPage  ] <>
               renderNumberedPageLinks  <>
             [ renderLastPage  ]
           )
+      ]
     where
 
       renderFirstPage  =
@@ -257,47 +266,76 @@ component =
       baseURL <- getBaseURL
       searchResult <- requestTuneSearch baseURL (asUriComponent state.genre) state.searchParams
       H.modify_ (\st -> st { searchResult = searchResult } )
+      _ <- handleQuery (InitializeVex unit)
       _ <- handleQuery (Thumbnail 0 unit)
       pure (Just next)
-    Thumbnail index next -> do
+
+    InitializeVex next -> do
+      -- Initialization of the Vex rendere which is done on first reference.
+      -- Note, we can obly initialising after rendering the page for the first time
+      -- because only then are the canvas Div elements established
+      state <- H.get
+      if (length state.vexRenderers > 0)
+        then do
+          -- already initialized
+          _ <- handleQuery (Thumbnail 0 unit)
+          pure (Just next)
+        else do
+          case (resultRows state.searchResult) of
+            0 ->
+              -- we need some arbitrary statement here
+              H.modify_ (\st -> st { vexRenderers = state.vexRenderers } )
+            n -> do
+              -- initialise as many renderers as we have result rows
+              let
+                rows :: Array Int
+                rows = range 0 (n - 1)
+              renderers <- H.liftEffect $ traverse (\r -> initialiseCanvas $ defaultVexConfig r) rows
+              H.modify_ (\st -> st { vexRenderers = renderers } )
+          -- _ <- handleQuery (Thumbnail 0 unit)
+          pure (Just next)
+
+    Thumbnail idx next -> do
       let
         bazz =
-          spy "Thumbnail Query for index: " index
+          spy "Thumbnail Query for index: " idx
       state <- H.get
       case state.searchResult of
         Left err ->
           pure (Just next)
         Right (Tuple tunesPage pagination) ->
-          if (index >= (length $ tunesPage.tunes) )
+          if (idx >= (length $ tunesPage.tunes) )
             then do
               let
                 bar =
-                  spy "thumbnail index out of range: " index
+                  spy "thumbnail index out of range: " idx
               pure (Just next)
             else do
               let
-                tuneRef = unsafePartial $ unsafeIndex tunesPage.tunes index
-              case (parse tuneRef.abc ) of
-                Right abcTune -> do
+                tuneRef = unsafePartial $ unsafeIndex tunesPage.tunes idx
+              case (Tuple (parse tuneRef.abc) (index state.vexRenderers idx)) of
+                (Tuple (Right abcTune) (Just renderer)) -> do
+                  _ <- H.liftEffect $ clearCanvas renderer
                   let
                     foo =
-                      spy "rendering thumbnail for" index
-                    unjustifiedScore = createScore (defaultVexConfig index) (thumbnail abcTune)
+                      spy "rendering thumbnail for" idx
+                    unjustifiedScore = createScore (defaultVexConfig idx) (thumbnail abcTune)
                     score = rightJustify canvasWidth scale unjustifiedScore
-                    config = justifiedScoreConfig score (defaultVexConfig index)
-                  _ <- H.liftEffect $ initialiseCanvas config
-                  -- _ <- H.liftEffect $ clearCanvas -- needs fixing in abc-scores
-                  _ <- H.liftEffect $ renderScore config score
-                  _ <- handleQuery (Thumbnail (index + 1) unit)
+                    config = justifiedScoreConfig score (defaultVexConfig idx)
+                  _ <- H.liftEffect $ resizeCanvas renderer config
+                  _ <- H.liftEffect $ renderScore config renderer score
+                  _ <- handleQuery (Thumbnail (idx + 1) unit)
+                  -- try to force a re-render after each row
+                  H.modify_ (\st -> st { genre = state.genre } )
                   pure (Just next)
                   -- Thumbnail (index + 1) next
                 _ -> do
                   let
                     baz =
-                      spy "tuneRef not parsed for index: " index
+                      spy "no renderer or tuneRef not parsed for index: " idx
                     baz1 =
                         spy "abc: " tuneRef.abc
-                  _ <- handleQuery (Thumbnail (index + 1) unit)
+                  _ <- handleQuery (Thumbnail (idx + 1) unit)
                   pure (Just next)
 
 
@@ -326,3 +364,10 @@ tsToDateString tsString =
      displayFormatter =  unsafePartial fromRight $ parseFormatString "DD MMM YYYY"
   in
     format displayFormatter dateTime
+
+resultRows :: Either String (Tuple TunesPage Pagination) -> Int
+resultRows = case _ of
+  Right (Tuple tunePage pagination) ->
+    length tunePage.tunes
+  _ ->
+    0

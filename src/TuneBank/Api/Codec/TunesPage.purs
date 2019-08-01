@@ -32,16 +32,6 @@ type TunesPage =
   , pageNum :: PageNum
   }
 
-{-
-instance showTunesPage :: Show TunesPage where
-  show (TunesPage p) = show p.tunes <> " " <> show p.pageNum
-
-instance eqTunesPage :: Eq TunesPage where
-  eq (TunesPage p1) (TunesPage p2) =
-    (p1.tunes == p2.tunes) &&
-    (p1.pageNum == p2.pageNum)
--}
-
 type TuneRefArray = Array TuneRef
 
 decodeTuneRefArray :: Json -> Either String TuneRefArray
