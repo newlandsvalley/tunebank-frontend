@@ -1,43 +1,42 @@
 module TuneBank.Page.TuneList where
 
 import Prelude
-import Global (readFloat)
-import Partial.Unsafe (unsafePartial)
+
 import Control.Monad.Reader (class MonadAsk)
+import Data.Abc.Metadata (thumbnail)
+import Data.Abc.Parser (parse)
 import Data.Array (index, length, mapWithIndex, range, unsafeIndex)
+import Data.DateTime.Instant (instant, toDateTime)
 import Data.Either (Either(..), fromRight)
+import Data.Formatter.DateTime (Formatter, parseFormatString, format)
 import Data.Maybe (Maybe(..), maybe)
 import Data.Monoid (guard)
-import Data.Tuple (Tuple(..))
-import Data.Traversable (traverse)
-import Data.DateTime.Instant (instant, toDateTime)
 import Data.Time.Duration (Milliseconds(..))
-import Data.Formatter.DateTime (Formatter, parseFormatString, format)
+import Data.Traversable (traverse)
+import Data.Tuple (Tuple(..))
+import Debug.Trace (spy, trace)
 import Effect.Aff.Class (class MonadAff)
+import Global (readFloat)
 import Halogen as H
 import Halogen.HTML as HH
-import Halogen.HTML.Properties as HP
 import Halogen.HTML.Events as HE
-import Data.Abc.Parser (parse)
-import Data.Abc.Metadata (thumbnail)
-import VexFlow.Types (Config)
-import VexFlow.Score (Renderer, clearCanvas, createScore, renderScore, initialiseCanvas, resizeCanvas)
-import VexFlow.Abc.Alignment (justifiedScoreConfig, rightJustify)
+import Halogen.HTML.Properties as HP
+import Partial.Unsafe (unsafePartial)
 import TuneBank.Api.Codec.Pagination (Pagination)
 import TuneBank.Api.Codec.TunesPage (TunesPage, TuneRefArray)
 import TuneBank.Api.Request (requestTuneSearch)
 import TuneBank.Data.Genre (Genre(..), asUriComponent)
 import TuneBank.Data.Session (Session)
-import TuneBank.Data.Types (BaseURL)
 import TuneBank.Data.TuneId (TuneId(..), decodeTuneIdURIComponent)
+import TuneBank.Data.Types (BaseURL)
 import TuneBank.HTML.Utils (css, safeHref)
 import TuneBank.Navigation.Navigate (class Navigate, navigate)
 import TuneBank.Navigation.Route (Route(..))
 import TuneBank.Navigation.SearchParams (SearchParams)
 import TuneBank.Page.Utils.Environment (getBaseURL, getCorsBaseURL, getCurrentGenre)
-
-
-import Debug.Trace (spy, trace)
+import VexFlow.Abc.Alignment (justifiedScoreConfig, rightJustify)
+import VexFlow.Score (Renderer, clearCanvas, createScore, renderScore, initialiseCanvas, resizeCanvas)
+import VexFlow.Types (Config)
 
 type Slot = H.Slot Query Void
 
@@ -63,10 +62,13 @@ type ChildSlots = ()
 data Action
   = Initialize          -- initialise the TuneList Page with default values
   | GoToPage Int        -- go to results page n
-  | AddThumbnails       -- add thumbnails to this page
+  | AddThumbnails       -- add all thumbnails to this page
 
 maxPageLinks :: Int
 maxPageLinks = 10
+
+maxRowsPerPage :: Int
+maxRowsPerPage = 15
 
 scale :: Number
 scale = 0.6
@@ -155,10 +157,13 @@ component =
       HH.div
         [css "tunelist"]
         [ HH.table_ $
-          mapWithIndex f tunes
+          (mapWithIndex f tunes) <>
+          (renderPhantomRows $ length tunes)
         ]
     where
 
+      -- render the rows where we have results from the search
+      tableRow :: TuneId -> String -> Int -> H.ComponentHTML Action ChildSlots m
       tableRow tuneId dateString index =
         let
           (TuneId {title,  tuneType}) = tuneId
@@ -195,6 +200,15 @@ component =
             -}
             ]
 
+      -- render further 'phantom' rows up to the max rows per page
+      -- in order to give a regular number of rows for each page and thus
+      -- preserve canvas slots for the thumbnails
+      renderPhantomRows :: Int -> Array (H.ComponentHTML Action ChildSlots m)
+      renderPhantomRows start =
+        let
+          rows = range start maxRowsPerPage
+        in
+          map renderPhantomRow rows
 
 
   renderPagination :: Pagination -> H.ComponentHTML Action ChildSlots m
@@ -235,7 +249,7 @@ component =
         in
           map pageLink (range first last)
 
-  renderAddThumbnailsButton :: forall m. State -> H.ComponentHTML Action ChildSlots m
+  renderAddThumbnailsButton :: ∀ m. State -> H.ComponentHTML Action ChildSlots m
   renderAddThumbnailsButton state =
       HH.button
         [ HE.onClick \_ -> Just AddThumbnails
@@ -276,6 +290,7 @@ component =
 
   handleQuery :: ∀ a. Query a -> H.HalogenM State Action ChildSlots o m (Maybe a)
   handleQuery = case _ of
+    -- Fetch the results of the search for the page in question
     FetchResults next -> do
       state <- H.get
       -- live server testing only baseURL <- getCorsBaseURL
@@ -285,10 +300,10 @@ component =
       -- handleQuery (InitializeVex next)
       pure (Just next)
 
+    -- Initialization of the Vex rendere which is done on first reference.
+    -- Note, we can obly initialising after rendering the page for the first time
+    -- because only then are the canvas Div elements established
     InitializeVex next -> do
-      -- Initialization of the Vex rendere which is done on first reference.
-      -- Note, we can obly initialising after rendering the page for the first time
-      -- because only then are the canvas Div elements established
       state <- H.get
       let
         foo = spy "INITIALIZEVEX" (length state.vexRenderers)
@@ -297,21 +312,15 @@ component =
           -- already initialized
           pure (Just next)
         else do
-          case (resultRows state.searchResult) of
-            0 ->
-              -- we need some arbitrary statement here
-              H.modify_ (\st -> st { vexRenderers = state.vexRenderers } )
-            n -> do
-              -- initialise as many renderers as we have result rows
-              let
-                rows :: Array Int
-                rows = range 0 (n - 1)
-                foo = spy "SETTING NO OF RENDERERS TO " n
-              renderers <- H.liftEffect $ traverse (\r -> initialiseCanvas $ defaultVexConfig r) rows
-              H.modify_ (\st -> st { vexRenderers = renderers } )
+          let
+            rows :: Array Int
+            rows = range 0 (maxRowsPerPage - 1)
+          renderers <- H.liftEffect $ traverse (\r -> initialiseCanvas $ defaultVexConfig r) rows
+          H.modify_ (\st -> st { vexRenderers = renderers } )
           -- _ <- handleQuery (Thumbnail 0 unit)
           pure (Just next)
 
+    -- render the thumbnail at index idx
     Thumbnail idx next -> do
       let
         bazz =
@@ -394,3 +403,28 @@ resultRows = case _ of
     length tunePage.tunes
   _ ->
     0
+
+-- | if we have less than a full page of 15 rows, generate phantoms
+-- | for the rest with workable canvas references
+renderPhantomRow :: ∀ i p. Int -> HH.HTML i p
+renderPhantomRow index =
+  HH.tr
+    [ ]
+    [ HH.td
+      []
+      [ HH.text ""]
+    , HH.td
+      []
+      [ HH.text ""]
+    , HH.td
+      []
+      [ HH.text ""]
+    , HH.td
+      []
+      [ HH.div
+        [ HP.id_ ("canvas" <> show index)
+        , css "thumbnail"
+        ]
+        []
+      ]
+    ]
