@@ -53,15 +53,17 @@ type Input =
 
 -- type Query = (Const Void)
 data Query a =
-  FetchResults a
-  | InitializeVex a
-  | Thumbnail Int a
+  FetchResults a        -- Fetch a page of results
+  | InitializeVex a     -- Initialise Vex renderers on first reference
+  | Thumbnail Int a     -- Add thumbnail for row 0 (and chain through the rest)
+  | ClearThumbnails a   -- clear the thumbnails of the current page
 
 type ChildSlots = ()
 
 data Action
-  = Initialize
-  | GoToPage Int
+  = Initialize          -- initialise the TuneList Page with default values
+  | GoToPage Int        -- go to results page n
+  | AddThumbnails       -- add thumbnails to this page
 
 maxPageLinks :: Int
 maxPageLinks = 10
@@ -134,9 +136,9 @@ component =
                            <> show pagination.maxPages
                            )
                  ]
-              , renderPagination pagination
-              , HH.h5_ [ HH.text "..."]
               , renderTuneList state tunesPage.tunes
+              , renderPagination pagination
+              , renderAddThumbnailsButton state
               ]
 
   renderTuneList :: State -> TuneRefArray -> H.ComponentHTML Action ChildSlots m
@@ -233,6 +235,15 @@ component =
         in
           map pageLink (range first last)
 
+  renderAddThumbnailsButton :: forall m. State -> H.ComponentHTML Action ChildSlots m
+  renderAddThumbnailsButton state =
+      HH.button
+        [ HE.onClick \_ -> Just AddThumbnails
+        , css "hoverable"
+        , HP.enabled true
+        ]
+        [ HH.text "add thumbnails" ]
+
 
   handleAction ∷ Action -> H.HalogenM State Action ChildSlots o m Unit
   handleAction = case _ of
@@ -255,7 +266,12 @@ component =
         newSearchParams = state.searchParams { page = page}
       _ <- H.modify (\st -> st { searchParams = newSearchParams } )
       _ <- navigate $ TuneList newSearchParams
+      _ <- handleQuery (ClearThumbnails unit)
       _ <- handleQuery (FetchResults unit)
+      pure unit
+    AddThumbnails -> do
+      _ <- handleQuery (InitializeVex unit)
+      _ <- handleQuery (Thumbnail 0 unit)
       pure unit
 
   handleQuery :: ∀ a. Query a -> H.HalogenM State Action ChildSlots o m (Maybe a)
@@ -266,8 +282,7 @@ component =
       baseURL <- getBaseURL
       searchResult <- requestTuneSearch baseURL (asUriComponent state.genre) state.searchParams
       H.modify_ (\st -> st { searchResult = searchResult } )
-      _ <- handleQuery (InitializeVex unit)
-      _ <- handleQuery (Thumbnail 0 unit)
+      -- handleQuery (InitializeVex next)
       pure (Just next)
 
     InitializeVex next -> do
@@ -275,10 +290,11 @@ component =
       -- Note, we can obly initialising after rendering the page for the first time
       -- because only then are the canvas Div elements established
       state <- H.get
+      let
+        foo = spy "INITIALIZEVEX" (length state.vexRenderers)
       if (length state.vexRenderers > 0)
         then do
           -- already initialized
-          _ <- handleQuery (Thumbnail 0 unit)
           pure (Just next)
         else do
           case (resultRows state.searchResult) of
@@ -290,6 +306,7 @@ component =
               let
                 rows :: Array Int
                 rows = range 0 (n - 1)
+                foo = spy "SETTING NO OF RENDERERS TO " n
               renderers <- H.liftEffect $ traverse (\r -> initialiseCanvas $ defaultVexConfig r) rows
               H.modify_ (\st -> st { vexRenderers = renderers } )
           -- _ <- handleQuery (Thumbnail 0 unit)
@@ -324,20 +341,26 @@ component =
                     config = justifiedScoreConfig score (defaultVexConfig idx)
                   _ <- H.liftEffect $ resizeCanvas renderer config
                   _ <- H.liftEffect $ renderScore config renderer score
-                  _ <- handleQuery (Thumbnail (idx + 1) unit)
                   -- try to force a re-render after each row
                   H.modify_ (\st -> st { genre = state.genre } )
-                  pure (Just next)
-                  -- Thumbnail (index + 1) next
-                _ -> do
+                  handleQuery (Thumbnail (idx + 1) next)
+                (Tuple (Right _) Nothing)  -> do
                   let
                     baz =
-                      spy "no renderer or tuneRef not parsed for index: " idx
+                      spy "no renderer for index: " idx
+                  handleQuery (Thumbnail (idx + 1) next)
+                (Tuple (Left _) _)  -> do
+                  let
+                    baz =
+                      spy "tuneRef not parsed for index: " idx
                     baz1 =
                         spy "abc: " tuneRef.abc
-                  _ <- handleQuery (Thumbnail (idx + 1) unit)
-                  pure (Just next)
+                  handleQuery (Thumbnail (idx + 1) next)
 
+    ClearThumbnails next -> do
+      state <- H.get
+      _ <- H.liftEffect $ traverse (clearCanvas) state.vexRenderers
+      pure (Just next)
 
 paginationItem
   :: ∀ m.
