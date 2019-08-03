@@ -236,7 +236,9 @@ component =
       [ HH.ul
           [ css "pagination"]
           ( [ renderFirstPage  ] <>
+            [ renderPrevPage  ] <>
               renderNumberedPageLinks  <>
+            [ renderNextPage  ] <>
             [ renderLastPage  ]
           )
       ]
@@ -255,6 +257,20 @@ component =
             [ HH.text "last" ]
           else
             HH.text ""
+
+      renderPrevPage  =
+        if (pagination.page > 1) then
+          paginationItem (pagination.page -1) pagination.page
+            [ HH.text "prev" ]
+        else
+          HH.text ""
+
+      renderNextPage  =
+        if (pagination.page < pagination.maxPages) then
+          paginationItem (pagination.page + 1) pagination.page
+            [ HH.text "next" ]
+        else
+          HH.text ""
 
       renderNumberedPageLinks  =
         let
