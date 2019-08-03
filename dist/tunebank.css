@@ -510,9 +510,8 @@ table.textalign tr td  {
 }
 
 .thumbnail {
-  height: 60px;
   overflow: hidden;
-  /* border: 1px solid deeppink; */
+	/* outline: black 3px solid; */
 }
 
 .thumbnail > div {

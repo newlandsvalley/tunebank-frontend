@@ -79,10 +79,11 @@ canvasWidth =
 
 defaultVexConfig :: Int -> Config
 defaultVexConfig index =
-  { canvasDivId : ("canvas" <> show index)
-  , canvasWidth : canvasWidth
-  , canvasHeight : 70
+  { parentElementId : ("canvas" <> show index)
+  , width : canvasWidth
+  , height : 70
   , scale : scale
+  , isSVG : true      -- only use Canvas backends for debug
   }
 
 component
@@ -193,6 +194,15 @@ component =
                 ]
                 []
               ]
+              {-}
+              [ HH.canvas
+                [ HP.id_ ("canvas" <> show index)
+                , css "thumbnail"
+                , HP.height 10
+                , HP.width 500
+                ]
+              ]
+              -}
             {-}
             , HH.td
               []
@@ -205,10 +215,14 @@ component =
       -- preserve canvas slots for the thumbnails
       renderPhantomRows :: Int -> Array (H.ComponentHTML Action ChildSlots m)
       renderPhantomRows start =
-        let
-          rows = range start maxRowsPerPage
-        in
-          map renderPhantomRow rows
+        if
+          start >= (maxRowsPerPage -1 ) then
+            []
+        else
+          let
+            rows = range start (maxRowsPerPage -1)
+          in
+            map renderPhantomRow rows
 
 
   renderPagination :: Pagination -> H.ComponentHTML Action ChildSlots m
@@ -427,4 +441,13 @@ renderPhantomRow index =
         ]
         []
       ]
+      {-
+      [ HH.canvas
+        [ HP.id_ ("canvas" <> show index)
+        , css "thumbnail"
+        , HP.height 10
+        , HP.width 500
+        ]
+      ]
+      -}
     ]
