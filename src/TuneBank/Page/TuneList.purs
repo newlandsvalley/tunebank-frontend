@@ -13,8 +13,10 @@ import Data.Maybe (Maybe(..), maybe)
 import Data.Monoid (guard)
 import Data.Time.Duration (Milliseconds(..))
 import Data.Traversable (traverse)
+import Data.TraversableWithIndex (traverseWithIndex)
 import Data.Tuple (Tuple(..))
 import Debug.Trace (spy, trace)
+import Effect (Effect)
 import Effect.Aff.Class (class MonadAff)
 import Global (readFloat)
 import Halogen as H
@@ -75,13 +77,16 @@ scale = 0.6
 
 canvasWidth :: Int
 canvasWidth =
-  900
+  500
 
-defaultVexConfig :: Int -> Config
-defaultVexConfig index =
+-- The default config for each thumbnail image via Vexflow
+-- This is an initial config with a small height which is
+-- overridden when the image is justified to its actual dimensions
+defaultThumbnailConfig :: Int -> Config
+defaultThumbnailConfig index =
   { parentElementId : ("canvas" <> show index)
   , width : canvasWidth
-  , height : 70
+  , height : 10       -- set to a small value so we can reduce to this between pages
   , scale : scale
   , isSVG : true      -- only use Canvas backends for debug
   }
@@ -329,7 +334,7 @@ component =
           let
             rows :: Array Int
             rows = range 0 (maxRowsPerPage - 1)
-          renderers <- H.liftEffect $ traverse (\r -> initialiseCanvas $ defaultVexConfig r) rows
+          renderers <- H.liftEffect $ traverse (\r -> initialiseCanvas $ defaultThumbnailConfig r) rows
           H.modify_ (\st -> st { vexRenderers = renderers } )
           -- _ <- handleQuery (Thumbnail 0 unit)
           pure (Just next)
@@ -359,9 +364,9 @@ component =
                   let
                     foo =
                       spy "rendering thumbnail for" idx
-                    unjustifiedScore = createScore (defaultVexConfig idx) (thumbnail abcTune)
+                    unjustifiedScore = createScore (defaultThumbnailConfig idx) (thumbnail abcTune)
                     score = rightJustify canvasWidth scale unjustifiedScore
-                    config = justifiedScoreConfig score (defaultVexConfig idx)
+                    config = justifiedScoreConfig score (defaultThumbnailConfig idx)
                   _ <- H.liftEffect $ resizeCanvas renderer config
                   _ <- H.liftEffect $ renderScore config renderer score
                   -- try to force a re-render after each row
@@ -382,6 +387,10 @@ component =
 
     ClearThumbnails next -> do
       state <- H.get
+      let
+        f :: Int -> Renderer -> Effect Unit
+        f i renderer = resizeCanvas renderer (defaultThumbnailConfig i)
+      _ <- H.liftEffect $ traverseWithIndex f state.vexRenderers
       _ <- H.liftEffect $ traverse (clearCanvas) state.vexRenderers
       pure (Just next)
 
