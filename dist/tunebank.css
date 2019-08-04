@@ -244,7 +244,7 @@ label {
   text-align: right;
   width: 100px;
   vertical-align: top;
-	font-size: 1em;
+	font-size: 1.25em;
 	margin-top: 8px; /* match with select (dropdown) */
 }
 
@@ -258,7 +258,7 @@ legend {
   -moz-box-shadow: 3px 3px 3px #ccc;
   -webkit-box-shadow: 3px 3px 3px #ccc;
   box-shadow: 3px 3px 3px #ccc;
-  font-size: 1em;
+  font-size: 1.25em;
   padding: 0.3em 1em;
 }
 
@@ -271,21 +271,28 @@ input[type="text"] {
   background: #f3f6c6;
 	width: 200px;
 	margin-top: 8px;   /* match with label */
+  font-size: 1.25em;
 }
 
 input[type="textarea"] {
-		background: #f3f6c6;
+	background: #f3f6c6;
 }
 
 /* select dropdown on forms */
 select {
    background-color: #cccc99;
 	 margin-top: 8px;   /* match with label */
+   font-size: 1.25em;
 }
 
 /* the upload file button */
-.uploadselectfile label {
-	width: 500px;
+#uploadselectfile label {
+	width: 150px;
+}
+
+/* the upload file button */
+#uploadform div p {
+	font-size: 1.25em;
 }
 
 /* the submit (and other) buttons */
@@ -308,6 +315,7 @@ input[type='submit'] {
 
 /* individual forms */
 #loginform,
+#registrationform,
 #searchform {
   width: 400px;
   text-align: middle;
