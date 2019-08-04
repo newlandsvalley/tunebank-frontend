@@ -2,9 +2,12 @@ module TuneBank.Data.Types
   ( LogLevel(..)
   , BaseURL(..)
   , Env
+  , Validated
   ) where
 
 import Prelude
+import Data.List.Types (NonEmptyList)
+import Data.Validation.Semigroup
 import TuneBank.Data.Session (Session)
 
 -- | A flag to control the environment for logging messages.
@@ -25,3 +28,6 @@ type Env =
   , baseURL :: BaseURL
   , session :: Session
   }
+
+-- | a validated item on a form
+type Validated a = V (NonEmptyList String) a

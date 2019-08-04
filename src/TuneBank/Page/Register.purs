@@ -4,12 +4,17 @@ import Affjax.RequestBody (RequestBody(..))
 import Data.Const (Const)
 import Data.Either (Either(..), either)
 import Data.Maybe (Maybe(..))
+import Data.Foldable (foldl)
+import Data.String (contains, length)
+import Data.String.Pattern (Pattern(..))
 import Effect.Aff.Class (class MonadAff)
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
-import Prelude (Unit, Void, ($), (<<<), (<>), bind, discard, pure, unit)
+import Data.Validation.Semigroup
+import Prelude (Unit, Void, ($), (<<<), (<>), (<), (/=), (<$>), (<*>), bind, discard, pure, unit)
+import TuneBank.Data.Types (Validated)
 import TuneBank.Data.Session (Session)
 import TuneBank.HTML.Utils (css)
 import TuneBank.Navigation.Route (Route(..))
@@ -29,6 +34,7 @@ type State =
   { submission :: Submission
   , confirmationPassword :: String
   , userRegisterResult :: Either String String
+  , errorText :: String
   }
 
 type Query = (Const Void)
@@ -69,6 +75,7 @@ component =
       { submission
       , confirmationPassword : ""
       , userRegisterResult : Left "not registered"
+      , errorText : ""
       }
 
   render :: State -> H.ComponentHTML Action ChildSlots m
@@ -156,13 +163,16 @@ component =
 
   renderRegisterError ::  State -> H.ComponentHTML Action ChildSlots m
   renderRegisterError state =
+    HH.div_
+      [
+        HH.text state.errorText
+      ]
+
+    {-
     let
       errorText = either (\x -> ("registration failed " <> x)) (\_ -> "registration OK") state.userRegisterResult
     in
-      HH.div_
-        [
-          HH.text errorText
-        ]
+    -}
 
   handleAction ∷ Action -> H.HalogenM State Action ChildSlots o m Unit
   handleAction = case _ of
@@ -186,4 +196,42 @@ component =
     HandlePasswordConfirmation password -> do
       H.modify_ (\st -> st { confirmationPassword = password } )
     RegisterUser -> do
+      state <- H.get
+      let
+        validated = validate state.submission state.confirmationPassword
+        newState = unV
+                    (\errs -> state { errorText = foldl (<>) "" errs})
+                    (\submission -> state {submission = submission, errorText = ""} )
+                    validated
+      _ <- H.put newState
       pure unit
+
+
+-- validation
+validate :: Submission -> String -> Validated Submission
+validate submission confirmationPassword =
+  { name : _, email : _, password : _ }
+  <$> validateName submission.name
+  <*> validateEmail submission.email
+  <*> validatePassword submission.password confirmationPassword
+
+validateName :: String -> Validated String
+validateName name =
+  if (0 < length name) then
+    pure name
+  else
+    invalid $ pure ("Invalid name. ")
+
+validatePassword :: String -> String -> Validated String
+validatePassword password confirmationPassword =
+  if (password /= confirmationPassword ) then
+    invalid $ pure ("Passwords don't match. ")
+  else
+    pure password
+
+validateEmail :: String -> Validated String
+validateEmail email =
+  if (contains (Pattern "@") email) then
+    pure email
+  else
+    invalid $ pure ("Invalid email. ")
