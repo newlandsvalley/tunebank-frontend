@@ -1,15 +1,14 @@
 module TuneBank.Api.Request where
 
 import Prelude
-import Affjax (Request, printResponseFormatError, request)
+import Affjax (Request, Response, printResponseFormatError, request)
 import Affjax.RequestHeader (RequestHeader(..))
 import Affjax.RequestBody (formURLEncoded)
 import Affjax.ResponseHeader (ResponseHeader, name, value)
 import Affjax.ResponseFormat as RF
-import Affjax.StatusCode (StatusCode(..))
 import Data.FormURLEncoded (FormURLEncoded, fromArray) as FUE
 import Effect.Aff.Class (class MonadAff)
-import Effect.Aff (try)
+import Effect.Aff (Aff, try)
 import Halogen as H
 import Data.Either (Either(..), isLeft)
 import Data.Maybe (Maybe(..), fromMaybe)
@@ -220,41 +219,34 @@ requestCommentsStr baseUrl genre tuneId = do
     commentsPage = (lmap printResponseFormatError res.body)
   pure $ commentsPage
 
+
 postTune :: forall m. MonadAff m => String -> BaseURL -> Genre -> Credentials -> m (Either String String)
 postTune tuneAbc baseUrl genre credentials =
   H.liftAff do
     let
       formData = FUE.fromArray [ Tuple "abc"  (Just tuneAbc)]
-    res1 <- try $ request $ defaultPostRequest baseUrl (Just credentials) formData (NewTune genre)
-    case res1 of
-      Left err ->
-        pure $ Left $ show err
-      Right res -> do
-        case res.body of
-          Left err ->
-            pure $ Left $ printResponseFormatError err
-          Right str ->
-            if (res.status == StatusCode 200)
-              then pure $ Right str
-              else pure $ Left str
+    res <- tryRequest $ defaultPostRequest baseUrl (Just credentials) formData (NewTune genre)
+    pure res
 
 postNewUser :: forall m. MonadAff m => Register.Submission -> BaseURL -> m (Either String String)
 postNewUser submission baseUrl =
   H.liftAff do
     let
       formData = Register.encodeFormData submission
-    res1 <- try $ request $ defaultPostRequest baseUrl Nothing formData Register
-    case res1 of
-      Left err ->
-        pure $ Left $ show err
-      Right res -> do
-        case res.body of
-          Left err ->
-            pure $ Left $ printResponseFormatError err
-          Right str ->
-            if (res.status == StatusCode 200)
-              then pure $ Right str
-              else pure $ Left str
+    res <- tryRequest $ defaultPostRequest baseUrl Nothing formData Register
+    pure res
+
+-- | The default manner of attempting a request. All errors will be collected
+-- | in Left String, irrespective of whether they emanate from bad HTTP responses
+-- | or formatting errors.
+tryRequest :: ∀ a m. MonadAff m => Request a -> m (Either String a)
+tryRequest r = H.liftAff do
+  res1 <- try $ request r
+  case res1 of
+    Left err1 ->
+      pure $ Left $ show err1
+    Right res -> do
+      pure $ lmap printResponseFormatError res.body
 
 
 getPagination :: Array ResponseHeader-> Pagination
