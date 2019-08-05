@@ -11,7 +11,7 @@ import Data.FormURLEncoded (FormURLEncoded, fromArray) as FUE
 import Effect.Aff.Class (class MonadAff)
 import Effect.Aff (try)
 import Halogen as H
-import Data.Either (Either(..), either, isLeft)
+import Data.Either (Either(..), isLeft)
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Array (fromFoldable, head, filter)
 import Data.Tuple (Tuple(..))
@@ -34,7 +34,7 @@ import TuneBank.Api.Codec.UsersPage (UsersPage, decodeUsersPage)
 import TuneBank.Api.Codec.Tune (TuneMetadata, fixJson, decodeTune)
 import TuneBank.Api.Codec.Comments (Comments, decodeComments)
 import TuneBank.Api.Codec.Pagination (Pagination, defaultPagination, decodePagination)
-import TuneBank.Api.Codec.Register ( Submission, defaultSubmission, encodeFormData ) as Register
+import TuneBank.Api.Codec.Register ( Submission, encodeFormData ) as Register
 import TuneBank.Authorization.BasicAuth (authorizationHeader)
 import TuneBank.BugFix.Backend (fixSearchParams)
 
@@ -170,24 +170,31 @@ requestUsers baseUrl mCredentials pageParams = do
 
 checkUser :: forall m. MonadAff m => BaseURL -> Credentials-> m (Either String String)
 checkUser baseUrl credentials = do
-  res <- H.liftAff $ request $ defaultStringGetRequest baseUrl (Just credentials) UserCheck (MediaType "text/plain; charset=UTF-8")
-  let
-    response = (lmap printResponseFormatError res.body)
-    foo = spy "status text" res.statusText
-    bar = spy "status code" res.status
-    baz = spy "is left" (isLeft res.body)
-    bozo = spy "body" res.body
-  pure $ response
+  res1 <- H.liftAff $ try $ request $ defaultStringGetRequest baseUrl (Just credentials) UserCheck (MediaType "text/plain; charset=UTF-8")
+  case res1 of
+    Left err ->
+      pure $ Left $ show err
+    Right res -> do
+      let
+        response = (lmap printResponseFormatError res.body)
+        foo = spy "status text" res.statusText
+        bar = spy "status code" res.status
+        baz = spy "is left" (isLeft res.body)
+        bozo = spy "body" res.body
+      pure $ response
 
 
 requestComments :: forall m. MonadAff m => BaseURL -> Genre -> TuneId -> m (Either String Comments)
 requestComments baseUrl genre tuneId = do
-  res <- H.liftAff $ request $ defaultJsonGetRequest baseUrl Nothing (Comments genre tuneId)
-  let
-    comments = (lmap printResponseFormatError res.body)
-      >>= decodeComments
-  pure $ comments
-
+  res1 <- H.liftAff $ try $ request $ defaultJsonGetRequest baseUrl Nothing (Comments genre tuneId)
+  case res1 of
+    Left err ->
+      pure $ Left $ show err
+    Right res -> do
+      let
+        comments = (lmap printResponseFormatError res.body)
+          >>= decodeComments
+      pure $ comments
 
 
 {-
@@ -218,28 +225,36 @@ postTune tuneAbc baseUrl genre credentials =
   H.liftAff do
     let
       formData = FUE.fromArray [ Tuple "abc"  (Just tuneAbc)]
-    res <- request $ defaultPostRequest baseUrl (Just credentials) formData (NewTune genre)
-    case res.body of
+    res1 <- try $ request $ defaultPostRequest baseUrl (Just credentials) formData (NewTune genre)
+    case res1 of
       Left err ->
-        pure $ Left $ printResponseFormatError err
-      Right str ->
-        if (res.status == StatusCode 200)
-          then pure $ Right str
-          else pure $ Left str
+        pure $ Left $ show err
+      Right res -> do
+        case res.body of
+          Left err ->
+            pure $ Left $ printResponseFormatError err
+          Right str ->
+            if (res.status == StatusCode 200)
+              then pure $ Right str
+              else pure $ Left str
 
 postNewUser :: forall m. MonadAff m => Register.Submission -> BaseURL -> m (Either String String)
 postNewUser submission baseUrl =
   H.liftAff do
     let
       formData = Register.encodeFormData submission
-    res <- request $ defaultPostRequest baseUrl Nothing formData Register
-    case res.body of
+    res1 <- try $ request $ defaultPostRequest baseUrl Nothing formData Register
+    case res1 of
       Left err ->
-        pure $ Left $ printResponseFormatError err
-      Right str ->
-        if (res.status == StatusCode 200)
-          then pure $ Right str
-          else pure $ Left str
+        pure $ Left $ show err
+      Right res -> do
+        case res.body of
+          Left err ->
+            pure $ Left $ printResponseFormatError err
+          Right str ->
+            if (res.status == StatusCode 200)
+              then pure $ Right str
+              else pure $ Left str
 
 
 getPagination :: Array ResponseHeader-> Pagination
