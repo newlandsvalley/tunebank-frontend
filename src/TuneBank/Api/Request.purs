@@ -34,6 +34,7 @@ import TuneBank.Api.Codec.UsersPage (UsersPage, decodeUsersPage)
 import TuneBank.Api.Codec.Tune (TuneMetadata, fixJson, decodeTune)
 import TuneBank.Api.Codec.Comments (Comments, decodeComments)
 import TuneBank.Api.Codec.Pagination (Pagination, defaultPagination, decodePagination)
+import TuneBank.Api.Codec.Register ( Submission, defaultSubmission, encodeFormData ) as Register
 import TuneBank.Authorization.BasicAuth (authorizationHeader)
 import TuneBank.BugFix.Backend (fixSearchParams)
 
@@ -225,6 +226,21 @@ postTune tuneAbc baseUrl genre credentials =
         if (res.status == StatusCode 200)
           then pure $ Right str
           else pure $ Left str
+
+postNewUser :: forall m. MonadAff m => Register.Submission -> BaseURL -> m (Either String String)
+postNewUser submission baseUrl =
+  H.liftAff do
+    let
+      formData = Register.encodeFormData submission
+    res <- request $ defaultPostRequest baseUrl Nothing formData Register
+    case res.body of
+      Left err ->
+        pure $ Left $ printResponseFormatError err
+      Right str ->
+        if (res.status == StatusCode 200)
+          then pure $ Right str
+          else pure $ Left str
+
 
 getPagination :: Array ResponseHeader-> Pagination
 getPagination headers =

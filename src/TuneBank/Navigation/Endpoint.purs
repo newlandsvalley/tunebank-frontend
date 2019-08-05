@@ -55,7 +55,7 @@ endpointCodec = root $ sum
        , sort : string }
   , "Users": "user" ? { page: int }
   , "UserCheck": "user" / "check" / noArgs
-  , "Register": "register" / noArgs
+  , "Register": "user" / noArgs
   , "Tune": "genre" /  (genre segment) / "tune" / (tuneId segment)
   , "NewTune": "genre" / (genre segment) / "tune"
   , "Comments": "genre" / (genre segment) / "tune" / (tuneId segment) / "comments"
