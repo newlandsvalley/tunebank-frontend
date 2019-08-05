@@ -16,7 +16,7 @@ import TuneBank.Api.Request (checkUser)
 import TuneBank.Data.Credentials (Credentials, Role(..), blankCredentials)
 import TuneBank.Data.Session (Session)
 import TuneBank.Data.Types (BaseURL)
-import TuneBank.HTML.Utils (css)
+import TuneBank.HTML.Utils (css, safeHref)
 import TuneBank.Navigation.Navigate (class Navigate, navigate)
 import TuneBank.Navigation.Route (Route(..))
 import TuneBank.Page.Utils.Environment (getBaseURL, getUser)
@@ -85,6 +85,7 @@ component =
             , renderLoginOutButton  state.currentUser
             ]
           , renderLoginError state
+          , renderLinks
           ]
       Just cred ->
         HH.div_
@@ -144,6 +145,12 @@ component =
         [
           HH.text errorText
         ]
+
+  renderLinks ::  H.ComponentHTML Action ChildSlots m
+  renderLinks =
+    HH.a
+      [ safeHref Register ]
+      [ HH.text "register"]
 
   handleAction ∷ Action -> H.HalogenM State Action ChildSlots o m Unit
   handleAction = case _ of

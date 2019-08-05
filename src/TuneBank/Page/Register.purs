@@ -1,37 +1,37 @@
 module TuneBank.Page.Register where
 
-import Affjax.RequestBody (RequestBody(..))
+import Prelude
+
+import Control.Monad.Reader (class MonadAsk)
 import Data.Const (Const)
 import Data.Either (Either(..), either)
-import Data.Maybe (Maybe(..))
 import Data.Foldable (foldl)
-import Data.String.Common (null)
+import Data.Maybe (Maybe(..))
 import Data.String (contains, length)
+import Data.String.Common (null)
 import Data.String.Pattern (Pattern(..))
+import Data.Validation.Semigroup (invalid, unV)
 import Effect.Aff.Class (class MonadAff)
-import TuneBank.Navigation.Navigate (class Navigate, navigate)
-import Control.Monad.Reader (class MonadAsk)
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
-import Data.Validation.Semigroup (invalid, unV)
-import Prelude
-import TuneBank.Data.Types (Validated, BaseURL)
-import TuneBank.Data.Session (Session)
-import TuneBank.HTML.Utils (css)
-import TuneBank.Page.Utils.Environment (getBaseURL)
-import TuneBank.Api.Codec.Utils (containsDigit)
 import TuneBank.Api.Codec.Register (Submission, defaultSubmission)
+import TuneBank.Api.Codec.Utils (containsDigit)
 import TuneBank.Api.Request (postNewUser)
+import TuneBank.Data.Session (Session)
+import TuneBank.Data.Types (Validated, BaseURL)
+import TuneBank.HTML.Utils (css)
+import TuneBank.Navigation.Navigate (class Navigate)
+import TuneBank.Page.Utils.Environment (getBaseURL)
 
 -- type Slot = H.Slot Query Void
 type Slot = H.Slot (Const Void) Void
 
 type State =
   { submission :: Submission
-  , userRegisterResult :: Either String String
-  , errorText :: String
+  , userRegisterResult :: Either String String  -- result from server
+  , errorText :: String                         -- validation errors
   }
 
 type Query = (Const Void)
@@ -157,7 +157,12 @@ component =
   renderRegisterError ::  State -> H.ComponentHTML Action ChildSlots m
   renderRegisterError state =
     let
-      registrationText = either identity identity state.userRegisterResult
+      registrationOK :: String -> String
+      registrationOK msg =
+          msg <>
+            "-- the last part of the registration process is to reply to an" <>
+            " email confirmation message that has been sent to you."
+      registrationText = either identity registrationOK state.userRegisterResult
     in
       HH.div_
         [
@@ -192,11 +197,15 @@ component =
     RegisterUser -> do
       state <- H.get
       baseURL <- getBaseURL
+      -- reset any previous error text
+      H.modify_ (\st -> st { userRegisterResult = Left "" } )
       let
         validated = validate state.submission
         newState = unV
                     (\errs -> state { errorText = foldl (<>) "" errs})
-                    (\submission -> state {submission = submission, errorText = ""} )
+                    (\submission -> state {submission = submission
+                                          , errorText = ""
+                                          , userRegisterResult = Left ""} )
                     validated
 
       if (null newState.errorText)
