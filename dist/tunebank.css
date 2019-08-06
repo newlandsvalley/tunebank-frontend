@@ -26,6 +26,10 @@ h2 {
 	margin-bottom: .50em;
 }
 
+.center {
+	text-align: center;
+}
+
 /* Site Nav - the upper navigation bar */
 
 /* Banner Navigation in the first masthead line */
@@ -274,8 +278,12 @@ input[type="text"] {
   font-size: 1.25em;
 }
 
-input[type="textarea"] {
+/* comment textarea */
+.textinput-div textarea {
+	padding: 2px 3px;
 	background: #f3f6c6;
+	margin-top: 8px;   /* match with label */
+  font-size: 1.25em;
 }
 
 /* select dropdown on forms */
@@ -325,6 +333,13 @@ input[type='submit'] {
 
 #uploadform {
   width: 400px;
+  text-align: middle;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#commentform {
+  width: 650px;
   text-align: middle;
   margin-left: auto;
   margin-right: auto;

@@ -104,6 +104,7 @@ component =
         , renderError state
         ]
       ]
+      
   handleAction ∷ Action -> H.HalogenM State Action ChildSlots o m Unit
   handleAction = case _ of
     Initialize -> do

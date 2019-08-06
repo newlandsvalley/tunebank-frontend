@@ -32,6 +32,7 @@ import TuneBank.Api.Codec.TunesPage (TunesPage, decodeTunesPage)
 import TuneBank.Api.Codec.UsersPage (UsersPage, decodeUsersPage)
 import TuneBank.Api.Codec.Tune (TuneMetadata, fixJson, decodeTune)
 import TuneBank.Api.Codec.Comments (Comments, decodeComments)
+import TuneBank.Api.Codec.Comments (Submission, encodeFormData) as Comments
 import TuneBank.Api.Codec.Pagination (Pagination, defaultPagination, decodePagination)
 import TuneBank.Api.Codec.Register ( Submission, encodeFormData ) as Register
 import TuneBank.Authorization.BasicAuth (authorizationHeader)
@@ -234,6 +235,14 @@ postNewUser submission baseUrl =
     let
       formData = Register.encodeFormData submission
     res <- tryRequest $ defaultPostRequest baseUrl Nothing formData Register
+    pure res
+
+postComment :: forall m. MonadAff m => BaseURL -> Genre -> TuneId -> Comments.Submission -> Credentials -> m (Either String String)
+postComment baseUrl genre tuneId submission credentials =
+  H.liftAff do
+    let
+      formData = Comments.encodeFormData submission
+    res <- tryRequest $ defaultPostRequest baseUrl (Just credentials) formData (Comments genre tuneId)
     pure res
 
 -- | The default manner of attempting a request. All errors will be collected

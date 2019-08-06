@@ -20,14 +20,16 @@ import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
 import Halogen.PlayerComponent as PC
 import Html.Parser.Halogen as PH
-import Prelude (Unit, Void, ($), (<>), (<<<), (>>=), (==), bind, const, identity, map, pure, show, unit)
+import Prelude (Unit, Void, ($), (<>), (<<<), (>>=), bind, const, identity, map, pure, show, unit)
 import TuneBank.Api.Codec.Tune (TuneMetadata, nullTuneMetadata)
 import TuneBank.Api.Request (requestTune, requestComments)
 import TuneBank.Data.Credentials (Credentials)
 import TuneBank.Data.Genre (Genre, asUriComponent)
 import TuneBank.Data.Session (Session)
 import TuneBank.Data.TuneId (TuneId(..), encodeTuneIdURIComponent)
+import TuneBank.Navigation.Route (Route(..))
 import TuneBank.Data.Types (BaseURL(..))
+import TuneBank.HTML.Utils (css, safeHref)
 import TuneBank.Navigation.Navigate (class Navigate)
 import TuneBank.Api.Codec.Comments (Comments, Comment)
 import TuneBank.Page.Utils.Environment (getBaseURL, getInstruments, getUser)
@@ -161,6 +163,7 @@ component =
             ]
             [ HH.text "midi"]
          ]
+         , renderAddComment state
       ]
 
   renderTuneSubmitter :: State -> H.ComponentHTML Action ChildSlots m
@@ -173,6 +176,21 @@ component =
       , HH.dd
         []
         [ HH.text state.tuneMetadata.submitter ]
+      ]
+
+  renderAddComment :: State -> H.ComponentHTML Action ChildSlots m
+  renderAddComment state =
+    HH.div_
+      [
+      HH.dt
+        []
+        [ HH.text "tune" ]
+      , HH.dd
+        []
+        [ HH.a
+           [ safeHref $ Comment state.genre state.tuneId ]
+           [ HH.text "add comment"]
+        ]
       ]
 
   renderPlayer ::  State -> H.ComponentHTML Action ChildSlots m

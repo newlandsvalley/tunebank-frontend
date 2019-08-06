@@ -22,6 +22,7 @@ import TuneBank.Page.Upload as Upload
 import TuneBank.Page.UserList as UserList
 import TuneBank.Page.Tune as Tune
 import TuneBank.Page.TuneList as TuneList
+import TuneBank.Page.Comment as Comment
 import TuneBank.Data.Session (Session)
 import TuneBank.Data.Types (BaseURL)
 import TuneBank.Data.Genre (Genre(..))
@@ -64,6 +65,7 @@ type ChildSlots =
   , userlist :: UserList.Slot Unit
   , tune :: Tune.Slot Unit
   , tunelist :: TuneList.Slot Unit
+  , comment :: Comment.Slot Unit
   )
 
 component ::
@@ -143,6 +145,8 @@ component =
             HH.slot (SProxy :: _ "tune") unit Tune.component { genre, tuneId } absurd
           TuneList searchParams ->
             HH.slot (SProxy :: _ "tunelist") unit TuneList.component { searchParams } absurd
+          Comment genre tuneId  ->
+            HH.slot (SProxy :: _ "comment") unit Comment.component { genre, tuneId } absurd
           About ->
             about
           Credits ->
