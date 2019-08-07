@@ -5,9 +5,10 @@ import Prelude
 import Control.Monad.Reader (class MonadAsk)
 import Data.Const (Const)
 import Data.Either (Either(..), either)
-import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe(..), isNothing)
 import Data.String (length)
 import Effect.Aff.Class (class MonadAff)
+import Effect.Now (now)
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
@@ -21,7 +22,9 @@ import TuneBank.Data.TuneId (TuneId(..))
 import TuneBank.Data.Types (BaseURL(..))
 import TuneBank.HTML.Utils (css)
 import TuneBank.Navigation.Navigate (class Navigate)
-import TuneBank.Page.Utils.Environment (getBaseURL, getInstruments, getUser)
+import TuneBank.Page.Utils.Environment (getBaseURL, getUser)
+
+import Debug.Trace (spy, trace, traceM)
 
 -- type Slot = H.Slot Query Void
 type Slot = H.Slot (Const Void) Void
@@ -33,7 +36,6 @@ type State =
   , baseURL :: BaseURL
   , submission :: Submission
   , submitCommentResult :: Either String String  -- result from server
-  , errorText :: String                          -- validation errors
   }
 
 type Query = (Const Void)
@@ -77,12 +79,18 @@ component =
     , baseURL : BaseURL ""
     , submission : defaultSubmission
     , submitCommentResult : Left ""
-    , errorText : ""
     }
 
   render :: State -> H.ComponentHTML Action ChildSlots m
   render state =
-    renderForm state
+    if (isNothing state.currentUser) then
+      HH.div_
+       [ HH.form
+         [ HP.id_ "commentform" ]
+         [ HH.text "you must log in before submitting comments"]
+       ]
+    else
+      renderForm state
 
   renderForm :: State -> H.ComponentHTML Action ChildSlots m
   renderForm state =
@@ -97,13 +105,13 @@ component =
            [ HP.id_ "commentform" ]
            [ HH.fieldset
              []
-             [ HH.legend_ [HH.text "Edit Comment"]
+             [ HH.legend_ [HH.text "Comment"]
              , renderSubject state
              , renderText state
              , renderAdvisoryText state
              , renderSubmitButton state
              ]
-           , renderRegisterError state
+           , renderSubmissionError state
            ]
         ]
 
@@ -172,24 +180,23 @@ component =
       enabled =
         (length state.submission.subject > 0)  &&
         (length state.submission.text > 0)
+      className =
+        if enabled then "hoverable" else "unhoverable"
     in
       HH.button
         [ HE.onClick \_ -> Just SubmitComment
-        , css "hoverable"
+        , css className
         , HP.enabled enabled
         ]
         [ HH.text "submit comment" ]
 
-  renderRegisterError ::  State -> H.ComponentHTML Action ChildSlots m
-  renderRegisterError state =
+  renderSubmissionError ::  State -> H.ComponentHTML Action ChildSlots m
+  renderSubmissionError state =
     let
       submissionText = either identity identity state.submitCommentResult
     in
       HH.div_
-        [
-          HH.text state.errorText
-        , HH.text submissionText
-        ]
+        [ HH.text submissionText ]
 
   handleAction ∷ Action -> H.HalogenM State Action ChildSlots o m Unit
   handleAction = case _ of
@@ -213,27 +220,17 @@ component =
         newSubmission = state.submission { text = text }
       H.modify_ (\st -> st { submission = newSubmission } )
     SubmitComment -> do
-      {-}
       state <- H.get
-      baseURL <- getBaseURL
-      -- reset any previous error text
-      H.modify_ (\st -> st { userRegisterResult = Left "" } )
-      let
-        validated = validate state.submission
-        newState = unV
-                    (\errs -> state { errorText = foldl (<>) "" errs})
-                    (\submission -> state {submission = submission
-                                          , errorText = ""
-                                          , userRegisterResult = Left ""} )
-                    validated
-
-      if (null newState.errorText)
-        then do
-          userRegisterResult <- postNewUser newState.submission baseURL
-          _ <- H.put newState { userRegisterResult = userRegisterResult }
+      case state.currentUser of
+        Nothing ->
           pure unit
-        else do
-          _ <- H.put newState
-          pure unit
-      -}
-      pure unit
+        Just credentials -> do
+          baseURL <- getBaseURL
+          instant <- H.liftEffect now
+          let
+            submission = state.submission {
+                user = credentials.user
+              , timestamp = show instant
+              }
+          submitCommentResult <- H.liftAff $ postComment baseURL state.genre state.tuneId submission credentials
+          H.modify_ (\st -> st { submitCommentResult = submitCommentResult } )
