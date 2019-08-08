@@ -8,17 +8,17 @@ import Data.Either (Either(..), either)
 import Data.Maybe (Maybe(..), isNothing)
 import Data.String (length)
 import Effect.Aff.Class (class MonadAff)
-import Effect.Now (now)
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
-import TuneBank.Api.Codec.Comments (Submission, defaultSubmission)
+import TuneBank.Api.Codec.Comments (Comment, defaultComment)
 import TuneBank.Api.Request (postComment)
 import TuneBank.Data.Credentials (Credentials)
 import TuneBank.Data.Genre (Genre)
 import TuneBank.Data.Session (Session)
 import TuneBank.Data.TuneId (TuneId(..))
+import TuneBank.Data.CommentId (CommentId, fromNow)
 import TuneBank.Data.Types (BaseURL(..))
 import TuneBank.HTML.Utils (css)
 import TuneBank.Navigation.Navigate (class Navigate, navigate)
@@ -35,7 +35,7 @@ type State =
   , currentUser :: Maybe Credentials
   , tuneId :: TuneId
   , baseURL :: BaseURL
-  , submission :: Submission
+  , submission :: Comment
   , submitCommentResult :: Either String String  -- result from server
   }
 
@@ -44,6 +44,7 @@ type Query = (Const Void)
 type Input =
   { genre :: Genre
   , tuneId :: TuneId
+  , cid :: Maybe CommentId
   }
 
 type ChildSlots = ()
@@ -78,7 +79,7 @@ component =
     , currentUser : Nothing
     , tuneId : input.tuneId
     , baseURL : BaseURL ""
-    , submission : defaultSubmission
+    , submission : defaultComment
     , submitCommentResult : Left ""
     }
 
@@ -227,11 +228,11 @@ component =
           pure unit
         Just credentials -> do
           baseURL <- getBaseURL
-          instant <- H.liftEffect now
+          commentId <- H.liftEffect fromNow
           let
             submission = state.submission
               { user = credentials.user
-              , timestamp = show instant
+              , commentId = commentId
               }
           submitCommentResult <- H.liftAff $ postComment baseURL state.genre state.tuneId submission credentials
           H.modify_ (\st -> st { submitCommentResult = submitCommentResult } )

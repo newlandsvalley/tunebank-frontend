@@ -12,6 +12,7 @@ import Routing.Duplex (RouteDuplex', root, segment, as, int, optional, string)
 import Routing.Duplex.Generic (noArgs, sum)
 import Routing.Duplex.Generic.Syntax ((/), (?))
 import TuneBank.Data.TuneId (TuneId, tuneIdFromString, tuneIdToString)
+import TuneBank.Data.CommentId (CommentId, commentIdFromString, commentIdToString)
 import TuneBank.Navigation.SearchParams (SearchParams)
 import TuneBank.Data.Genre (Genre, genreFromString, genreToString)
 
@@ -20,6 +21,9 @@ type PageParams =
 
 tuneId :: RouteDuplex' String -> RouteDuplex' TuneId
 tuneId = as tuneIdToString tuneIdFromString
+
+commentId :: RouteDuplex' String -> RouteDuplex' CommentId
+commentId = as commentIdToString commentIdFromString
 
 genre :: RouteDuplex' String -> RouteDuplex' Genre
 genre = as genreToString genreFromString
@@ -33,6 +37,7 @@ data Endpoint
   | Tune Genre TuneId
   | NewTune Genre
   | Comments Genre TuneId
+  | Comment Genre TuneId String CommentId
 
 derive instance genericEndpoint :: Generic Endpoint _
 derive instance eqEndpoint :: Eq Endpoint
@@ -59,4 +64,5 @@ endpointCodec = root $ sum
   , "Tune": "genre" /  (genre segment) / "tune" / (tuneId segment)
   , "NewTune": "genre" / (genre segment) / "tune"
   , "Comments": "genre" / (genre segment) / "tune" / (tuneId segment) / "comments"
+  , "Comment": "genre" / (genre segment) / "tune" / (tuneId segment) / "comment" / segment / (commentId segment)
   }

@@ -26,15 +26,17 @@ import TuneBank.Navigation.Endpoint (PageParams, Endpoint(..), endpointCodec)
 import TuneBank.Navigation.SearchParams (SearchParams)
 import TuneBank.Data.Types (BaseURL(..))
 import TuneBank.Data.TuneId (TuneId())
+import TuneBank.Data.CommentId (CommentId())
 import TuneBank.Data.Credentials (Credentials)
 import TuneBank.Data.Genre (Genre)
 import TuneBank.Api.Codec.TunesPage (TunesPage, decodeTunesPage)
 import TuneBank.Api.Codec.UsersPage (UsersPage, decodeUsersPage)
 import TuneBank.Api.Codec.Tune (TuneMetadata, fixJson, decodeTune)
 import TuneBank.Api.Codec.Comments (Comments, decodeComments)
-import TuneBank.Api.Codec.Comments (Submission, encodeFormData) as Comments
+import TuneBank.Api.Codec.Comments (Comment,  encodeFormData) as Comments
 import TuneBank.Api.Codec.Pagination (Pagination, defaultPagination, decodePagination)
 import TuneBank.Api.Codec.Register ( Submission, encodeFormData ) as Register
+import TuneBank.Api.Codec.Utils (encodeURIComponent)
 import TuneBank.Authorization.BasicAuth (authorizationHeader)
 import TuneBank.BugFix.Backend (fixSearchParams)
 
@@ -113,6 +115,19 @@ defaultPostRequest (BaseURL baseUrl) mCredentials fue endpoint  =
   , withCredentials: false
   , responseFormat: RF.string
   }
+
+defaultDeleteRequest :: BaseURL -> Maybe Credentials -> Endpoint -> Request String
+defaultDeleteRequest (BaseURL baseUrl) mCredentials endpoint  =
+  { method: Left DELETE
+  , url: baseUrl <> print endpointCodec endpoint
+  , headers: (fromFoldable $ authorizationHeader mCredentials)
+  , content: Nothing
+  , username: Nothing
+  , password: Nothing
+  , withCredentials: false
+  , responseFormat: RF.string
+  }
+
 
 -- | this gives a bad JSON error because it really is bad!
 requestTune :: forall m. MonadAff m => BaseURL -> Genre -> TuneId -> m (Either String TuneMetadata)
@@ -220,6 +235,7 @@ requestCommentsStr baseUrl genre tuneId = do
     commentsPage = (lmap printResponseFormatError res.body)
   pure $ commentsPage
 
+-- | POST
 
 postTune :: forall m. MonadAff m => String -> BaseURL -> Genre -> Credentials -> m (Either String String)
 postTune tuneAbc baseUrl genre credentials =
@@ -237,12 +253,22 @@ postNewUser submission baseUrl =
     res <- tryRequest $ defaultPostRequest baseUrl Nothing formData Register
     pure res
 
-postComment :: forall m. MonadAff m => BaseURL -> Genre -> TuneId -> Comments.Submission -> Credentials -> m (Either String String)
-postComment baseUrl genre tuneId submission credentials =
+postComment :: forall m. MonadAff m => BaseURL -> Genre -> TuneId -> Comments.Comment -> Credentials -> m (Either String String)
+postComment baseUrl genre tuneId comment credentials =
   H.liftAff do
     let
-      formData = Comments.encodeFormData submission
+      formData = Comments.encodeFormData comment
     res <- tryRequest $ defaultPostRequest baseUrl (Just credentials) formData (Comments genre tuneId)
+    pure res
+
+-- | DELETE
+
+deleteComment :: forall m. MonadAff m => BaseURL -> Genre -> TuneId -> CommentId -> Credentials -> m (Either String String)
+deleteComment baseUrl genre tuneId commentId credentials =
+  H.liftAff do
+    let
+      encodedUser = encodeURIComponent credentials.user
+    res <- tryRequest $ defaultDeleteRequest baseUrl (Just credentials) (Comment genre tuneId encodedUser commentId)
     pure res
 
 -- | The default manner of attempting a request. All errors will be collected

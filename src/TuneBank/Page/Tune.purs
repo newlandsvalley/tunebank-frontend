@@ -18,15 +18,17 @@ import Effect.Aff.Class (class MonadAff)
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
+import Halogen.HTML.Events as HE
 import Halogen.PlayerComponent as PC
 import Html.Parser.Halogen as PH
-import Prelude (Unit, Void, ($), (<>), (<<<), (>>=), bind, const, identity, map, pure, show, unit)
+import Prelude
 import TuneBank.Api.Codec.Tune (TuneMetadata, nullTuneMetadata)
-import TuneBank.Api.Request (requestTune, requestComments)
-import TuneBank.Data.Credentials (Credentials)
+import TuneBank.Api.Request (requestTune, requestComments, deleteComment)
+import TuneBank.Data.Credentials (Credentials, Role(..))
 import TuneBank.Data.Genre (Genre, asUriComponent)
 import TuneBank.Data.Session (Session)
 import TuneBank.Data.TuneId (TuneId(..), encodeTuneIdURIComponent)
+import TuneBank.Data.CommentId (CommentId(..))
 import TuneBank.Navigation.Route (Route(..))
 import TuneBank.Data.Types (BaseURL(..))
 import TuneBank.HTML.Utils (css, safeHref)
@@ -69,6 +71,7 @@ _player = SProxy :: SProxy "player"
 data Action
   = Initialize
   | HandleTuneIsPlaying PC.Message
+  | DeleteComment CommentId
 
 component
    :: ∀ o m r
@@ -227,19 +230,41 @@ component =
     HH.div_
       [
         HH.text header
-      , HH.div_ $ map renderComment state.comments
+      , HH.div_ $ map (renderComment state.currentUser) state.comments
       ]
 
-  renderComment :: Comment -> H.ComponentHTML Action ChildSlots m
-  renderComment comment =
-    HH.div
-      []
-      [ HH.h2
+  renderComment :: Maybe Credentials -> Comment -> H.ComponentHTML Action ChildSlots m
+  renderComment mCredentials comment =
+    let
+      editable =
+        case mCredentials of
+          Just credentials ->
+            (Administrator == credentials.role) || (comment.user == credentials.user)
+          Nothing ->
+            false
+    in
+      HH.div
         []
-        [ HH.text comment.subject]
-      , PH.render comment.text
-      --, HH.text comment.text
-      ]
+        [ HH.h2
+          []
+          [ HH.text comment.subject]
+        , PH.render comment.text
+        --, HH.text comment.text
+        , renderCommentControls editable comment
+        ]
+
+  renderCommentControls :: Boolean -> Comment -> H.ComponentHTML Action ChildSlots m
+  renderCommentControls isEditable comment =
+    case isEditable of
+      true ->
+        HH.button
+          [ HE.onClick \_ -> Just $ DeleteComment comment.commentId
+          , css "hoverable"
+          , HP.enabled true
+          ]
+          [ HH.text "delete comment" ]
+      false ->
+        HH.text ""
 
   renderDebug ::  State -> H.ComponentHTML Action ChildSlots m
   renderDebug state =
@@ -287,6 +312,16 @@ component =
       -- disable any button that can alter the editor contents whilst the player
       -- is playing and re-enable when it stops playing
       pure unit
+    DeleteComment commentId -> do
+      state <- H.get
+      currentUser <- getUser
+      baseURL <- getBaseURL
+      case currentUser of
+        Just credentials -> do
+          _ <- deleteComment baseURL state.genre state.tuneId commentId credentials
+          pure unit
+        Nothing ->
+          pure unit
 
 
 urlPreface :: State -> String

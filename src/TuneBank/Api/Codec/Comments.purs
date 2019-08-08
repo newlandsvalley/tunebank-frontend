@@ -1,8 +1,7 @@
 module TuneBank.Api.Codec.Comments
   ( Comments
   , Comment
-  , Submission
-  , defaultSubmission
+  , defaultComment
   , decodeComments
   , encodeFormData) where
 
@@ -14,27 +13,21 @@ import Data.Tuple (Tuple(..))
 import Data.Maybe (Maybe(..))
 import Data.Either (Either)
 import Data.Traversable (traverse)
+import TuneBank.Data.CommentId (CommentId(..))
 
 -- | the type of a comment when returned from the server
 type Comment =
   { user :: String
-  , cid :: String
+  , commentId :: CommentId   -- Id is a unique timestamp (cid on database)
   , subject :: String
   , text :: String
   }
 
--- | the type of a comment when submitted to the sever
-type Submission =
-  { user :: String
-  , timestamp :: String
-  , subject :: String
-  , text :: String
-  }
 
-defaultSubmission :: Submission
-defaultSubmission =
+defaultComment :: Comment
+defaultComment =
   { user : ""
-  , timestamp : ""
+  , commentId : CommentId ""
   , subject : ""
   , text : ""
   }
@@ -43,10 +36,10 @@ decodeJsonComment :: Json -> Either String Comment
 decodeJsonComment json = do
     obj <- decodeJson json
     user <- obj .: "user"
-    cid <- obj .: "cid"
+    timestamp <- obj .: "cid"
     subject <- obj .: "subject"
     text <- obj .: "text"
-    pure $ { user, cid, subject, text }
+    pure $ { user, commentId : CommentId timestamp, subject, text }
 
 type Comments = Array Comment
 
@@ -59,11 +52,14 @@ decodeComments json = do
   comments <- obj .: "comment" >>= decodeCommentArray
   pure comments
 
-encodeFormData :: Submission -> FormURLEncoded
-encodeFormData submission =
-  fromArray
-     [ Tuple "user"  (Just submission.user)
-     , Tuple "timestamp"  (Just submission.timestamp)
-     , Tuple "subject"  (Just submission.subject)
-     , Tuple "text"  (Just submission.text)
-     ]
+encodeFormData :: Comment -> FormURLEncoded
+encodeFormData comment =
+  let
+    (CommentId timestamp) = comment.commentId
+  in
+    fromArray
+       [ Tuple "user"  (Just comment.user)
+       , Tuple "timestamp"  (Just timestamp)
+       , Tuple "subject"  (Just comment.subject)
+       , Tuple "text"  (Just comment.text)
+       ]
