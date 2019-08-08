@@ -188,7 +188,7 @@ component =
       , HH.dd
         []
         [ HH.a
-           [ safeHref $ Comment state.genre state.tuneId ]
+           [ safeHref $ Comments state.genre state.tuneId ]
            [ HH.text "add comment"]
         ]
       ]

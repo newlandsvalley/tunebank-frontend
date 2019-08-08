@@ -145,7 +145,7 @@ component =
             HH.slot (SProxy :: _ "tune") unit Tune.component { genre, tuneId } absurd
           TuneList searchParams ->
             HH.slot (SProxy :: _ "tunelist") unit TuneList.component { searchParams } absurd
-          Comment genre tuneId  ->
+          Comments genre tuneId  ->
             HH.slot (SProxy :: _ "comment") unit Comment.component { genre, tuneId } absurd
           About ->
             about

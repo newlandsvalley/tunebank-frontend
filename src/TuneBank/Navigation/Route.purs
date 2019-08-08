@@ -32,7 +32,7 @@ data Route
   | UserList PageParams
   | Tune Genre TuneId
   | TuneList SearchParams
-  | Comment Genre TuneId
+  | Comments Genre TuneId
   | About
   | Credits
   | Help
@@ -71,7 +71,7 @@ routeCodec = root $ sum
        , abc : optional <<< string
        , page: int
        , sort : string }
-  , "Comment": "genre" / (genre segment)  / "tune" / (tuneId segment) / "comment" 
+  , "Comments": "genre" / (genre segment)  / "tune" / (tuneId segment) / "comments" 
   , "About" : "about" / noArgs
   , "Credits" : "credits" / noArgs
   , "Help" : "help" / noArgs

@@ -21,7 +21,8 @@ import TuneBank.Data.Session (Session)
 import TuneBank.Data.TuneId (TuneId(..))
 import TuneBank.Data.Types (BaseURL(..))
 import TuneBank.HTML.Utils (css)
-import TuneBank.Navigation.Navigate (class Navigate)
+import TuneBank.Navigation.Navigate (class Navigate, navigate)
+import TuneBank.Navigation.Route (Route(..))
 import TuneBank.Page.Utils.Environment (getBaseURL, getUser)
 
 import Debug.Trace (spy, trace, traceM)
@@ -193,7 +194,7 @@ component =
   renderSubmissionError ::  State -> H.ComponentHTML Action ChildSlots m
   renderSubmissionError state =
     let
-      submissionText = either identity identity state.submitCommentResult
+      submissionText = either identity (const "") state.submitCommentResult
     in
       HH.div_
         [ HH.text submissionText ]
@@ -228,9 +229,15 @@ component =
           baseURL <- getBaseURL
           instant <- H.liftEffect now
           let
-            submission = state.submission {
-                user = credentials.user
+            submission = state.submission
+              { user = credentials.user
               , timestamp = show instant
               }
           submitCommentResult <- H.liftAff $ postComment baseURL state.genre state.tuneId submission credentials
           H.modify_ (\st -> st { submitCommentResult = submitCommentResult } )
+          case submitCommentResult of
+            Left _ ->
+              pure unit
+            Right _ ->
+              -- go back to the tune page which should now show the commebt
+              navigate $ Tune state.genre state.tuneId
