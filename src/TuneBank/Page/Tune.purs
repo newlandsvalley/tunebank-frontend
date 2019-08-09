@@ -1,39 +1,41 @@
 module TuneBank.Page.Tune where
 
+import Prelude
+
 import Audio.SoundFont (Instrument)
 import Audio.SoundFont.Melody.Class (MidiRecording(..))
 import Control.Monad.Reader (class MonadAsk, asks)
-import Effect.Ref as Ref
+import Control.Monad.State (state)
 import Data.Abc (AbcTune)
 import Data.Abc.Midi (toMidi)
 import Data.Abc.Parser (parse)
-import Data.Array (length)
+import Data.Array (filter, length)
 import Data.Bifunctor (lmap)
 import Data.Const (Const)
 import Data.Either (Either(..), either)
 import Data.Maybe (Maybe(..))
-import Data.Symbol (SProxy(..))
 import Data.MediaType (MediaType(..))
+import Data.Symbol (SProxy(..))
 import Effect.Aff.Class (class MonadAff)
+import Effect.Ref as Ref
 import Halogen as H
 import Halogen.HTML as HH
-import Halogen.HTML.Properties as HP
 import Halogen.HTML.Events as HE
+import Halogen.HTML.Properties as HP
 import Halogen.PlayerComponent as PC
 import Html.Parser.Halogen as PH
-import Prelude
+import TuneBank.Api.Codec.Comments (Comments, Comment)
 import TuneBank.Api.Codec.Tune (TuneMetadata, nullTuneMetadata)
 import TuneBank.Api.Request (requestTune, requestComments, deleteComment)
+import TuneBank.Data.CommentId (CommentId(..))
 import TuneBank.Data.Credentials (Credentials, Role(..))
 import TuneBank.Data.Genre (Genre, asUriComponent)
 import TuneBank.Data.Session (Session)
 import TuneBank.Data.TuneId (TuneId(..), encodeTuneIdURIComponent)
-import TuneBank.Data.CommentId (CommentId(..))
-import TuneBank.Navigation.Route (Route(..))
 import TuneBank.Data.Types (BaseURL(..))
 import TuneBank.HTML.Utils (css, safeHref)
 import TuneBank.Navigation.Navigate (class Navigate)
-import TuneBank.Api.Codec.Comments (Comments, Comment)
+import TuneBank.Navigation.Route (Route(..))
 import TuneBank.Page.Utils.Environment (getBaseURL, getInstruments, getUser)
 
 -- | there is no tune yet
@@ -318,8 +320,14 @@ component =
       baseURL <- getBaseURL
       case currentUser of
         Just credentials -> do
-          _ <- deleteComment baseURL state.genre state.tuneId commentId credentials
-          pure unit
+          result <- deleteComment baseURL state.genre state.tuneId commentId credentials
+          case result of
+            Right _ -> do
+              let
+                newState = removeComment commentId state
+              H.put newState
+            Left _ ->
+              pure unit
         Nothing ->
           pure unit
 
@@ -331,3 +339,11 @@ urlPreface state =
   <> (asUriComponent state.genre)
   <> "/tune/"
   <> state.tuneURI
+
+-- | remove the comment from state
+removeComment :: CommentId -> State -> State
+removeComment cId state =
+  let
+    newComments = filter (\c -> c.commentId /= cId) state.comments
+  in
+    state { comments = newComments }
