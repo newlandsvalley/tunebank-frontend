@@ -23,6 +23,7 @@ import TuneBank.Page.UserList as UserList
 import TuneBank.Page.Tune as Tune
 import TuneBank.Page.TuneList as TuneList
 import TuneBank.Page.Comment as Comment
+import TuneBank.Data.CommentId (commentKey)
 import TuneBank.Data.Session (Session)
 import TuneBank.Data.Types (BaseURL)
 import TuneBank.Data.Genre (Genre(..))
@@ -146,9 +147,9 @@ component =
           TuneList searchParams ->
             HH.slot (SProxy :: _ "tunelist") unit TuneList.component { searchParams } absurd
           Comments genre tuneId  ->
-            HH.slot (SProxy :: _ "comment") unit Comment.component { genre, tuneId, cid : Nothing } absurd
-          Comment genre tuneId cid ->
-            HH.slot (SProxy :: _ "comment") unit Comment.component { genre, tuneId, cid : (Just cid) } absurd
+            HH.slot (SProxy :: _ "comment") unit Comment.component { genre, tuneId, key : Nothing } absurd
+          Comment genre tuneId user cid ->
+            HH.slot (SProxy :: _ "comment") unit Comment.component { genre, tuneId, key : (Just $ commentKey user cid) } absurd
           About ->
             about
           Credits ->

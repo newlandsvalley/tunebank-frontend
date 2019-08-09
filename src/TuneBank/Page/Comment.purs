@@ -13,12 +13,12 @@ import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
 import TuneBank.Api.Codec.Comments (Comment, defaultComment)
-import TuneBank.Api.Request (postComment)
+import TuneBank.Api.Request (postComment, requestComment)
 import TuneBank.Data.Credentials (Credentials)
 import TuneBank.Data.Genre (Genre)
 import TuneBank.Data.Session (Session)
 import TuneBank.Data.TuneId (TuneId(..))
-import TuneBank.Data.CommentId (CommentId, fromNow)
+import TuneBank.Data.CommentId (CommentId, CommentKey, fromNow)
 import TuneBank.Data.Types (BaseURL(..))
 import TuneBank.HTML.Utils (css)
 import TuneBank.Navigation.Navigate (class Navigate, navigate)
@@ -26,6 +26,9 @@ import TuneBank.Navigation.Route (Route(..))
 import TuneBank.Page.Utils.Environment (getBaseURL, getUser)
 
 import Debug.Trace (spy, trace, traceM)
+
+-- | Edit a comment
+-- | This is used both for editing existing comments and new ones
 
 -- type Slot = H.Slot Query Void
 type Slot = H.Slot (Const Void) Void
@@ -35,6 +38,7 @@ type State =
   , currentUser :: Maybe Credentials
   , tuneId :: TuneId
   , baseURL :: BaseURL
+  , key :: Maybe CommentKey
   , submission :: Comment
   , submitCommentResult :: Either String String  -- result from server
   }
@@ -44,7 +48,7 @@ type Query = (Const Void)
 type Input =
   { genre :: Genre
   , tuneId :: TuneId
-  , cid :: Maybe CommentId
+  , key :: Maybe CommentKey
   }
 
 type ChildSlots = ()
@@ -79,6 +83,7 @@ component =
     , currentUser : Nothing
     , tuneId : input.tuneId
     , baseURL : BaseURL ""
+    , key : input.key
     , submission : defaultComment
     , submitCommentResult : Left ""
     }
@@ -206,11 +211,30 @@ component =
       state <- H.get
       currentUser <- getUser
       baseURL <- getBaseURL
-      H.modify_ (\st -> st
-        { currentUser = currentUser
-        , baseURL = baseURL
-        } )
-      pure unit
+      let
+        newState = state { currentUser = currentUser
+                         , baseURL = baseURL
+                         }
+      case newState.currentUser of
+        Just credentials -> do
+          case newState.key of
+            Nothing -> do
+              H.put newState
+              pure unit
+            Just key -> do
+              eComment <- H.liftAff $ requestComment baseURL state.genre state.tuneId key credentials
+              case eComment of
+                Right comment -> do
+                  -- edit comment
+                  H.put $ newState { submission = comment }
+                  pure unit
+                Left _ -> do
+                  -- new comment
+                  H.put newState
+                  pure unit
+        Nothing ->
+          -- a user login is required before anything can happen in this page
+          pure unit
     HandleSubject subject -> do
       state <- H.get
       let
@@ -230,10 +254,17 @@ component =
           baseURL <- getBaseURL
           commentId <- H.liftEffect fromNow
           let
-            submission = state.submission
-              { user = credentials.user
-              , commentId = commentId
-              }
+            submission =
+              case state.key of
+                Nothing ->
+                  -- new comment
+                  state.submission
+                    { user = credentials.user
+                    , commentId = commentId
+                    }
+                Just _ ->
+                   -- edit comment
+                   state.submission
           submitCommentResult <- H.liftAff $ postComment baseURL state.genre state.tuneId submission credentials
           H.modify_ (\st -> st { submitCommentResult = submitCommentResult } )
           case submitCommentResult of

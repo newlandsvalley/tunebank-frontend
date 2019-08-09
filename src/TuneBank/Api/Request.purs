@@ -26,13 +26,13 @@ import TuneBank.Navigation.Endpoint (PageParams, Endpoint(..), endpointCodec)
 import TuneBank.Navigation.SearchParams (SearchParams)
 import TuneBank.Data.Types (BaseURL(..))
 import TuneBank.Data.TuneId (TuneId())
-import TuneBank.Data.CommentId (CommentId())
+import TuneBank.Data.CommentId (CommentId, CommentKey)
 import TuneBank.Data.Credentials (Credentials)
 import TuneBank.Data.Genre (Genre)
 import TuneBank.Api.Codec.TunesPage (TunesPage, decodeTunesPage)
 import TuneBank.Api.Codec.UsersPage (UsersPage, decodeUsersPage)
 import TuneBank.Api.Codec.Tune (TuneMetadata, fixJson, decodeTune)
-import TuneBank.Api.Codec.Comments (Comments, decodeComments)
+import TuneBank.Api.Codec.Comments (Comment, Comments, decodeComment, decodeComments)
 import TuneBank.Api.Codec.Comments (Comment,  encodeFormData) as Comments
 import TuneBank.Api.Codec.Pagination (Pagination, defaultPagination, decodePagination)
 import TuneBank.Api.Codec.Register ( Submission, encodeFormData ) as Register
@@ -211,6 +211,20 @@ requestComments baseUrl genre tuneId = do
           >>= decodeComments
       pure $ comments
 
+requestComment :: forall m. MonadAff m => BaseURL -> Genre -> TuneId -> CommentKey -> Credentials -> m (Either String Comment)
+requestComment baseUrl genre tuneId key credentials =
+  H.liftAff do
+    let
+      encodedUser = encodeURIComponent key.user
+    res1 <- tryRequest $ defaultJsonGetRequest baseUrl (Just credentials) (Comment genre tuneId encodedUser key.commentId)
+    case res1 of
+      Left err ->
+        pure $ Left $ show err
+      Right json -> do
+        let
+          comment :: Either String Comment
+          comment = decodeComment json
+        pure $ comment
 
 {-
 requestUsersStr :: forall m. MonadAff m => BaseURL -> Maybe Credentials -> PageParams -> m (Either String String)

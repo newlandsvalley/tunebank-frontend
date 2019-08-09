@@ -1,8 +1,11 @@
 module TuneBank.Data.CommentId
   ( CommentId(..)
+  , CommentKey
   , commentIdFromString
   , commentIdToString
+  , commentKey
   , fromNow
+  , isEmpty
   ) where
 
 
@@ -12,6 +15,7 @@ import Effect (Effect)
 import Effect.Now (now)
 import Data.DateTime.Instant (unInstant)
 import Data.Time.Duration (Milliseconds(..))
+import Data.String.Common (null)
 
 newtype CommentId = CommentId String
 
@@ -22,6 +26,13 @@ derive newtype instance ordCommentId :: Ord CommentId
 instance showCommentid :: Show CommentId where
   show = commentIdToString
 
+-- the key to a comment is the combinatio  of the user who originally submitted the
+-- | comment and the commentId (a timestamp)
+type CommentKey =
+  { user :: String
+  , commentId :: CommentId
+  }
+
 commentIdToString :: CommentId -> String
 commentIdToString (CommentId s) =
   s
@@ -30,9 +41,17 @@ commentIdFromString :: String -> Either String CommentId
 commentIdFromString s =
   Right $ CommentId s
 
+commentKey :: String -> CommentId -> CommentKey
+commentKey user commentId =
+  { user, commentId }
+
 fromNow :: Effect CommentId
 fromNow = do
   instant <- now
   let
     (Milliseconds milliseconds) = unInstant instant
   pure $ CommentId (show milliseconds)
+
+isEmpty :: CommentId -> Boolean
+isEmpty (CommentId s) =
+  null s

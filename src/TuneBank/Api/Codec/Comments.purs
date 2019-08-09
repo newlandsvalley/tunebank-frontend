@@ -2,6 +2,7 @@ module TuneBank.Api.Codec.Comments
   ( Comments
   , Comment
   , defaultComment
+  , decodeComment
   , decodeComments
   , encodeFormData) where
 
@@ -32,8 +33,9 @@ defaultComment =
   , text : ""
   }
 
-decodeJsonComment :: Json -> Either String Comment
-decodeJsonComment json = do
+-- | decode a JSON comment
+decodeComment :: Json -> Either String Comment
+decodeComment json = do
     obj <- decodeJson json
     user <- obj .: "user"
     timestamp <- obj .: "cid"
@@ -44,7 +46,7 @@ decodeJsonComment json = do
 type Comments = Array Comment
 
 decodeCommentArray :: Json -> Either String Comments
-decodeCommentArray json = decodeJson json >>= traverse decodeJsonComment
+decodeCommentArray json = decodeJson json >>= traverse decodeComment
 
 decodeComments :: Json -> Either String Comments
 decodeComments json = do

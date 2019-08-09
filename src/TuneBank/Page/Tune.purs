@@ -5,7 +5,6 @@ import Prelude
 import Audio.SoundFont (Instrument)
 import Audio.SoundFont.Melody.Class (MidiRecording(..))
 import Control.Monad.Reader (class MonadAsk, asks)
-import Control.Monad.State (state)
 import Data.Abc (AbcTune)
 import Data.Abc.Midi (toMidi)
 import Data.Abc.Parser (parse)
@@ -27,7 +26,7 @@ import Html.Parser.Halogen as PH
 import TuneBank.Api.Codec.Comments (Comments, Comment)
 import TuneBank.Api.Codec.Tune (TuneMetadata, nullTuneMetadata)
 import TuneBank.Api.Request (requestTune, requestComments, deleteComment)
-import TuneBank.Data.CommentId (CommentId(..))
+import TuneBank.Data.CommentId (CommentId)
 import TuneBank.Data.Credentials (Credentials, Role(..))
 import TuneBank.Data.Genre (Genre, asUriComponent)
 import TuneBank.Data.Session (Session)
@@ -232,14 +231,14 @@ component =
     HH.div_
       [
         HH.text header
-      , HH.div_ $ map (renderComment state.currentUser) state.comments
+      , HH.div_ $ map (renderComment state) state.comments
       ]
 
-  renderComment :: Maybe Credentials -> Comment -> H.ComponentHTML Action ChildSlots m
-  renderComment mCredentials comment =
+  renderComment :: State -> Comment -> H.ComponentHTML Action ChildSlots m
+  renderComment state comment =
     let
       editable =
-        case mCredentials of
+        case state.currentUser of
           Just credentials ->
             (Administrator == credentials.role) || (comment.user == credentials.user)
           Nothing ->
@@ -252,19 +251,23 @@ component =
           [ HH.text comment.subject]
         , PH.render comment.text
         --, HH.text comment.text
-        , renderCommentControls editable comment
+        , renderCommentControls state editable comment
         ]
 
-  renderCommentControls :: Boolean -> Comment -> H.ComponentHTML Action ChildSlots m
-  renderCommentControls isEditable comment =
+  renderCommentControls :: State -> Boolean -> Comment -> H.ComponentHTML Action ChildSlots m
+  renderCommentControls state isEditable comment =
     case isEditable of
       true ->
-        HH.button
-          [ HE.onClick \_ -> Just $ DeleteComment comment.commentId
-          , css "hoverable"
-          , HP.enabled true
+        HH.div_
+          [ HH.a
+            [ css "a-internal-link"
+            , HE.onClick \_ -> Just $ DeleteComment comment.commentId
+            ]
+            [ HH.text "delete comment" ]
+          , HH.a
+            [ safeHref $ Comment state.genre state.tuneId comment.user comment.commentId ]
+            [ HH.text "edit comment" ]
           ]
-          [ HH.text "delete comment" ]
       false ->
         HH.text ""
 

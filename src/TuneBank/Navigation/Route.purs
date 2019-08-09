@@ -37,7 +37,7 @@ data Route
   | Tune Genre TuneId
   | TuneList SearchParams
   | Comments Genre TuneId
-  | Comment Genre TuneId CommentId
+  | Comment Genre TuneId String CommentId
   | About
   | Credits
   | Help
@@ -77,7 +77,7 @@ routeCodec = root $ sum
        , page: int
        , sort : string }
   , "Comments": "genre" / (genre segment)  / "tune" / (tuneId segment) / "comments"
-  , "Comment": "genre" / (genre segment)  / "tune" / (tuneId segment) / "comment" / (commentId segment)
+  , "Comment": "genre" / (genre segment)  / "tune" / (tuneId segment) / "comment" / segment / (commentId segment)
   , "About" : "about" / noArgs
   , "Credits" : "credits" / noArgs
   , "Help" : "help" / noArgs

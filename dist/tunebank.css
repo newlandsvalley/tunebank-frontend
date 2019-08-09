@@ -375,6 +375,13 @@ a:hover.current {
 	text-decoration: none;
 }
 
+/* an a link without an href but with an OnClick action
+   referring to a Halogen action on the same page */
+.a-internal-link {
+	color: #597dbd;
+	text-decoration: underline;
+}
+
 /** definition lists */
 
 dl {
