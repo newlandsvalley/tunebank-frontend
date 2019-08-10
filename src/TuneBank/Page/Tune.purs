@@ -15,6 +15,7 @@ import Data.Either (Either(..), either)
 import Data.Maybe (Maybe(..))
 import Data.MediaType (MediaType(..))
 import Data.Symbol (SProxy(..))
+import Data.Link (expandLinks)
 import Effect.Aff.Class (class MonadAff)
 import Effect.Ref as Ref
 import Halogen as H
@@ -22,7 +23,7 @@ import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
 import Halogen.PlayerComponent as PC
-import Html.Parser.Halogen as PH
+import Html.Renderer.Halogen as RH
 import TuneBank.Api.Codec.Comments (Comments, Comment)
 import TuneBank.Api.Codec.Tune (TuneMetadata, nullTuneMetadata)
 import TuneBank.Api.Request (requestTune, requestComments, deleteComment)
@@ -249,7 +250,7 @@ component =
         [ HH.h2
           []
           [ HH.text comment.subject]
-        , PH.render comment.text
+        , RH.render_ $ expandLinks comment.text
         --, HH.text comment.text
         , renderCommentControls state editable comment
         ]
