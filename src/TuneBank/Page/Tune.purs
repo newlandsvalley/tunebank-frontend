@@ -26,7 +26,7 @@ import Halogen.PlayerComponent as PC
 import Html.Renderer.Halogen as RH
 import TuneBank.Api.Codec.Comments (Comments, Comment)
 import TuneBank.Api.Codec.Tune (TuneMetadata, nullTuneMetadata)
-import TuneBank.Api.Request (requestTune, requestComments, deleteComment)
+import TuneBank.Api.Request (requestTune, requestComments, deleteComment, deleteTune)
 import TuneBank.Data.CommentId (CommentId)
 import TuneBank.Data.Credentials (Credentials, Role(..))
 import TuneBank.Data.Genre (Genre, asUriComponent)
@@ -34,7 +34,7 @@ import TuneBank.Data.Session (Session)
 import TuneBank.Data.TuneId (TuneId(..), encodeTuneIdURIComponent)
 import TuneBank.Data.Types (BaseURL(..))
 import TuneBank.HTML.Utils (css, safeHref)
-import TuneBank.Navigation.Navigate (class Navigate)
+import TuneBank.Navigation.Navigate (class Navigate, navigate)
 import TuneBank.Navigation.Route (Route(..))
 import TuneBank.Page.Utils.Environment (getBaseURL, getInstruments, getUser)
 
@@ -73,6 +73,7 @@ _player = SProxy :: SProxy "player"
 data Action
   = Initialize
   | HandleTuneIsPlaying PC.Message
+  | DeleteTune TuneId
   | DeleteComment CommentId
 
 component
@@ -168,7 +169,7 @@ component =
             ]
             [ HH.text "midi"]
          ]
-         , renderAddComment state
+         , renderTuneControls state
       ]
 
   renderTuneSubmitter :: State -> H.ComponentHTML Action ChildSlots m
@@ -183,20 +184,32 @@ component =
         [ HH.text state.tuneMetadata.submitter ]
       ]
 
-  renderAddComment :: State -> H.ComponentHTML Action ChildSlots m
-  renderAddComment state =
-    HH.div_
-      [
-      HH.dt
-        []
-        [ HH.text "tune" ]
-      , HH.dd
-        []
-        [ HH.a
-           [ safeHref $ Comments state.genre state.tuneId ]
-           [ HH.text "add comment"]
-        ]
-      ]
+  renderTuneControls :: State -> H.ComponentHTML Action ChildSlots m
+  renderTuneControls state =
+    case state.currentUser of
+      Nothing ->
+        HH.text ""
+      Just credentials ->
+        HH.div_
+          [
+            HH.dt
+            []
+            [ HH.text "tune" ]
+          , HH.dd
+            []
+            [ HH.a
+               [ safeHref $ Comments state.genre state.tuneId ]
+               [ HH.text "add comment"]
+            ]
+          , HH.dd
+            []
+            [ HH.a
+               [ css "a-internal-link"
+               , HE.onClick \_ -> Just $ DeleteTune state.tuneId
+               ]
+               [ HH.text "delete tune"]
+            ]
+          ]
 
   renderPlayer ::  State -> H.ComponentHTML Action ChildSlots m
   renderPlayer state =
@@ -313,11 +326,28 @@ component =
         , comments = either (const []) identity comments
         , instruments = instruments
         } )
+        
     HandleTuneIsPlaying (PC.IsPlaying p) -> do
       -- we ignore this message, but if we wanted to we could
       -- disable any button that can alter the editor contents whilst the player
       -- is playing and re-enable when it stops playing
       pure unit
+
+    DeleteTune tuneId -> do
+      state <- H.get
+      currentUser <- getUser
+      baseURL <- getBaseURL
+      case currentUser of
+        Just credentials -> do
+          result <- deleteTune baseURL state.genre tuneId credentials
+          case result of
+            Right _ -> do
+              navigate Home
+            Left _ ->
+              pure unit
+        Nothing ->
+          pure unit
+
     DeleteComment commentId -> do
       state <- H.get
       currentUser <- getUser

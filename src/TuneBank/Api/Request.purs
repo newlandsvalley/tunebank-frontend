@@ -276,6 +276,12 @@ postComment baseUrl genre tuneId comment credentials =
     pure res
 
 -- | DELETE
+deleteTune :: forall m. MonadAff m => BaseURL -> Genre -> TuneId -> Credentials -> m (Either String String)
+deleteTune baseUrl genre tuneId credentials =
+  H.liftAff do
+    res <- tryRequest $ defaultDeleteRequest baseUrl (Just credentials) (Tune genre tuneId)
+    pure res
+
 
 deleteComment :: forall m. MonadAff m => BaseURL -> Genre -> TuneId -> CommentId -> Credentials -> m (Either String String)
 deleteComment baseUrl genre tuneId commentId credentials =
