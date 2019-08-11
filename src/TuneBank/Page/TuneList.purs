@@ -31,7 +31,7 @@ import TuneBank.Data.Genre (Genre(..), asUriComponent)
 import TuneBank.Data.Session (Session)
 import TuneBank.Data.TuneId (TuneId(..), decodeTuneIdURIComponent)
 import TuneBank.Data.Types (BaseURL)
-import TuneBank.HTML.Utils (css, safeHref)
+import TuneBank.HTML.Utils (css, safeHref, truncateTo)
 import TuneBank.Navigation.Navigate (class Navigate, navigate)
 import TuneBank.Navigation.Route (Route(..))
 import TuneBank.Navigation.SearchParams (SearchParams)
@@ -183,7 +183,7 @@ component =
               []
               [ HH.a
                 [ safeHref route ]
-                [ HH.text title]
+                [ HH.text $ truncateTo 36 title]
               ]
             , HH.td
               []

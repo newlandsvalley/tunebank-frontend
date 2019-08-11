@@ -3,6 +3,7 @@ module TuneBank.HTML.Utils where
 import Prelude
 import TuneBank.Navigation.Route (Route, routeCodec)
 import Data.Maybe (Maybe(..))
+import Data.String (length, take)
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
 import Routing.Duplex (print)
@@ -33,3 +34,10 @@ maybeElem _ _ = HH.text ""
 -- | to minimize the work performed each render.
 whenElem :: forall p i. Boolean -> (Unit -> HH.HTML p i) -> HH.HTML p i
 whenElem cond f = if cond then f unit else HH.text ""
+
+truncateTo :: Int -> String -> String
+truncateTo maxLen s =
+  if (maxLen >= length s) then
+    s
+  else
+    (take maxLen s) <> "..."
