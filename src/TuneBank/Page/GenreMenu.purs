@@ -1,6 +1,6 @@
 module TuneBank.Page.GenreMenu where
 
-import Prelude (Unit, Void, ($), (==), (<<<), bind, map, pure, unit, show)
+import Prelude (Unit, Void, ($), (==), (<<<), (<>), bind, map, pure, unit, show)
 import Data.Const (Const)
 import Data.Maybe (Maybe(..))
 import Data.Enum (enumFromTo)
@@ -56,14 +56,33 @@ component =
   initialState _ =
     { genre : Scandi  }
 
+
   render :: State -> H.ComponentHTML Action ChildSlots m
   render state =
     HH.div_
-      [ HH.h1
-         [HP.class_ (H.ClassName "center") ]
-         [HH.text "Genre" ]
-      , renderGenreMenu state
+      [ HH.form
+        [ HP.id_ "genreform" ]
+        [ HH.fieldset
+            []
+            [ HH.legend_ [HH.text "Genre"]
+            , renderGenreMenu state
+            , renderAdvisoryText state
+            ]
+        ]
       ]
+
+  renderAdvisoryText :: State -> H.ComponentHTML Action ChildSlots m
+  renderAdvisoryText state =
+    let
+      text =
+         "Choose the genre to be used in all tune searches, " <>
+          "uploads etc."
+    in
+      HH.div_
+        [ HH.p_
+            [HH.text text]
+        ]
+
 
   handleAction ∷ Action -> H.HalogenM State Action ChildSlots o m Unit
   handleAction = case _ of
@@ -90,7 +109,7 @@ renderGenreMenu state =
        [ css "nav-menu" ]
        [ HH.label
          [ css "nav-menu-label" ]
-         [ HH.text "select genre:" ]
+         [ HH.text "select:" ]
          , HH.select
             [ css "nav-selection"
             , HP.id_  "genre-menu"
