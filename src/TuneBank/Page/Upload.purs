@@ -104,7 +104,7 @@ component =
         , renderError state
         ]
       ]
-      
+
   handleAction ∷ Action -> H.HalogenM State Action ChildSlots o m Unit
   handleAction = case _ of
     Initialize -> do
@@ -208,7 +208,7 @@ renderError state =
 
 getTuneTitle :: String -> Either String String
 getTuneTitle abc =
-  case parse abc of
-    Left _ -> Left "invalid ABC"
+  case parse (abc <> "\r\n")  of
+    Left err -> Left ("invalid ABC: " <> show err)
     Right tune ->
-      maybe (Left "invalid ABC") (\t -> Right t) $ getTitle tune
+      maybe (Left "No tune title present") (\t -> Right t) $ getTitle tune
