@@ -8,6 +8,7 @@ import Data.Either (Either(..))
 import Data.Bifunctor (rmap)
 import Data.Tuple (Tuple(..))
 import Effect (Effect)
+import Global.Unsafe (unsafeDecodeURIComponent, unsafeEncodeURIComponent)
 import Test.Unit (Test, TestF, suite, test, failure, success)
 import Test.Unit.Assert as Assert
 import Test.Unit.Main (runTest)
@@ -77,6 +78,7 @@ unknownUser =
   , pass : "xyz123"
   , role : NormalUser
   }
+
 {-}
 samplePredicateString :: String
 samplePredicateString =
@@ -92,6 +94,7 @@ samplePredicate =
 main :: Effect Unit
 main = runTest do
   apiSuite
+  codecSuite
 
 apiSuite :: Free TestF Unit
 apiSuite =
@@ -150,7 +153,14 @@ apiSuite =
       -- Assert.equal (Left "error") $ response
       assertRight response
 
-
+codecSuite :: Free TestF Unit
+codecSuite =
+  suite "Codecs" do
+    test "tune name" do
+      let
+        sampleTuneName = "andet brudestykke"
+      Assert.equal sampleTuneName
+        (unsafeDecodeURIComponent $ unsafeEncodeURIComponent sampleTuneName)
 {-}
 predicateSuite :: Free TestF Unit
 predicateSuite =
