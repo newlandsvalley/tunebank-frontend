@@ -1,14 +1,14 @@
 module TuneBank.Api.Request where
 
 import Prelude
-import Affjax (Request, Response, printResponseFormatError, request)
+import Affjax (Request, printResponseFormatError, request)
 import Affjax.RequestHeader (RequestHeader(..))
 import Affjax.RequestBody (formURLEncoded)
 import Affjax.ResponseHeader (ResponseHeader, name, value)
 import Affjax.ResponseFormat as RF
 import Data.FormURLEncoded (FormURLEncoded, fromArray) as FUE
 import Effect.Aff.Class (class MonadAff)
-import Effect.Aff (Aff, try)
+import Effect.Aff (try)
 import Halogen as H
 import Data.Either (Either(..), isLeft)
 import Data.Maybe (Maybe(..), fromMaybe)
@@ -198,6 +198,12 @@ checkUser baseUrl credentials = do
         bozo = spy "body" res.body
       pure $ response
 
+-- | check the MusicRest service is up by attempting to get a welcome message
+-- | we never need to bother to decode the JSON
+checkService :: forall m. MonadAff m => BaseURL -> m (Either String Json)
+checkService baseUrl =  H.liftAff do
+  res1 <- tryRequest $ defaultJsonGetRequest baseUrl Nothing Root
+  pure res1
 
 requestComments :: forall m. MonadAff m => BaseURL -> Genre -> TuneId -> m (Either String Comments)
 requestComments baseUrl genre tuneId = do

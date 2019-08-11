@@ -30,7 +30,8 @@ genre = as genreToString genreFromString
 
 
 data Endpoint
-  = Search String SearchParams
+  = Root
+  | Search String SearchParams
   | Users PageParams
   | UserCheck
   | Register
@@ -65,4 +66,5 @@ endpointCodec = root $ sum
   , "NewTune": "genre" / (genre segment) / "tune"
   , "Comments": "genre" / (genre segment) / "tune" / (tuneId segment) / "comments"
   , "Comment": "genre" / (genre segment) / "tune" / (tuneId segment) / "comment" / segment / (commentId segment)
+  , "Root" : noArgs
   }
