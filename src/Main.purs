@@ -3,7 +3,7 @@ module Main where
 import Prelude
 
 
-import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Array (singleton)
 import Effect (Effect)
 import Effect.Aff (Aff, launchAff_)
@@ -13,6 +13,9 @@ import Halogen as H
 import Halogen.Aff as HA
 import Halogen.HTML as HH
 import Halogen.VDom.Driver (runUI)
+import Web.HTML (window)
+import Web.HTML.Window (localStorage)
+import Web.Storage.Storage (getItem)
 import TuneBank.Navigation.Route (routeCodec)
 import TuneBank.Navigation.Router as Router
 import TuneBank.Data.Types (BaseURL(..), LogLevel(..), Env)
@@ -22,6 +25,24 @@ import Routing.Hash (matchesWith)
 import Audio.SoundFont (loadPianoSoundFont)
 import AppM (runAppM)
 
+-- | production Musicrest server
+-- |  baseURL = BaseURL "http://www.tradtunedb.org.uk:8080/musicrest"
+-- | dev server
+-- |  baseURL = BaseURL "http://192.168.0.113:8080/musicrest"
+productionServer :: String
+productionServer =
+   "http://www.tradtunedb.org.uk:8080/musicrest"
+
+-- | we pass parameters to the application by means of local storage.
+-- | if there is no baseURL item, then we automatically fall back
+-- | to the production server
+getBaseURL :: Effect BaseURL
+getBaseURL = do
+  w <- window
+  s <- localStorage w
+  base <- getItem "baseURL" s
+  pure $ BaseURL $ fromMaybe productionServer base
+
 main :: Effect Unit
 main = HA.runHalogenAff do
   body <- HA.awaitBody
@@ -30,14 +51,11 @@ main = HA.runHalogenAff do
   user <- liftEffect $ Ref.new Nothing
   genre <- liftEffect $ Ref.new Scandi
   instruments <- liftEffect $ Ref.new (singleton instrument)
+  baseURL <- liftEffect $ getBaseURL
 
   -- Halogen only deals in Aff at the top level. We have to hoist our monad
   -- (which only adds Navigation to Aff) into Aff so Halogen can deal with it
   let
-    -- production server
-    -- baseURL = BaseURL "http://www.tradtunedb.org.uk:8080/musicrest"
-    -- dev server
-    baseURL = BaseURL "http://192.168.0.113:8080/musicrest"
     session = { user, genre, instruments }
     logLevel = Dev
     -- the basic environment
