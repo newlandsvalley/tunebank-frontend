@@ -533,10 +533,12 @@ table.textalign tr td  {
   margin-right: auto;
 }
 
-/* thumbnail images */
+/* tune lists with thumbnail images */
 
 .tunelist {
-	float: left;
+	margin: 0 auto;
+	width: 90%;
+	text-align: left;
 }
 
 .thumbnail {

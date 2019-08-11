@@ -232,7 +232,8 @@ component =
 
   renderPagination :: Pagination -> H.ComponentHTML Action ChildSlots m
   renderPagination pagination =
-    HH.div_
+    HH.div
+      [ css "pagination-div" ]
       [ HH.ul
           [ css "pagination"]
           ( [ renderFirstPage  ] <>

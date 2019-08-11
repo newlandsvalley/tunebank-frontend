@@ -202,10 +202,7 @@ component =
             [ HH.a
                [ safeHref $ Comments state.genre state.tuneId ]
                [ HH.text "add comment"]
-            ]
-          , HH.dd
-            []
-            [ HH.a
+            , HH.a
                [ css "a-internal-link"
                , HE.onClick \_ -> Just $ DeleteTune state.tuneId
                ]
@@ -291,12 +288,10 @@ component =
   renderDebug state =
     let
       instrumentCount = length state.instruments
-      tuneResult = either identity (\_ -> "tune OK") state.tuneResult
+      tuneResult = either (\r -> "tune parse error: " <> r) (const "") state.tuneResult
     in
       HH.div_
-        [
-          HH.text (" tune result: " <> tuneResult)
-        ]
+        [ HH.text tuneResult ]
 
   handleAction ∷ Action -> H.HalogenM State Action ChildSlots o m Unit
   handleAction = case _ of
