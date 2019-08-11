@@ -31,7 +31,7 @@ import TuneBank.Data.CommentId (CommentId)
 import TuneBank.Data.Credentials (Credentials, Role(..))
 import TuneBank.Data.Genre (Genre, asUriComponent)
 import TuneBank.Data.Session (Session)
-import TuneBank.Data.TuneId (TuneId(..), encodeTuneIdURIComponent)
+import TuneBank.Data.TuneId (TuneId(..), encodeTuneIdURIComponent, tuneIdToString)
 import TuneBank.Data.Types (BaseURL(..))
 import TuneBank.HTML.Utils (css, safeHref)
 import TuneBank.Navigation.Navigate (class Navigate, navigate)
@@ -50,7 +50,6 @@ type Slot = H.Slot (Const Void) Void
 type State =
   { genre :: Genre
   , currentUser :: Maybe Credentials
-  , tuneURI :: String
   , tuneId :: TuneId
   , baseURL :: BaseURL
   , tuneMetadata :: TuneMetadata
@@ -100,7 +99,6 @@ component =
   initialState input =
     { genre : input.genre
     , currentUser : Nothing
-    , tuneURI : encodeTuneIdURIComponent input.tuneId
     , tuneId : input.tuneId
     , baseURL : BaseURL ""
     , tuneMetadata : nullTuneMetadata
@@ -373,7 +371,7 @@ urlPreface state =
   <> "/genre/"
   <> (asUriComponent state.genre)
   <> "/tune/"
-  <> state.tuneURI
+  <> tuneIdToString state.tuneId
 
 -- | remove the comment from state
 removeComment :: CommentId -> State -> State

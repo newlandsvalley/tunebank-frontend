@@ -8,13 +8,15 @@ module TuneBank.Data.TuneId
 
 
 import Prelude
+
+import Data.Either (Either(..))
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..), fromMaybe)
-import Data.Either (Either(..))
-import Data.Tuple (Tuple(..))
+import Data.String (replaceAll)
 import Data.String.CodePoints (indexOf, lastIndexOf, length)
 import Data.String.CodeUnits (slice)
-import Data.String.Pattern (Pattern(..))
+import Data.String.Pattern (Pattern(..), Replacement(..))
+import Data.Tuple (Tuple(..))
 import TuneBank.Api.Codec.Utils (decodeURIComponent, encodeURIComponent, safeSlice)
 
 newtype TuneId = TuneId { title :: String, tuneType :: String }
@@ -32,7 +34,7 @@ tuneIdToString (TuneId { title, tuneType }) =
 
 tuneIdFromString :: String -> Either String TuneId
 tuneIdFromString s =
-  case indexOf (Pattern "-") s of
+  case lastIndexOf (Pattern "-") s of
     Just ix ->
       let
         mTitle = slice 0 ix s
@@ -46,7 +48,9 @@ tuneIdFromString s =
     _ ->
       Left $ "Not a TuneId: " <> s
 
--- not yet safe
+-- | decode a tuneId coming back from the MusicRest server
+-- | This needs to be URI decoded but seems to leave plus signs in place
+-- | instead of spaces.  I don't yet know the reason
 decodeTuneIdURIComponent :: String -> TuneId
 decodeTuneIdURIComponent s =
   let
@@ -55,13 +59,32 @@ decodeTuneIdURIComponent s =
   in
     case lastIndexOf (Pattern "-") decodedS of
       Just ix ->
-        TuneId { title : safeSlice 0 ix decodedS
+        TuneId { title : cleanTuneTitle $ safeSlice 0 ix decodedS
                , tuneType : safeSlice (ix + 1) (length decodedS) decodedS
                }
       Nothing ->
-        TuneId { title : decodedS
+        TuneId { title : cleanTuneTitle decodedS
                , tuneType : ""
                }
+
+-- | this is a hack to tidy up tune titles retruned from tune lists in musicrest
+cleanTuneTitle :: String -> String
+cleanTuneTitle =
+  replaceAll (Pattern "+") (Replacement " ")
+
+{- not needed I think }
+unsafeTuneIdFromString :: String -> TuneId
+unsafeTuneIdFromString s =
+  case lastIndexOf (Pattern "-") s of
+    Just ix ->
+      TuneId { title : safeSlice 0 ix s
+             , tuneType : safeSlice (ix + 1) (length s) s
+             }
+    Nothing ->
+      TuneId { title : s
+             , tuneType : ""
+             }
+-}
 
 encodeTuneIdURIComponent :: TuneId -> String
 encodeTuneIdURIComponent =
