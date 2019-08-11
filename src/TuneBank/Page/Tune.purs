@@ -38,6 +38,7 @@ import TuneBank.Navigation.Navigate (class Navigate, navigate)
 import TuneBank.Navigation.Route (Route(..))
 import TuneBank.Page.Utils.Environment (getBaseURL, getInstruments, getUser)
 
+
 -- | there is no tune yet
 nullParsedTune :: Either String AbcTune
 nullParsedTune =
@@ -72,6 +73,7 @@ _player = SProxy :: SProxy "player"
 
 data Action
   = Initialize
+  | Finalize
   | HandleTuneIsPlaying PC.Message
   | DeleteTune TuneId
   | DeleteComment CommentId
@@ -89,7 +91,7 @@ component =
     , eval: H.mkEval $ H.defaultEval
         { handleAction = handleAction
         , initialize = Just Initialize
-        , finalize = Nothing
+        , finalize = Just Finalize
         }
     }
   where
@@ -326,7 +328,11 @@ component =
         , comments = either (const []) identity comments
         , instruments = instruments
         } )
-        
+
+    Finalize -> do
+      _ <- H.query _player unit $ H.tell PC.StopMelody
+      pure unit
+
     HandleTuneIsPlaying (PC.IsPlaying p) -> do
       -- we ignore this message, but if we wanted to we could
       -- disable any button that can alter the editor contents whilst the player
