@@ -5,6 +5,7 @@ import Data.Const (Const)
 import Data.Either (Either(..), either, isRight)
 import Data.Maybe (Maybe(..), maybe)
 import Data.String.CodePoints (length)
+import Data.String.Common (null)
 import Effect.Aff.Class (class MonadAff)
 import Effect.Ref as Ref
 import Halogen as H
@@ -139,7 +140,13 @@ component =
   renderLoginError ::  State -> H.ComponentHTML Action ChildSlots m
   renderLoginError state =
     let
-      errorText = either (\x -> ("login failed " <> x)) (\_ -> "login OK") state.userCheckResult
+      f :: String -> String
+      f errorMsg =
+         if (null errorMsg)
+           then ""
+        else
+          "login failed"
+      errorText = either f (const "login OK") state.userCheckResult
     in
       HH.div_
         [
