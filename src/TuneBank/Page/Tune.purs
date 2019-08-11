@@ -39,6 +39,7 @@ import TuneBank.Navigation.Route (Route(..))
 import TuneBank.Page.Utils.Environment (getBaseURL, getInstruments, getUser)
 
 
+import Debug.Trace (spy)
 -- | there is no tune yet
 nullParsedTune :: Either String AbcTune
 nullParsedTune =
@@ -313,6 +314,9 @@ component =
         tuneMetadata =
           either (const state.tuneMetadata) identity tuneMetadataResult
       comments <- requestComments baseURL state.genre state.tuneId
+      let
+        foo = spy "any load comments errors? " $
+          either (identity) (const "") comments
       H.modify_ (\st -> st
         { currentUser = currentUser
         , baseURL = baseURL

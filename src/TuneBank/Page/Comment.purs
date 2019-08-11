@@ -6,7 +6,8 @@ import Control.Monad.Reader (class MonadAsk)
 import Data.Const (Const)
 import Data.Either (Either(..), either)
 import Data.Maybe (Maybe(..), isNothing)
-import Data.String (length)
+import Data.String (length, replaceAll)
+import Data.String.Pattern (Pattern(..), Replacement(..))
 import Effect.Aff.Class (class MonadAff)
 import Halogen as H
 import Halogen.HTML as HH
@@ -18,7 +19,7 @@ import TuneBank.Data.Credentials (Credentials)
 import TuneBank.Data.Genre (Genre)
 import TuneBank.Data.Session (Session)
 import TuneBank.Data.TuneId (TuneId(..))
-import TuneBank.Data.CommentId (CommentId, CommentKey, fromNow)
+import TuneBank.Data.CommentId (CommentKey, fromNow)
 import TuneBank.Data.Types (BaseURL(..))
 import TuneBank.HTML.Utils (css)
 import TuneBank.Navigation.Navigate (class Navigate, navigate)
@@ -163,7 +164,7 @@ component =
           ]
       ]
 
-
+  -- we allow any text but embedded doube quotes are problematic
   renderText :: State -> H.ComponentHTML Action ChildSlots m
   renderText state =
     HH.div
@@ -261,6 +262,7 @@ component =
                   state.submission
                     { user = credentials.user
                     , commentId = commentId
+                    , text = cleanCommentText state.submission.text
                     }
                 Just _ ->
                    -- edit comment
@@ -273,3 +275,8 @@ component =
             Right _ ->
               -- go back to the tune page which should now show the commebt
               navigate $ Tune state.genre state.tuneId
+
+-- | replace any double quotes with single quotes
+cleanCommentText :: String -> String
+cleanCommentText =
+  replaceAll (Pattern "\"") (Replacement "'")

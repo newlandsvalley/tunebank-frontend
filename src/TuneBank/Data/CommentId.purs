@@ -5,7 +5,6 @@ module TuneBank.Data.CommentId
   , commentIdToString
   , commentKey
   , fromNow
-  , isEmpty
   ) where
 
 
@@ -16,6 +15,7 @@ import Effect.Now (now)
 import Data.DateTime.Instant (unInstant)
 import Data.Time.Duration (Milliseconds(..))
 import Data.String.Common (null)
+import Data.Number.Format (toString)
 
 newtype CommentId = CommentId String
 
@@ -50,8 +50,4 @@ fromNow = do
   instant <- now
   let
     (Milliseconds milliseconds) = unInstant instant
-  pure $ CommentId (show milliseconds)
-
-isEmpty :: CommentId -> Boolean
-isEmpty (CommentId s) =
-  null s
+  pure $ CommentId (toString milliseconds)
