@@ -2,8 +2,14 @@ module TuneBank.HTML.Utils where
 
 import Prelude
 import TuneBank.Navigation.Route (Route, routeCodec)
-import Data.Maybe (Maybe(..))
+import Partial.Unsafe (unsafePartial)
+import Data.Maybe (Maybe(..), maybe)
+import Data.Either (fromRight)
 import Data.String (length, take)
+import Data.DateTime.Instant (instant, toDateTime)
+import Data.Time.Duration (Milliseconds(..))
+import Data.Formatter.DateTime (Formatter, parseFormatString, format)
+import Global (readFloat)
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
 import Routing.Duplex (print)
@@ -41,3 +47,13 @@ truncateTo maxLen s =
     s
   else
     (take maxLen s) <> "..."
+
+tsToDateString :: String-> String
+tsToDateString tsString =
+  let
+     mInstant = instant $ Milliseconds $ readFloat tsString
+     dateTime = maybe (bottom) (toDateTime) mInstant
+     displayFormatter :: Formatter
+     displayFormatter =  unsafePartial fromRight $ parseFormatString "DD MMM YYYY"
+  in
+    format displayFormatter dateTime

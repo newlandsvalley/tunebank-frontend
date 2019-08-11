@@ -27,13 +27,13 @@ import Html.Renderer.Halogen as RH
 import TuneBank.Api.Codec.Comments (Comments, Comment)
 import TuneBank.Api.Codec.Tune (TuneMetadata, nullTuneMetadata)
 import TuneBank.Api.Request (requestTune, requestComments, deleteComment, deleteTune)
-import TuneBank.Data.CommentId (CommentId)
+import TuneBank.Data.CommentId (CommentId, commentIdToString)
 import TuneBank.Data.Credentials (Credentials, Role(..))
 import TuneBank.Data.Genre (Genre, asUriComponent)
 import TuneBank.Data.Session (Session)
 import TuneBank.Data.TuneId (TuneId(..), encodeTuneIdURIComponent, tuneIdToString)
 import TuneBank.Data.Types (BaseURL(..))
-import TuneBank.HTML.Utils (css, safeHref)
+import TuneBank.HTML.Utils (css, safeHref, tsToDateString)
 import TuneBank.Navigation.Navigate (class Navigate, navigate)
 import TuneBank.Navigation.Route (Route(..))
 import TuneBank.Page.Utils.Environment (getBaseURL, getInstruments, getUser)
@@ -262,9 +262,22 @@ component =
           []
           [ HH.text comment.subject]
         , RH.render_ $ expandLinks comment.text
+        , renderCommentMetadata comment
         --, HH.text comment.text
         , renderCommentControls state editable comment
         ]
+
+  renderCommentMetadata :: Comment -> H.ComponentHTML Action ChildSlots m
+  renderCommentMetadata comment =
+    HH.div_
+      [ HH.dt_
+         [ HH.text "posted by" ]
+      , HH.dd_
+         [ HH.text comment.user
+         , HH.text "  "
+         , HH.text $ tsToDateString $ commentIdToString comment.commentId
+         ]
+      ]
 
   renderCommentControls :: State -> Boolean -> Comment -> H.ComponentHTML Action ChildSlots m
   renderCommentControls state isEditable comment =

@@ -293,6 +293,12 @@ select {
    font-size: 1.25em;
 }
 
+.fileInputLabel {
+	max-width: 90px;
+  display: inline-block;
+	text-align: left;
+}
+
 /* the upload file button */
 #uploadselectfile label {
 	width: 150px;

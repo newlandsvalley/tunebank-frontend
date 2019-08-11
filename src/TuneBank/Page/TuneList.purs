@@ -6,19 +6,15 @@ import Control.Monad.Reader (class MonadAsk)
 import Data.Abc.Metadata (thumbnail)
 import Data.Abc.Parser (parse)
 import Data.Array (index, length, mapWithIndex, range, unsafeIndex)
-import Data.DateTime.Instant (instant, toDateTime)
-import Data.Either (Either(..), fromRight)
-import Data.Formatter.DateTime (Formatter, parseFormatString, format)
-import Data.Maybe (Maybe(..), maybe)
+import Data.Either (Either(..))
+import Data.Maybe (Maybe(..))
 import Data.Monoid (guard)
-import Data.Time.Duration (Milliseconds(..))
 import Data.Traversable (traverse)
 import Data.TraversableWithIndex (traverseWithIndex)
 import Data.Tuple (Tuple(..))
 import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Aff.Class (class MonadAff)
-import Global (readFloat)
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
@@ -31,7 +27,7 @@ import TuneBank.Data.Genre (Genre(..), asUriComponent)
 import TuneBank.Data.Session (Session)
 import TuneBank.Data.TuneId (TuneId(..), decodeTuneIdURIComponent)
 import TuneBank.Data.Types (BaseURL)
-import TuneBank.HTML.Utils (css, safeHref, truncateTo)
+import TuneBank.HTML.Utils (css, safeHref, truncateTo, tsToDateString)
 import TuneBank.Navigation.Navigate (class Navigate, navigate)
 import TuneBank.Navigation.Route (Route(..))
 import TuneBank.Navigation.SearchParams (SearchParams)
@@ -427,15 +423,7 @@ paginationItem thisPage currentPage html =
       html
     ]
 
-tsToDateString :: String-> String
-tsToDateString tsString =
-  let
-     mInstant = instant $ Milliseconds $ readFloat tsString
-     dateTime = maybe (bottom) (toDateTime) mInstant
-     displayFormatter :: Formatter
-     displayFormatter =  unsafePartial fromRight $ parseFormatString "DD MMM YYYY"
-  in
-    format displayFormatter dateTime
+
 
 resultRows :: Either String (Tuple TunesPage Pagination) -> Int
 resultRows = case _ of
