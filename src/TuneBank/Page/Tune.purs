@@ -112,15 +112,19 @@ component =
     let
       (TuneId {title, tuneType}) = state.tuneId
     in
-      HH.div_
+      HH.div
+        [ ]
         [ HH.h1
            [HP.class_ (H.ClassName "center") ]
            [HH.text title ]
         , renderTuneScore state title
-        , renderTuneMetadata state
-        , renderPlayer state
-        , renderComments state
-        , renderDebug state
+        , HH.div
+            [ css "tune-metadata" ]
+            [ renderTuneMetadata state
+            , renderPlayer state
+            , renderComments state
+            , renderDebug state
+            ]
         ]
 
   renderTuneScore :: State -> String -> H.ComponentHTML Action ChildSlots m
@@ -128,7 +132,8 @@ component =
     let
       imageURI = urlPreface state <> "/png"
     in
-      HH.div_
+      HH.div
+        [ css "center-image" ]
         [HH.img
           [ HP.src imageURI
           , HP.alt title
@@ -138,7 +143,7 @@ component =
   renderTuneMetadata :: State -> H.ComponentHTML Action ChildSlots m
   renderTuneMetadata state  =
     HH.dl
-      []
+      [ ]
       [ renderKV "submitter" state.tuneMetadata.submitter
       , renderOptionalKV "composer" state.tuneMetadata.composer
       , renderOptionalKV "source" state.tuneMetadata.source

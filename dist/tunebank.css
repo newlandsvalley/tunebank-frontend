@@ -30,6 +30,14 @@ h2 {
 	text-align: center;
 }
 
+
+.center-image {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+	width: 40%
+}
+
 /* Site Nav - the upper navigation bar */
 
 /* Banner Navigation in the first masthead line */
@@ -540,7 +548,17 @@ table.textalign tr td  {
   margin-right: auto;
 }
 
+
+.tune-metadata {
+	margin: 0 auto;
+	width: 40%;
+	display: block;
+}
+
+
+
 /* tune lists with thumbnail images */
+
 
 .tunelist {
 	margin: 0 auto;
