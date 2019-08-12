@@ -2,6 +2,7 @@ module TuneBank.Page.Tune where
 
 import Prelude
 
+import Affjax.RequestBody (RequestBody(..))
 import Audio.SoundFont (Instrument)
 import Audio.SoundFont.Melody.Class (MidiRecording(..))
 import Control.Monad.Reader (class MonadAsk, asks)
@@ -12,10 +13,11 @@ import Data.Array (filter, length)
 import Data.Bifunctor (lmap)
 import Data.Const (Const)
 import Data.Either (Either(..), either)
+import Data.Link (expandLinks, expandYouTubeWatchLinks)
 import Data.Maybe (Maybe(..))
 import Data.MediaType (MediaType(..))
 import Data.Symbol (SProxy(..))
-import Data.Link (expandLinks)
+import Debug.Trace (spy)
 import Effect.Aff.Class (class MonadAff)
 import Effect.Ref as Ref
 import Halogen as H
@@ -37,9 +39,6 @@ import TuneBank.HTML.Utils (css, safeHref, tsToDateString)
 import TuneBank.Navigation.Navigate (class Navigate, navigate)
 import TuneBank.Navigation.Route (Route(..))
 import TuneBank.Page.Utils.Environment (getBaseURL, getInstruments, getUser)
-
-
-import Debug.Trace (spy)
 -- | there is no tune yet
 nullParsedTune :: Either String AbcTune
 nullParsedTune =
@@ -261,7 +260,7 @@ component =
         [ HH.h2
           []
           [ HH.text comment.subject]
-        , RH.render_ $ expandLinks comment.text
+        , RH.render_ $ expandAllLinks comment.text
         , renderCommentMetadata comment
         --, HH.text comment.text
         , renderCommentControls state editable comment
@@ -274,7 +273,7 @@ component =
          [ HH.text "posted by" ]
       , HH.dd_
          [ HH.text comment.user
-         , HH.text "  "
+         , HH.text " on "
          , HH.text $ tsToDateString $ commentIdToString comment.commentId
          ]
       ]
@@ -381,6 +380,10 @@ component =
         Nothing ->
           pure unit
 
+-- expand YouTube watch links to embedded iframes and geberal links to anchor tags
+expandAllLinks :: String -> String
+expandAllLinks =
+  expandLinks <<< expandYouTubeWatchLinks
 
 urlPreface :: State -> String
 urlPreface state =
