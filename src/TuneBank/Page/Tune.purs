@@ -139,7 +139,11 @@ component =
   renderTuneMetadata state  =
     HH.dl
       []
-      [ renderTuneSubmitter state
+      [ renderKV "submitter" state.tuneMetadata.submitter
+      , renderOptionalKV "composer" state.tuneMetadata.composer
+      , renderOptionalKV "source" state.tuneMetadata.source
+      , renderOptionalKV "origin" state.tuneMetadata.origin
+      , renderOptionalKV "transcriber" state.tuneMetadata.transcriber
       , HH.dt
          []
          [ HH.text "download"]
@@ -172,16 +176,22 @@ component =
          , renderTuneControls state
       ]
 
-  renderTuneSubmitter :: State -> H.ComponentHTML Action ChildSlots m
-  renderTuneSubmitter state =
+  renderOptionalKV :: String -> Maybe String -> H.ComponentHTML Action ChildSlots m
+  renderOptionalKV k mv =
+    case mv of
+      Nothing ->
+        HH.text ""
+      Just v ->
+        renderKV k v
+
+  renderKV :: String -> String -> H.ComponentHTML Action ChildSlots m
+  renderKV k v =
     HH.div_
       [
-      HH.dt
-        []
-        [ HH.text "submitter" ]
-      , HH.dd
-        []
-        [ HH.text state.tuneMetadata.submitter ]
+      HH.dt_
+        [ HH.text k ]
+      , HH.dd_
+        [ HH.text v ]
       ]
 
   renderTuneControls :: State -> H.ComponentHTML Action ChildSlots m
