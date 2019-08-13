@@ -2,7 +2,6 @@ module TuneBank.Page.Tune where
 
 import Prelude
 
-import Affjax.RequestBody (RequestBody(..))
 import Audio.SoundFont (Instrument)
 import Audio.SoundFont.Melody.Class (MidiRecording(..))
 import Control.Monad.Reader (class MonadAsk, asks)
@@ -35,7 +34,7 @@ import TuneBank.Data.Genre (Genre, asUriComponent)
 import TuneBank.Data.Session (Session)
 import TuneBank.Data.TuneId (TuneId(..), encodeTuneIdURIComponent, tuneIdToString)
 import TuneBank.Data.Types (BaseURL(..))
-import TuneBank.HTML.Utils (css, safeHref, tsToDateString)
+import TuneBank.HTML.Utils (css, safeHref, renderKV, tsToDateString)
 import TuneBank.Navigation.Navigate (class Navigate, navigate)
 import TuneBank.Navigation.Route (Route(..))
 import TuneBank.Page.Utils.Environment (getBaseURL, getInstruments, getUser)
@@ -188,16 +187,6 @@ component =
         HH.text ""
       Just v ->
         renderKV k v
-
-  renderKV :: String -> String -> H.ComponentHTML Action ChildSlots m
-  renderKV k v =
-    HH.div_
-      [
-      HH.dt_
-        [ HH.text k ]
-      , HH.dd_
-        [ HH.text v ]
-      ]
 
   renderTuneControls :: State -> H.ComponentHTML Action ChildSlots m
   renderTuneControls state =

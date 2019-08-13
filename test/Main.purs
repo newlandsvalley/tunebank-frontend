@@ -20,7 +20,8 @@ import TuneBank.Api.Request (requestTune, requestTuneAbc, requestCleanTune, requ
        requestTuneSearch, requestTuneSearchStr, checkUser, requestUsers, requestComments,
        requestCommentsStr)
 import TuneBank.Navigation.Endpoint (PageParams)
-import TuneBank.Navigation.SearchParams (SearchParams, defaultSearchParams)
+import TuneBank.Navigation.SearchParams (SearchParams, defaultSearchParams, parseParams)
+import Text.Parsing.StringParser (ParseError(..))
 
 
 import Debug.Trace (spy, trace)
@@ -161,6 +162,13 @@ codecSuite =
         sampleTuneName = "andet brudestykke"
       Assert.equal sampleTuneName
         (unsafeDecodeURIComponent $ unsafeEncodeURIComponent sampleTuneName)
+    test "parse search params" do
+      let
+        expected = defaultSearchParams { rhythm = Just "reel", key = Just "BMin" }
+      Assert.equal (Right expected) (parseParams "rhythm=reel&key=BMin")
+
+
+
 {-}
 predicateSuite :: Free TestF Unit
 predicateSuite =

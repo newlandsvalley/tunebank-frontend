@@ -10,6 +10,7 @@ import Data.DateTime.Instant (instant, toDateTime)
 import Data.Time.Duration (Milliseconds(..))
 import Data.Formatter.DateTime (Formatter, parseFormatString, format)
 import Global (readFloat)
+import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
 import Routing.Duplex (print)
@@ -57,3 +58,14 @@ tsToDateString tsString =
      displayFormatter =  unsafePartial fromRight $ parseFormatString "DD MMM YYYY"
   in
     format displayFormatter dateTime
+
+-- render key-value pairs as rows in a definition list
+renderKV :: ∀ a s m. String -> String -> H.ComponentHTML a s m
+renderKV k v =
+  HH.div_
+    [
+    HH.dt_
+      [ HH.text k ]
+    , HH.dd_
+      [ HH.text v ]
+    ]

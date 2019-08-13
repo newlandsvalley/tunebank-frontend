@@ -21,18 +21,6 @@ foreign import decodeURIComponentImpl :: String -> Nullable.Nullable String
 decodeURIComponent :: String -> Maybe String
 decodeURIComponent = Nullable.toMaybe <<< decodeURIComponentImpl
 
-
-{-}
-encodeURIComponent :: String -> String
-encodeURIComponent =
-  unsafeEncodeURIComponent
-
-decodeURIComponent :: String -> Maybe String
-decodeURIComponent =
-  unsafeDecodeURIComponent >>> Just
--}
-
-
 safeSlice :: Int -> Int -> String -> String
 safeSlice from to str =
   fromMaybe "" $ slice from to str

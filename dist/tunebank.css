@@ -286,6 +286,11 @@ input[type="text"] {
   font-size: 1.25em;
 }
 
+/* override default text input width for search criteria */
+#search-criteria {
+	width: 450px;
+}
+
 /* comment textarea */
 .textinput-div textarea {
 	padding: 2px 3px;
@@ -360,6 +365,20 @@ input[type='submit'] {
   margin-right: auto;
 }
 
+#advancedsearchform {
+  width: 640px;
+  text-align: middle;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* center search examples in advanced search page */
+#search-examples-div {
+  width: 640px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 
 /* link states */
 a {
@@ -417,31 +436,17 @@ dl {
     padding: 0 0 0.3em 0;
   }
 
-/** the metadata form */
-
-dl.metadata {
-    padding: 0;
+/* override dl settings for advanced search examples */
+#search-examples dt {
+	width: 200px;
+	padding: 0 0, 0.3em 0;
+	margin-left: 10px;
 }
 
-.metadata dt {
-    float: left;
-    clear: left;
+#search-examples dd {
+	width: 600px;
 }
 
-.metadata dt:after {
-    content: " :";
-}
-
-.metadata dd {
-    margin: 0 0 0 314px;
-    width: 400px;
-    padding: 0 0, 0.3em 0;
-}
-
-/* label alignment in metadata forms */
-.metadata dt label {
-  width: 275px;
-}
 
 /* links alignment */
 

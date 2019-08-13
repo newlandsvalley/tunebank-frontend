@@ -19,7 +19,7 @@ import TuneBank.Data.Types (BaseURL)
 import TuneBank.Data.Key (keySearchTerm)
 import TuneBank.Data.Key as K
 import TuneBank.Data.Rhythm as R
-import TuneBank.HTML.Utils (css)
+import TuneBank.HTML.Utils (css, safeHref)
 import TuneBank.Page.Utils.Environment (getCurrentGenre)
 
 -- type Slot = H.Slot Query Void
@@ -97,6 +97,7 @@ component =
             , renderSearchButton state
             ]
         ]
+        , renderLink
       ]
 
   handleAction ∷ Action -> H.HalogenM State Action ChildSlots o m Unit
@@ -167,6 +168,14 @@ renderKeyMenu state =
             ]
             (keyOptions defaultKey)
         ]
+
+renderLink :: forall m. H.ComponentHTML Action ChildSlots m
+renderLink =
+  HH.div_
+    [ HH.a
+        [ safeHref AdvancedSearch ]
+        [ HH.text "advanced search"]
+    ]
 
 keyOptions :: forall i p. String -> Array (HH.HTML i p)
 keyOptions default =

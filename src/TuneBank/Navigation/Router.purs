@@ -16,6 +16,7 @@ import TuneBank.Navigation.Route (Route(..), routeCodec)
 import TuneBank.Navigation.Navigate (class Navigate, navigate)
 import TuneBank.Page.Login as Login
 import TuneBank.Page.SearchForm as SearchForm
+import TuneBank.Page.AdvancedSearchForm as AdvancedSearchForm
 import TuneBank.Page.GenreMenu as GenreMenu
 import TuneBank.Page.Register as Register
 import TuneBank.Page.Upload as Upload
@@ -63,6 +64,7 @@ type ChildSlots =
   , login :: Login.Slot Unit
   , register :: Register.Slot Unit
   , upload :: Upload.Slot Unit
+  , advancedsearch :: AdvancedSearchForm.Slot Unit
   , userlist :: UserList.Slot Unit
   , tune :: Tune.Slot Unit
   , tunelist :: TuneList.Slot Unit
@@ -140,6 +142,8 @@ component =
             HH.slot (SProxy :: _ "register") unit Register.component unit absurd
           Upload ->
             HH.slot (SProxy :: _ "upload") unit Upload.component unit absurd
+          AdvancedSearch ->
+            HH.slot (SProxy :: _ "advancedsearch") unit AdvancedSearchForm.component unit absurd
           UserList pageParams  ->
             HH.slot (SProxy :: _ "userlist") unit UserList.component pageParams absurd
           Tune genre tuneId  ->
