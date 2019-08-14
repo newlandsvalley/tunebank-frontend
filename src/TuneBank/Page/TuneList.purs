@@ -281,7 +281,7 @@ component =
         in
           map pageLink (range first last)
 
-  renderAddThumbnailsButton :: ∀ m. State -> H.ComponentHTML Action ChildSlots m
+  renderAddThumbnailsButton :: State -> H.ComponentHTML Action ChildSlots m
   renderAddThumbnailsButton state =
       HH.button
         [ HE.onClick \_ -> Just AddThumbnails

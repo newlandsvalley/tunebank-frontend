@@ -105,10 +105,12 @@ component =
       state <- H.get
       user <- getUser
       genre <- getCurrentGenre
-      -- don't re-render unnecessarily if the state is unchanged
-      when ((state.route /= Just dest)
+      -- don't re-render unnecessarily if the state is unchanged.
+      -- we will re-render for paged routes, though
+      when ( (state.route /= Just dest)
            || (state.genre /= genre)
            || (state.currentUser /= user)
+           || (isPagedRoute state.route)
            ) do
          H.modify_ _ { route = Just dest, genre = genre, currentUser = user }
       pure (Just a)
@@ -145,7 +147,7 @@ component =
           AdvancedSearch ->
             HH.slot (SProxy :: _ "advancedsearch") unit AdvancedSearchForm.component unit absurd
           UserList pageParams  ->
-            HH.slot (SProxy :: _ "userlist") unit UserList.component pageParams absurd
+            HH.slot (SProxy :: _ "userlist") unit UserList.component { pageParams } absurd
           Tune genre tuneId  ->
             HH.slot (SProxy :: _ "tune") unit Tune.component { genre, tuneId } absurd
           TuneList searchParams ->
@@ -163,3 +165,17 @@ component =
 
         Nothing ->
           HH.div_ [ HH.text "Oh no! That page wasn't found." ]
+
+-- return true if the Route is paged
+isPagedRoute :: Maybe Route -> Boolean
+isPagedRoute route =
+  case route of
+    Just r -> case r of
+      TuneList _ ->
+        true
+      UserList _ ->
+        true
+      _ ->
+        false
+    Nothing ->
+      false

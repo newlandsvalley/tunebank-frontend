@@ -6,7 +6,7 @@ import Data.Monoid (guard)
 import Halogen.HTML as HH
 import TuneBank.Api.Codec.Pagination (Pagination)
 import TuneBank.HTML.Utils (css, safeHref)
-import TuneBank.Navigation.Route (Route(..))
+import TuneBank.Navigation.Route (Route)
 import Data.Array (range)
 
 -- failing attempt at abstracting the rendering of pagination
@@ -19,7 +19,9 @@ renderPagination route pagination =
   HH.ul
         [ css "pagination"]
         ( [ renderFirstPage  ] <>
+          [ renderPrevPage  ] <>
             renderNumberedPageLinks  <>
+          [ renderNextPage  ] <>
           [ renderLastPage  ]
         )
   where
@@ -37,6 +39,20 @@ renderPagination route pagination =
           [ HH.text "last" ]
         else
           HH.text ""
+
+    renderPrevPage  =
+      if (pagination.page > 1) then
+        paginationItem route (pagination.page -1) pagination.page
+          [ HH.text "prev" ]
+      else
+        HH.text ""
+
+    renderNextPage  =
+      if (pagination.page < pagination.maxPages) then
+        paginationItem route (pagination.page + 1) pagination.page
+          [ HH.text "next" ]
+      else
+        HH.text ""
 
     renderNumberedPageLinks  =
       let

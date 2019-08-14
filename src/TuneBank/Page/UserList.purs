@@ -22,6 +22,9 @@ import TuneBank.Navigation.Route (Route(..))
 import TuneBank.Page.Utils.Environment (getBaseURL, getUser)
 import TuneBank.HTML.PaginationRendering  (renderPagination)
 
+
+import Debug.Trace (spy, trace)
+
 type Slot = H.Slot Query Void
 
 type State =
@@ -33,6 +36,9 @@ type State =
 data Query a =
   FetchResults a
 
+type Input =
+  { pageParams :: PageParams }
+
 type ChildSlots = ()
 
 data Action
@@ -40,11 +46,11 @@ data Action
   | GoToPage Int
 
 component
-   :: ∀ i o m r
+   :: ∀ o m r
     . MonadAff m
    => MonadAsk { session :: Session, baseURL :: BaseURL | r } m
    => Navigate m
-   => H.Component HH.HTML Query i o m
+   => H.Component HH.HTML Query Input o m
 component =
   H.mkComponent
     { initialState
@@ -58,10 +64,10 @@ component =
     }
   where
 
-  initialState :: i -> State
-  initialState _ =
+  initialState :: Input -> State
+  initialState input =
     { currentUser : Nothing
-    , pageParams : { page: 1 }
+    , pageParams : input.pageParams
     , usersResult : Left "Not started" }
 
   render :: State -> H.ComponentHTML Action ChildSlots m
@@ -114,8 +120,11 @@ component =
   handleAction ∷ Action -> H.HalogenM State Action ChildSlots o m Unit
   handleAction = case _ of
     Initialize -> do
+      state <- H.get
+      let
+        foo = spy "UserList page" state.pageParams
       mUser <- getUser
-      _ <- H.modify (\state -> state { currentUser = mUser } )
+      _ <- H.modify (\st -> st { currentUser = mUser } )
       _ <- handleQuery (FetchResults unit)
       pure unit
     GoToPage page -> do
