@@ -18,6 +18,7 @@ fixSearchParams endpoint buggys =
       replace (Pattern rhythm) (Replacement "R") $
       replace (Pattern title) (Replacement "T") $
       replace (Pattern origin) (Replacement "O") $
+      replace (Pattern composer) (Replacement "C") $
       replace (Pattern transcriber) (Replacement "Z") $
       replace (Pattern source) (Replacement "S") buggys
     _ ->

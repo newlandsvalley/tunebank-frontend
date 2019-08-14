@@ -74,6 +74,8 @@ routeCodec = root $ sum
        , rhythm : optional <<< string
        , title : optional <<< string
        , source : optional <<< string
+       , origin : optional <<< string
+       , composer : optional <<< string
        , transcriber : optional <<< string
        , abc : optional <<< string
        , page: int

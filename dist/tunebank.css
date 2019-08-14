@@ -375,6 +375,7 @@ input[type='submit'] {
 /* center search examples in advanced search page */
 #search-examples-div {
   width: 640px;
+	margin-top: 10px;
   margin-left: auto;
   margin-right: auto;
 }

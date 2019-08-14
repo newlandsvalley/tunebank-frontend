@@ -1,9 +1,10 @@
 module TuneBank.Page.AdvancedSearchForm where
 
-import Prelude (Unit, Void, ($), (<<<), (<>),  bind, identity, pure, map, unit)
+import Prelude (Unit, Void, ($), (<<<), (<>),  bind, const, pure, unit)
 import Data.Const (Const)
-import Data.String.CodePoints (length)
-import Data.Maybe (Maybe(..), maybe)
+import Data.String.Common (null)
+import Data.Maybe (Maybe(..))
+import Data.Either (Either(..), either)
 import Effect.Aff.Class (class MonadAff)
 import Control.Monad.Reader (class MonadAsk)
 import TuneBank.Navigation.Navigate (class Navigate, navigate)
@@ -12,7 +13,7 @@ import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
 import TuneBank.Navigation.Route (Route(..))
-import TuneBank.Navigation.SearchParams (SearchParams, defaultSearchParams)
+import TuneBank.Navigation.SearchParams (SearchParams, parseParams)
 import TuneBank.Data.Genre (Genre(..))
 import TuneBank.Data.Session (Session)
 import TuneBank.Data.Types (BaseURL)
@@ -25,8 +26,8 @@ type Slot = H.Slot (Const Void) Void
 
 type State =
   { genre :: Genre
-  , searchParams :: SearchParams
   , criteria :: String
+  , parsedParams :: Either String SearchParams
   }
 
 type Query = (Const Void)
@@ -60,8 +61,8 @@ component =
   initialState :: i -> State
   initialState _ =
    { genre : Scandi
-   , searchParams : defaultSearchParams
    , criteria : ""
+   , parsedParams : Left ""
    }
 
   render :: State -> H.ComponentHTML Action ChildSlots m
@@ -76,6 +77,7 @@ component =
             , renderCriteria state
             , renderSearchButton state
             ]
+        , renderError state
         ]
         , renderSearchExamples
       ]
@@ -86,22 +88,18 @@ component =
       genre <- getCurrentGenre
       H.modify_ (\state -> state { genre = genre } )
     HandleCriteria criteria -> do
-      {-}
-      if (length title > 0)
-        then do
-          state <- H.get
-          let
-            searchParams = state.searchParams { title = Just title }
-          H.modify_ (\st -> st { searchParams = searchParams } )
-        else
-      -}
-          pure unit
+      state <- H.get
+      H.modify_ (\st -> st { criteria = criteria, parsedParams = Left "" } )
     Search -> do
       state <- H.get
-      pure unit
-      {-}
-      navigate $ TuneList state.searchParams
-      -}
+      let
+        parsedParams = parseParams state.criteria
+      _ <- H.modify_ (\st -> st { parsedParams = parsedParams  } )
+      case parsedParams of
+        Left _ ->
+          pure unit
+        Right searchParams ->
+          navigate $ TuneList searchParams
 
 renderCriteria :: forall m. State -> H.ComponentHTML Action ChildSlots m
 renderCriteria state =
@@ -160,10 +158,23 @@ renderSearchExamples =
         [ HP.id_ "search-examples"]
         [ renderKV "title=Sligo" "'sligo' in the tune name"
         , renderKV "rhythm=slip jig" "slip jigs"
-        , renderKV "rhythm=jig" "both jigs and slip jigs"
+        , renderKV "rhythm=jig" "jigs"
         , renderKV "abc-fedd" "tunes with this succession of notes (irrespective of octave)"
         , renderKV "transcriber=Fred" "tunes transcribed by Fred"
         , renderKV "submitterer=Fred" "tunes submitted by Fred"
         , renderKV "rhythm=reel&key=BMin"	"reels in B Minor"
         ]
     ]
+
+renderError :: forall m. State -> H.ComponentHTML Action ChildSlots m
+renderError state =
+  let
+    f :: String -> String
+    f err =
+      if (null err) then "" else "invalid search criteria"
+    errorText = either f (const "") state.parsedParams
+  in
+    HH.div_
+      [ HH.b_
+        [ HH.text errorText ]
+      ]

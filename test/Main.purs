@@ -21,7 +21,6 @@ import TuneBank.Api.Request (requestTune, requestTuneAbc, requestCleanTune, requ
        requestCommentsStr)
 import TuneBank.Navigation.Endpoint (PageParams)
 import TuneBank.Navigation.SearchParams (SearchParams, defaultSearchParams, parseParams)
-import Text.Parsing.StringParser (ParseError(..))
 
 
 import Debug.Trace (spy, trace)

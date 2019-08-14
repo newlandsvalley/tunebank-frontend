@@ -96,8 +96,8 @@ component =
             , renderOrderingMenu state
             , renderSearchButton state
             ]
-        ]
         , renderLink
+        ]
       ]
 
   handleAction ∷ Action -> H.HalogenM State Action ChildSlots o m Unit
