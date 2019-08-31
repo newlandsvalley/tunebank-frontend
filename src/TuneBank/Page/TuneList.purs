@@ -8,7 +8,6 @@ import Data.Abc.Parser (parse)
 import Data.Array (index, length, mapWithIndex, range, unsafeIndex)
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
-import Data.Monoid (guard)
 import Data.Traversable (traverse)
 import Data.TraversableWithIndex (traverseWithIndex)
 import Data.Tuple (Tuple(..))
@@ -28,7 +27,8 @@ import TuneBank.Data.Session (Session)
 import TuneBank.Data.TuneId (TuneId(..), decodeTuneIdURIComponent)
 import TuneBank.Data.Types (BaseURL)
 import TuneBank.HTML.Utils (css, safeHref, truncateTo, tsToDateString)
-import TuneBank.Navigation.Navigate (class Navigate, navigate)
+import TuneBank.HTML.PaginationRendering  (renderPagination)
+import TuneBank.Navigation.Navigate (class Navigate)
 import TuneBank.Navigation.Route (Route(..))
 import TuneBank.Navigation.SearchParams (SearchParams)
 import TuneBank.Page.Utils.Environment (getBaseURL, getCurrentGenre)
@@ -59,7 +59,8 @@ type ChildSlots = ()
 
 data Action
   = Initialize          -- initialise the TuneList Page with default values
-  | GoToPage Int        -- go to results page n
+  -- | GoToPage Int        -- go to results page n
+  | HandleInput Input
   | AddThumbnails       -- add all thumbnails to this page
 
 maxPageLinks :: Int
@@ -100,6 +101,7 @@ component =
     , eval: H.mkEval $ H.defaultEval
         { handleAction = handleAction
         , handleQuery = handleQuery
+        , receive = Just <<< HandleInput
         , initialize = Just Initialize
         , finalize = Nothing
         }
@@ -141,7 +143,8 @@ component =
                            )
                  ]
               , renderTuneList state tunesPage.tunes
-              , renderPagination pagination
+              -- , renderPagination pagination
+              , renderPagination (TuneList state.searchParams) pagination
               , renderAddThumbnailsButton state
               ]
 
@@ -225,62 +228,6 @@ component =
           in
             map renderPhantomRow rows
 
-
-  renderPagination :: Pagination -> H.ComponentHTML Action ChildSlots m
-  renderPagination pagination =
-    HH.div
-      [ css "pagination-div" ]
-      [ HH.ul
-          [ css "pagination"]
-          ( [ renderFirstPage  ] <>
-            [ renderPrevPage  ] <>
-              renderNumberedPageLinks  <>
-            [ renderNextPage  ] <>
-            [ renderLastPage  ]
-          )
-      ]
-    where
-
-      renderFirstPage  =
-        if (pagination.maxPages > maxPageLinks  && pagination.page > 1) then
-          paginationItem 1 pagination.page
-            [ HH.text "first" ]
-        else
-          HH.text ""
-
-      renderLastPage  =
-        if (pagination.maxPages > maxPageLinks  && pagination.page < pagination.maxPages) then
-          paginationItem pagination.maxPages pagination.page
-            [ HH.text "last" ]
-          else
-            HH.text ""
-
-      renderPrevPage  =
-        if (pagination.page > 1) then
-          paginationItem (pagination.page -1) pagination.page
-            [ HH.text "prev" ]
-        else
-          HH.text ""
-
-      renderNextPage  =
-        if (pagination.page < pagination.maxPages) then
-          paginationItem (pagination.page + 1) pagination.page
-            [ HH.text "next" ]
-        else
-          HH.text ""
-
-      renderNumberedPageLinks  =
-        let
-          pageLink n =
-            paginationItem n pagination.page
-              [ HH.text (show n) ]
-          first =
-            max 1 (pagination.page - (maxPageLinks / 2))
-          last =
-            min pagination.maxPages (first + maxPageLinks)
-        in
-          map pageLink (range first last)
-
   renderAddThumbnailsButton :: State -> H.ComponentHTML Action ChildSlots m
   renderAddThumbnailsButton state =
       HH.button
@@ -298,23 +245,15 @@ component =
       H.modify_ (\state -> state { genre = genre } )
       _ <- handleQuery (FetchResults unit)
       pure unit
-    GoToPage page -> do
-      -- | This is a little awkward.  I had expected that all I needed to do in
-      -- | order to have pagination was to navigate to the same page but with
-      -- | the new page parameter.  Unfortunately, this does not work - the
-      -- | route changes OK (as indicated by the URL displayed by the browser)
-      -- | but the page does not refresh.  This is presumably a Halogen slot
-      -- | issue that I don't yet fully understand.
-      -- | so, as well as navigate, we refresh the page - presumably we just
-      -- | stay in the same slot.
-      state <- H.get
+
+    HandleInput input -> do
       let
-        newSearchParams = state.searchParams { page = page}
-      _ <- H.modify (\st -> st { searchParams = newSearchParams } )
-      _ <- navigate $ TuneList newSearchParams
+        foo = spy "new TuneList input" input
+      H.modify_ (\st -> st { searchParams = input.searchParams } )
       _ <- handleQuery (ClearThumbnails unit)
       _ <- handleQuery (FetchResults unit)
       pure unit
+
     AddThumbnails -> do
       _ <- handleQuery (InitializeVex unit)
       _ <- handleQuery (Thumbnail 0 unit)
@@ -406,24 +345,6 @@ component =
       _ <- H.liftEffect $ traverseWithIndex f state.vexRenderers
       _ <- H.liftEffect $ traverse (clearCanvas) state.vexRenderers
       pure (Just next)
-
-paginationItem
-  :: ∀ m.
-  Int ->
-  Int ->
-  Array (H.ComponentHTML Action ChildSlots m) ->
-  H.ComponentHTML Action ChildSlots m
-paginationItem thisPage currentPage html =
-  HH.li
-    [ css "pagination-item" ]
-    [ HH.a
-      [ css $ guard (thisPage == currentPage) "current"
-      , HE.onClick \_ -> Just (GoToPage thisPage)
-      ]
-      html
-    ]
-
-
 
 resultRows :: Either String (Tuple TunesPage Pagination) -> Int
 resultRows = case _ of

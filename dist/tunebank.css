@@ -518,7 +518,8 @@ table.textalign tr td  {
 .pagination li {
    float: left;
    padding: 3.5px 4px 3.5px 4px;
-   font-size: .90em;
+   /* font-size: .90em; */
+   font-size: 1.3em;
    list-style-type: none;
    display: inline;
 }

@@ -8,7 +8,8 @@ import Data.Tuple (Tuple(..))
 import Effect.Aff.Class (class MonadAff)
 import Halogen as H
 import Halogen.HTML as HH
-import Prelude (Unit, Void, ($), (<>), bind, discard, map, pure, show, unit)
+import Halogen.HTML.Events as HE
+import Prelude (Unit, Void, ($), (<>), (<<<), bind, discard, map, pure, show, unit)
 import TuneBank.Api.Codec.Pagination (Pagination)
 import TuneBank.Api.Codec.UsersPage (UsersPage, UserRef)
 import TuneBank.Api.Request (requestUsers)
@@ -34,7 +35,7 @@ type State =
   }
 
 data Query a =
-  FetchResults a
+    FetchResults a
 
 type Input =
   { pageParams :: PageParams }
@@ -43,7 +44,7 @@ type ChildSlots = ()
 
 data Action
   = Initialize
-  | GoToPage Int
+  | HandleInput Input
 
 component
    :: ∀ o m r
@@ -58,6 +59,7 @@ component =
     , eval: H.mkEval $ H.defaultEval
         { handleAction = handleAction
         , handleQuery = handleQuery
+        , receive = Just <<< HandleInput
         , initialize = Just Initialize
         , finalize = Nothing
         }
@@ -127,9 +129,10 @@ component =
       _ <- H.modify (\st -> st { currentUser = mUser } )
       _ <- handleQuery (FetchResults unit)
       pure unit
-    GoToPage page -> do
-      _ <- H.modify (\st -> st { pageParams = { page : page} } )
-      _ <- navigate $ UserList { page : page }
+    HandleInput input -> do
+      let
+        foo = spy "new UserList input" input
+      H.modify_ (\st -> st { pageParams = input.pageParams } )
       _ <- handleQuery (FetchResults unit)
       pure unit
 

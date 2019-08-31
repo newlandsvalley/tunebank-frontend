@@ -6,10 +6,11 @@ import Data.Monoid (guard)
 import Halogen.HTML as HH
 import TuneBank.Api.Codec.Pagination (Pagination)
 import TuneBank.HTML.Utils (css, safeHref)
-import TuneBank.Navigation.Route (Route)
+import TuneBank.Navigation.Route (Route(..))
 import Data.Array (range)
 
--- failing attempt at abstracting the rendering of pagination
+-- | abstraction for the rendering of pagination
+-- | At the moment, only the user list and tune list are paged
 
 maxPageLinks :: Int
 maxPageLinks = 10
@@ -79,7 +80,19 @@ paginationItem route thisPage currentPage html =
     [ css "pagination-item" ]
     [ HH.a
       [ css $ guard (thisPage == currentPage) "current"
-      , safeHref route
+      , safeHref $ pagedRoute thisPage route
       ]
       html
     ]
+
+-- | Produce a route for the correct page
+-- | we need a case entry for each tunebank 'page;' which is itself paged
+pagedRoute :: Int -> Route -> Route
+pagedRoute thisPage r =
+  case r of
+    UserList pageParams ->
+      UserList pageParams { page = thisPage }
+    TuneList searchParams ->
+      TuneList searchParams { page = thisPage }
+    _ ->
+      r
