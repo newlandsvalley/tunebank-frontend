@@ -50,6 +50,10 @@ defaultOrdering :: String
 defaultOrdering =
   "alpha"
 
+mostRecentOrdering :: String
+mostRecentOrdering =
+  "most recent"
+
 defaultOtherMenu :: String
 defaultOtherMenu =
   "any"
@@ -129,8 +133,17 @@ component =
             searchParams = state.searchParams { rhythm = Just rhythm }
           H.modify_ (\st -> st { searchParams = searchParams } )
         else pure unit
-    HandleOrdering ordering ->
-       H.modify_ (\state -> state { ordering = ordering } )
+    HandleOrdering ordering -> do
+      state <- H.get
+      let
+        sortKey =
+          if (ordering == mostRecentOrdering)
+            then
+              "date"
+            else
+              defaultOrdering
+        searchParams = state.searchParams { sort = sortKey }
+      H.modify_ (\st -> st { searchParams = searchParams } )
     Search -> do
       state <- H.get
       navigate $ TuneList state.searchParams
@@ -217,7 +230,9 @@ menuOption default next  =
 renderOrderingMenu :: forall m. State -> H.ComponentHTML Action ChildSlots m
 renderOrderingMenu state =
   let
-    default = "alpha"
+    -- default = "alpha"
+    default =
+      state.ordering
   in
      HH.div
        [ css "dropdown-div" ]
@@ -227,7 +242,7 @@ renderOrderingMenu state =
          , HH.select
             [ css "dropdown-selection"
             , HP.id_  "ordering-menu"
-            , HP.value state.ordering
+            , HP.value default
             , HE.onValueChange  (Just <<< HandleOrdering)
             ]
             (orderingOptions default)
@@ -235,8 +250,8 @@ renderOrderingMenu state =
 
 orderingOptions :: forall i p. String -> Array (HH.HTML i p)
 orderingOptions default =
-  [ menuOption default "alpha"
-  , menuOption default "most recent"
+  [ menuOption default defaultOrdering      -- alpha
+  , menuOption default mostRecentOrdering   -- date
   ]
 
 renderSearchButton :: forall m. State -> H.ComponentHTML Action ChildSlots m

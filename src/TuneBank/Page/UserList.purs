@@ -8,7 +8,6 @@ import Data.Tuple (Tuple(..))
 import Effect.Aff.Class (class MonadAff)
 import Halogen as H
 import Halogen.HTML as HH
-import Halogen.HTML.Events as HE
 import Prelude (Unit, Void, ($), (<>), (<<<), bind, discard, map, pure, show, unit)
 import TuneBank.Api.Codec.Pagination (Pagination)
 import TuneBank.Api.Codec.UsersPage (UsersPage, UserRef)
@@ -18,13 +17,10 @@ import TuneBank.Data.Session (Session)
 import TuneBank.Data.Types (BaseURL)
 import TuneBank.HTML.Utils (css)
 import TuneBank.Navigation.Endpoint (PageParams)
-import TuneBank.Navigation.Navigate (class Navigate, navigate)
+import TuneBank.Navigation.Navigate (class Navigate)
 import TuneBank.Navigation.Route (Route(..))
 import TuneBank.Page.Utils.Environment (getBaseURL, getUser)
 import TuneBank.HTML.PaginationRendering  (renderPagination)
-
-
-import Debug.Trace (spy, trace)
 
 type Slot = H.Slot Query Void
 
@@ -106,32 +102,27 @@ component =
       HH.table_ $
         map f users
     where
-
       tableRow name email =
-          HH.tr
+        HH.tr
+          []
+          [ HH.td
             []
-            [ HH.td
-              []
-              [ HH.text name]
-            , HH.td
-              []
-              [ HH.text email]
-            ]
+            [ HH.text name]
+          , HH.td
+            []
+            [ HH.text email]
+          ]
 
 
   handleAction ∷ Action -> H.HalogenM State Action ChildSlots o m Unit
   handleAction = case _ of
     Initialize -> do
       state <- H.get
-      let
-        foo = spy "UserList page" state.pageParams
       mUser <- getUser
       _ <- H.modify (\st -> st { currentUser = mUser } )
       _ <- handleQuery (FetchResults unit)
       pure unit
     HandleInput input -> do
-      let
-        foo = spy "new UserList input" input
       H.modify_ (\st -> st { pageParams = input.pageParams } )
       _ <- handleQuery (FetchResults unit)
       pure unit
