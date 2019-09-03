@@ -3,8 +3,9 @@ module TuneBank.Page.TuneList where
 import Prelude
 
 import Control.Monad.Reader (class MonadAsk)
-import Data.Abc.Metadata (thumbnail)
+import Data.Abc.Metadata (thumbnail, removeRepeatMarkers)
 import Data.Abc.Parser (parse)
+import Data.Abc.Midi (toMidi)
 import Data.Array (index, length, mapWithIndex, range, unsafeIndex)
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
@@ -14,10 +15,12 @@ import Data.Tuple (Tuple(..))
 import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Aff.Class (class MonadAff)
+import Data.Symbol (SProxy(..))
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
+import Halogen.ThumbnailPlayerComponent (Query(..), Slot, component) as TNP
 import Partial.Unsafe (unsafePartial)
 import TuneBank.Api.Codec.Pagination (Pagination)
 import TuneBank.Api.Codec.TunesPage (TunesPage, TuneRefArray)
@@ -31,10 +34,13 @@ import TuneBank.HTML.PaginationRendering  (renderPagination)
 import TuneBank.Navigation.Navigate (class Navigate)
 import TuneBank.Navigation.Route (Route(..))
 import TuneBank.Navigation.SearchParams (SearchParams)
-import TuneBank.Page.Utils.Environment (getBaseURL, getCurrentGenre)
+import TuneBank.Page.Utils.Environment (getBaseURL, getCurrentGenre, getInstruments)
 import VexFlow.Abc.Alignment (justifiedScoreConfig, rightJustify)
 import VexFlow.Score (Renderer, clearCanvas, createScore, renderScore, initialiseCanvas, resizeCanvas)
 import VexFlow.Types (Config)
+import Audio.SoundFont (Instrument)
+import Audio.SoundFont.Melody (Melody)
+import Audio.SoundFont.Melody.Maker (toMelody_)
 
 type Slot = H.Slot Query Void
 
@@ -42,7 +48,9 @@ type State =
   { genre :: Genre
   , searchParams :: SearchParams
   , searchResult :: Either String (Tuple TunesPage Pagination)
+  , instruments :: Array Instrument
   , vexRenderers :: Array Renderer
+  , hasThumbnails :: Boolean
   }
 
 type Input =
@@ -55,13 +63,18 @@ data Query a =
   | Thumbnail Int a     -- Add thumbnail for row 0 (and chain through the rest)
   | ClearThumbnails a   -- clear the thumbnails of the current page
 
-type ChildSlots = ()
+type ChildSlots =
+  ( thumbnailPlayer :: TNP.Slot Unit )
+
+_thumbnailPlayer = SProxy :: SProxy "thumbnailPlayer"
 
 data Action
   = Initialize          -- initialise the TuneList Page with default values
   -- | GoToPage Int        -- go to results page n
   | HandleInput Input
   | AddThumbnails       -- add all thumbnails to this page
+  | PlayThumbnail Int
+  | StopThumbnail
 
 maxPageLinks :: Int
 maxPageLinks = 10
@@ -113,13 +126,16 @@ component =
      { genre : Scandi
      , searchParams
      , searchResult : Left ""
+     , instruments : []
      , vexRenderers : []
+     , hasThumbnails : false
      }
 
   render :: State -> H.ComponentHTML Action ChildSlots m
   render state =
     HH.div_
-      [ renderSearchResult state
+      [ HH.slot _thumbnailPlayer unit TNP.component { instruments : state.instruments } absurd
+      , renderSearchResult state
       ]
 
   renderSearchResult :: State -> H.ComponentHTML Action ChildSlots m
@@ -192,21 +208,7 @@ component =
               [ HH.text dateString]
             , HH.td
               []
-              [ HH.div
-                [ HP.id_ ("canvas" <> show index)
-                , css "thumbnail"
-                ]
-                []
-              ]
-              {-}
-              [ HH.canvas
-                [ HP.id_ ("canvas" <> show index)
-                , css "thumbnail"
-                , HP.height 10
-                , HP.width 500
-                ]
-              ]
-              -}
+              [ renderThumbnailCanvas index ]
             {-}
             , HH.td
               []
@@ -228,8 +230,31 @@ component =
           in
             map renderPhantomRow rows
 
+      -- render the thumbnail canvas.  This canvas is empty, but populated by
+      -- side-effect if AddThumbnails is pressed.  We don't want to have
+      -- active onMouse functions if the thumbnail is inactive
+      renderThumbnailCanvas :: Int -> H.ComponentHTML Action ChildSlots m
+      renderThumbnailCanvas index =
+        if (state.hasThumbnails) then
+          HH.div
+            [ HP.id_ ("canvas" <> show index)
+            , css "thumbnail"
+            , HE.onMouseLeave \_ -> Just StopThumbnail
+            , HE.onMouseDown \_ -> Just (PlayThumbnail index)
+            ]
+            []
+        else
+          HH.div
+            [ HP.id_ ("canvas" <> show index)
+            , css "thumbnail"
+            ]
+            []
+
   renderAddThumbnailsButton :: State -> H.ComponentHTML Action ChildSlots m
   renderAddThumbnailsButton state =
+    if (state.hasThumbnails) then
+      HH.text ""
+    else
       HH.button
         [ HE.onClick \_ -> Just AddThumbnails
         , css "hoverable"
@@ -242,7 +267,8 @@ component =
   handleAction = case _ of
     Initialize -> do
       genre <- getCurrentGenre
-      H.modify_ (\state -> state { genre = genre } )
+      instruments <- getInstruments
+      H.modify_ (\state -> state { genre = genre, instruments = instruments } )
       _ <- handleQuery (FetchResults unit)
       pure unit
 
@@ -257,7 +283,30 @@ component =
     AddThumbnails -> do
       _ <- handleQuery (InitializeVex unit)
       _ <- handleQuery (Thumbnail 0 unit)
+      _ <- H.modify_ (\state -> state { hasThumbnails = true } )
       pure unit
+
+    PlayThumbnail idx -> do
+      _ <- H.query _thumbnailPlayer unit $ H.tell TNP.StopMelody
+      state <- H.get
+      case state.searchResult of
+        Left err ->
+          pure unit
+        Right (Tuple tunesPage pagination) ->
+          if (idx >= (length $ tunesPage.tunes) )
+            then do
+              pure unit
+            else do
+              let
+                tuneRef = unsafePartial $ unsafeIndex tunesPage.tunes idx
+                melody = getThumbnailMelody tuneRef.abc
+              _ <- H.query _thumbnailPlayer unit $ H.tell (TNP.PlayMelody melody)
+              pure unit
+
+    StopThumbnail -> do
+      _ <- H.query _thumbnailPlayer unit $ H.tell TNP.StopMelody
+      pure unit
+
 
   handleQuery :: ∀ a. Query a -> H.HalogenM State Action ChildSlots o m (Maybe a)
   handleQuery = case _ of
@@ -339,6 +388,7 @@ component =
 
     ClearThumbnails next -> do
       state <- H.get
+      _ <- H.modify_ (\st -> st { hasThumbnails = false } )
       let
         f :: Int -> Renderer -> Effect Unit
         f i renderer = resizeCanvas renderer (defaultThumbnailConfig i)
@@ -386,3 +436,11 @@ renderPhantomRow index =
       ]
       -}
     ]
+
+getThumbnailMelody :: String -> Melody
+getThumbnailMelody abc =
+  case (parse abc) of
+    Right abcTune ->
+      (toMelody_ 0.25 <<< toMidi <<< removeRepeatMarkers <<< thumbnail) abcTune
+    _ ->
+      []
