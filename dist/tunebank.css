@@ -555,17 +555,13 @@ table.textalign tr td  {
   margin-right: auto;
 }
 
-
 .tune-metadata {
 	margin: 0 auto;
 	width: 40%;
 	display: block;
 }
 
-
-
 /* tune lists with thumbnail images */
-
 
 .tunelist {
 	margin: 0 auto;
@@ -573,12 +569,15 @@ table.textalign tr td  {
 	text-align: left;
 }
 
-.thumbnail {
+div.thumbnail > svg {
   overflow: hidden;
-	/* outline: black 3px solid; */
+}
+
+div.thumbnail-highlighted > svg {
+  overflow: hidden;
+	background: #f3f6c6;
 }
 
 .thumbnail > div {
   height: 60px;
-  /* white-space: nowrap; */
 }

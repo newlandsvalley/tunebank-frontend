@@ -8,7 +8,7 @@ import Data.Abc.Parser (parse)
 import Data.Abc.Midi (toMidi)
 import Data.Array (index, length, mapWithIndex, range, unsafeIndex)
 import Data.Either (Either(..))
-import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe(..), maybe)
 import Data.Traversable (traverse)
 import Data.TraversableWithIndex (traverseWithIndex)
 import Data.Tuple (Tuple(..))
@@ -51,6 +51,7 @@ type State =
   , instruments :: Array Instrument
   , vexRenderers :: Array Renderer
   , hasThumbnails :: Boolean
+  , selectedThumbnail :: Maybe Int
   }
 
 type Input =
@@ -69,12 +70,12 @@ type ChildSlots =
 _thumbnailPlayer = SProxy :: SProxy "thumbnailPlayer"
 
 data Action
-  = Initialize          -- initialise the TuneList Page with default values
-  -- | GoToPage Int        -- go to results page n
+  = Initialize               -- initialise the TuneList Page with default values
   | HandleInput Input
-  | AddThumbnails       -- add all thumbnails to this page
-  | PlayThumbnail Int
-  | StopThumbnail
+  | AddThumbnails            -- add all thumbnails to this page
+  | HighlightThumbnail Int   -- when the thumbnail has mouse enter
+  | PlayThumbnail Int        -- when the thumbnail is cliecked
+  | StopThumbnail            -- when the thumbnail has mouse leave
 
 maxPageLinks :: Int
 maxPageLinks = 10
@@ -129,6 +130,7 @@ component =
      , instruments : []
      , vexRenderers : []
      , hasThumbnails : false
+     , selectedThumbnail : Nothing
      }
 
   render :: State -> H.ComponentHTML Action ChildSlots m
@@ -232,23 +234,34 @@ component =
 
       -- render the thumbnail canvas.  This canvas is empty, but populated by
       -- side-effect if AddThumbnails is pressed.  We don't want to have
-      -- active onMouse functions if the thumbnail is inactive
+      -- active onMouse functions if the thumbnail is inactive and we highlight
+      -- the thumbnail if the mpuse passes over it
       renderThumbnailCanvas :: Int -> H.ComponentHTML Action ChildSlots m
       renderThumbnailCanvas index =
-        if (state.hasThumbnails) then
-          HH.div
-            [ HP.id_ ("canvas" <> show index)
-            , css "thumbnail"
-            , HE.onMouseLeave \_ -> Just StopThumbnail
-            , HE.onMouseDown \_ -> Just (PlayThumbnail index)
-            ]
-            []
-        else
-          HH.div
-            [ HP.id_ ("canvas" <> show index)
-            , css "thumbnail"
-            ]
-            []
+        let
+          -- highlight the currently hovered over thumbnail image
+          f target =
+            if (index == target) then
+              "thumbnail-highlighted"
+            else
+              "thumbnail"
+          cssSelector = maybe "thumbnail" f state.selectedThumbnail
+        in
+          if (state.hasThumbnails) then
+            HH.div
+              [ HP.id_ ("canvas" <> show index)
+              , css cssSelector
+              , HE.onMouseOver \_ -> Just (HighlightThumbnail index)
+              , HE.onMouseLeave \_ -> Just StopThumbnail
+              , HE.onMouseDown \_ -> Just (PlayThumbnail index)
+              ]
+              []
+          else
+            HH.div
+              [ HP.id_ ("canvas" <> show index)
+              , css "thumbnail"
+              ]
+              []
 
   renderAddThumbnailsButton :: State -> H.ComponentHTML Action ChildSlots m
   renderAddThumbnailsButton state =
@@ -286,6 +299,10 @@ component =
       _ <- H.modify_ (\state -> state { hasThumbnails = true } )
       pure unit
 
+    HighlightThumbnail idx -> do
+      _ <- H.modify_ (\state -> state { selectedThumbnail = Just idx } )
+      pure unit
+
     PlayThumbnail idx -> do
       _ <- H.query _thumbnailPlayer unit $ H.tell TNP.StopMelody
       state <- H.get
@@ -304,6 +321,7 @@ component =
               pure unit
 
     StopThumbnail -> do
+      _ <- H.modify_ (\state -> state { selectedThumbnail = Nothing } )
       _ <- H.query _thumbnailPlayer unit $ H.tell TNP.StopMelody
       pure unit
 
@@ -404,7 +422,7 @@ resultRows = case _ of
     0
 
 -- | if we have less than a full page of 15 rows, generate phantoms
--- | for the rest with workable canvas references
+-- | for the rest with workable but empty canvas references
 renderPhantomRow :: ∀ i p. Int -> HH.HTML i p
 renderPhantomRow index =
   HH.tr
@@ -426,15 +444,6 @@ renderPhantomRow index =
         ]
         []
       ]
-      {-
-      [ HH.canvas
-        [ HP.id_ ("canvas" <> show index)
-        , css "thumbnail"
-        , HP.height 10
-        , HP.width 500
-        ]
-      ]
-      -}
     ]
 
 getThumbnailMelody :: String -> Melody
