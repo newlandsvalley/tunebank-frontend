@@ -8,6 +8,7 @@ import Data.Either (fromRight)
 import Data.String (length, take)
 import Data.DateTime.Instant (instant, toDateTime)
 import Data.Time.Duration (Milliseconds(..))
+import Data.Rational (Rational, numerator, denominator)
 import Data.Formatter.DateTime (Formatter, parseFormatString, format)
 import Global (readFloat)
 import Halogen as H
@@ -69,3 +70,7 @@ renderKV k v =
     , HH.dd_
       [ HH.text v ]
     ]
+
+showRatio :: Rational -> String
+showRatio r =
+  (show $ numerator r) <> "/" <> (show $ denominator r)

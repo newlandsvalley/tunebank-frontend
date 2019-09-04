@@ -6,14 +6,16 @@ import Audio.SoundFont (Instrument)
 import Audio.SoundFont.Melody.Class (MidiRecording(..))
 import Control.Monad.Reader (class MonadAsk, asks)
 import Data.Abc (AbcTune)
-import Data.Abc.Midi (toMidi)
+import Data.Abc.Midi (toMidiAtBpm)
 import Data.Abc.Parser (parse)
+import Data.Abc.Tempo (defaultTempo, getAbcTempo, getBpm)
 import Data.Array (filter, length)
 import Data.Bifunctor (lmap)
 import Data.Const (Const)
-import Data.Either (Either(..), either)
+import Data.Either (Either(..), either, isRight)
+import Data.Int (fromString, toNumber)
 import Data.Link (expandLinks, expandYouTubeWatchLinks)
-import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe(..), fromMaybe)
 import Data.MediaType (MediaType(..))
 import Data.Symbol (SProxy(..))
 import Debug.Trace (spy)
@@ -32,9 +34,9 @@ import TuneBank.Data.CommentId (CommentId, commentIdToString)
 import TuneBank.Data.Credentials (Credentials, Role(..))
 import TuneBank.Data.Genre (Genre, asUriComponent)
 import TuneBank.Data.Session (Session)
-import TuneBank.Data.TuneId (TuneId(..), encodeTuneIdURIComponent, tuneIdToString)
+import TuneBank.Data.TuneId (TuneId(..), tuneIdToString)
 import TuneBank.Data.Types (BaseURL(..))
-import TuneBank.HTML.Utils (css, safeHref, renderKV, tsToDateString)
+import TuneBank.HTML.Utils (css, safeHref, renderKV, showRatio, tsToDateString)
 import TuneBank.Navigation.Navigate (class Navigate, navigate)
 import TuneBank.Navigation.Route (Route(..))
 import TuneBank.Page.Utils.Environment (getBaseURL, getInstruments, getUser)
@@ -53,6 +55,10 @@ type State =
   , baseURL :: BaseURL
   , tuneMetadata :: TuneMetadata
   , tuneResult :: Either String AbcTune
+  , currentBpm :: Int           -- BPM from the tempo slider
+  , originalBpm :: Int          -- BPM from the Abc
+  , tempoNoteLength :: String
+  , isPlaying :: Boolean
   , comments :: Comments
   , instruments :: Array Instrument
   }
@@ -73,6 +79,7 @@ data Action
   = Initialize
   | Finalize
   | HandleTuneIsPlaying PC.Message
+  | HandleTempoInput Int
   | DeleteTune TuneId
   | DeleteComment CommentId
 
@@ -102,6 +109,10 @@ component =
     , baseURL : BaseURL ""
     , tuneMetadata : nullTuneMetadata
     , tuneResult: nullParsedTune
+    , currentBpm : defaultTempo.bpm      -- 120
+    , originalBpm : defaultTempo.bpm     -- 120
+    , tempoNoteLength : "1/4"
+    , isPlaying : false
     , comments : []
     , instruments : []
     }
@@ -120,6 +131,7 @@ component =
         , HH.div
             [ css "tune-metadata" ]
             [ renderTuneMetadata state
+            , renderTempoSlider state
             , renderPlayer state
             , renderComments state
             , renderDebug state
@@ -220,15 +232,40 @@ component =
           [ HP.class_ (H.ClassName "leftPanelComponent")
           , HP.id_  "player-div"
           ]
-          [ HH.slot _player unit (PC.component (toPlayable abcTune) state.instruments) unit (Just <<< HandleTuneIsPlaying) ]
+          [ HH.slot _player unit (PC.component (toPlayable abcTune state.currentBpm) state.instruments) unit (Just <<< HandleTuneIsPlaying) ]
       Left err ->
         HH.div_
           [  ]
-      where
-        -- | convert a tune to a format recognized by the player
-        toPlayable :: AbcTune -> MidiRecording
-        toPlayable abcTune =
-          MidiRecording $ toMidi abcTune
+
+  renderTempoSlider :: State -> H.ComponentHTML Action ChildSlots m
+  renderTempoSlider state =
+    let
+      isVisible = isRight state.tuneResult
+      -- get the value from the slider result
+      toTempo :: String -> Int
+      toTempo s =
+        fromMaybe defaultTempo.bpm $ fromString s
+    in
+      if (isVisible) then
+        HH.div
+          [ HP.class_ (H.ClassName "leftPanelComponent")]
+          [ HH.p
+            [  ]
+            [ HH.text ("set tempo: " <> state.tempoNoteLength <> "=" <> (show state.currentBpm)) ]
+
+          , HH.input
+            [ HE.onValueInput  (Just <<< HandleTempoInput <<< toTempo)
+            , HP.type_ HP.InputRange
+            , HP.id_ "tempo-slider"
+            , HP.min (toNumber $ div state.originalBpm 2)
+            , HP.max (toNumber $ state.originalBpm * 2)
+            , HP.value (show state.currentBpm)
+            , HP.disabled state.isPlaying
+            ]
+          ]
+      else
+        HH.text ""
+
 
   renderComments ::  State -> H.ComponentHTML Action ChildSlots m
   renderComments state =
@@ -329,7 +366,12 @@ component =
           tuneMetadataResult >>= (\x -> lmap show $ parse x.abc)
         tuneMetadata =
           either (const state.tuneMetadata) identity tuneMetadataResult
+        bpm =
+          either (const defaultTempo.bpm) getBpm tuneResult
+        tempoNoteLength =
+          either (const "1/4") (showRatio <<< _.tempoNoteLength <<< getAbcTempo) tuneResult
       comments <- requestComments baseURL state.genre state.tuneId
+
       let
         foo = spy "any load comments errors? " $
           either (identity) (const "") comments
@@ -338,6 +380,9 @@ component =
         , baseURL = baseURL
         , tuneMetadata = tuneMetadata
         , tuneResult = tuneResult
+        , currentBpm = bpm
+        , originalBpm = bpm
+        , tempoNoteLength = tempoNoteLength
         , comments = either (const []) identity comments
         , instruments = instruments
         } )
@@ -346,10 +391,15 @@ component =
       _ <- H.query _player unit $ H.tell PC.StopMelody
       pure unit
 
-    HandleTuneIsPlaying (PC.IsPlaying p) -> do
-      -- we ignore this message, but if we wanted to we could
-      -- disable any button that can alter the editor contents whilst the player
-      -- is playing and re-enable when it stops playing
+    HandleTuneIsPlaying (PC.IsPlaying isPlaying) -> do
+      _ <- H.modify_ (\st -> st { isPlaying = isPlaying } )
+      pure unit
+
+    HandleTempoInput bpm -> do
+      state <- H.get
+      _ <- H.query _player unit $ H.tell PC.StopMelody
+      _ <- H.modify_ (\st -> st { currentBpm = bpm } )
+      _ <- refreshPlayerState state
       pure unit
 
     DeleteTune tuneId -> do
@@ -383,6 +433,24 @@ component =
               pure unit
         Nothing ->
           pure unit
+
+
+-- refresh the state of the player by passing it the tune result and the tempo
+refreshPlayerState :: ∀ o m
+  . MonadAff m
+  => State
+  -> H.HalogenM State Action ChildSlots o m Unit
+refreshPlayerState state  = do
+  _ <- either
+     (\_ -> H.query _player unit $ H.tell PC.StopMelody)
+     (\abcTune -> H.query _player unit $ H.tell (PC.HandleNewPlayable (toPlayable abcTune state.currentBpm)))
+     state.tuneResult
+  pure unit
+
+-- | convert a tune to a format recognized by the player
+toPlayable :: AbcTune -> Int -> MidiRecording
+toPlayable abcTune bpm =
+  MidiRecording $ toMidiAtBpm abcTune bpm
 
 -- expand YouTube watch links to embedded iframes and geberal links to anchor tags
 expandAllLinks :: String -> String

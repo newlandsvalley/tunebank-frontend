@@ -20,7 +20,7 @@ help =
     , HH.h2_
        [ HH.text "Which genres are supported?" ]
     , HH.text $
-        ("At the moment, TradTuneDB recognises Irish, Klezmer, Scottish and (especially) Scandinavian tunes. " <>
+        ("At the moment, TradTuneDb recognises Irish, Klezmer, Scottish and (especially) Scandinavian tunes. " <>
         " These are kept in separate collections and you must select your chosen genre before searching for tunes." <>
         " Each tune has a distinct name (consisting of the tune name and its type) which is used in its URL. " <>
         " Also, each tune must have a key signature and a rhythm " <>
