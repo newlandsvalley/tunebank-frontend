@@ -162,7 +162,7 @@ renderSearchExamples =
         , renderKV "abc=fedd" "tunes with this succession of notes (irrespective of octave)"
         , renderKV "transcriber=Fred" "tunes transcribed by Fred"
         , renderKV "submitterer=Fred" "tunes submitted by Fred"
-        , renderKV "rhythm=reel&key=BMin"	"reels in B Minor"
+        , renderKV "rhythm=reel&key=BMin" "reels in B Minor"
         ]
     ]
 
