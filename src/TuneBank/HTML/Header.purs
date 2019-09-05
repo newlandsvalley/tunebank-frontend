@@ -27,6 +27,8 @@ header mCredentials genre route =
              [ HH.text "upload" ]
           , adminUserNavItem (UserList { page: 1 })
              [ HH.text "users" ]
+          , navItem Metronome
+             [ HH.text "metronome" ]
           , navLogInOut
           ]
         ]

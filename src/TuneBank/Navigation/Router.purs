@@ -2,7 +2,6 @@ module TuneBank.Navigation.Router where
 
 -- | The Router Halogen Component
 
-
 import Prelude
 import Data.Const (Const)
 import Data.Maybe (Maybe(..), fromMaybe, maybe)
@@ -35,6 +34,7 @@ import TuneBank.Page.Utils.Environment (getUser, getCurrentGenre)
 import TuneBank.HTML.About (about)
 import TuneBank.HTML.Credits (credits)
 import TuneBank.HTML.Help (help)
+import Metronome.Container as Metronome
 import Routing.Duplex as RD
 import Routing.Hash (getHash)
 
@@ -69,6 +69,7 @@ type ChildSlots =
   , tune :: Tune.Slot Unit
   , tunelist :: TuneList.Slot Unit
   , comment :: Comment.Slot Unit
+  , metronome :: Metronome.Slot Unit
   )
 
 component ::
@@ -154,6 +155,8 @@ component =
             HH.slot (SProxy :: _ "comment") unit Comment.component { genre, tuneId, key : Nothing } absurd
           Comment genre tuneId user cid ->
             HH.slot (SProxy :: _ "comment") unit Comment.component { genre, tuneId, key : (Just $ commentKey user cid) } absurd
+          Metronome ->
+            HH.slot (SProxy :: _ "metronome") unit Metronome.component unit absurd
           About ->
             about
           Credits ->

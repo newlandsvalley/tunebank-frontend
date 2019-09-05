@@ -39,6 +39,7 @@ data Route
   | TuneList SearchParams
   | Comments Genre TuneId
   | Comment Genre TuneId String CommentId
+  | Metronome
   | About
   | Credits
   | Help
@@ -82,6 +83,7 @@ routeCodec = root $ sum
        , sort : string }
   , "Comments": "genre" / (genre segment)  / "tune" / (tuneId segment) / "comments"
   , "Comment": "genre" / (genre segment)  / "tune" / (tuneId segment) / "comment" / segment / (commentId segment)
+  , "Metronome" : "metronome" / noArgs
   , "About" : "about" / noArgs
   , "Credits" : "credits" / noArgs
   , "Help" : "help" / noArgs
