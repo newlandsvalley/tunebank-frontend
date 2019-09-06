@@ -38,6 +38,11 @@ footer =
         [ navItem Help
           [ HH.text "help" ]
         ]
+      , HH.nav
+        [ css "footer-nav"]
+        [ navItem Tutorial
+          [ HH.text "ABC tutorial" ]
+        ]
       ]
     ]
 

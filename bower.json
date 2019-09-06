@@ -22,6 +22,7 @@
     "purescript-html-parser-halogen": "https://github.com/rnons/purescript-html-parser-halogen.git#master",
     "purescript-expand-links": "https://github.com/newlandsvalley/purescript-expand-links.git#master",
     "purescript-polska-metronome": "https://github.com/newlandsvalley/purescript-polska-metronome.git#halogen5",
+    "purescript-abc-tutorial": "https://github.com/newlandsvalley/purescript-abc-tutorial.git#halogen5",
     "purescript-debug": "^4.0.0"
   },
   "devDependencies": {

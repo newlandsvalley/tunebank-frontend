@@ -30,11 +30,13 @@ import TuneBank.Data.Genre (Genre(..))
 import TuneBank.Data.Credentials (Credentials)
 import TuneBank.HTML.Footer (footer)
 import TuneBank.HTML.Header (header)
-import TuneBank.Page.Utils.Environment (getUser, getCurrentGenre)
+import TuneBank.Page.Utils.Environment (getUser, getCurrentGenre, getInstruments)
 import TuneBank.HTML.About (about)
 import TuneBank.HTML.Credits (credits)
 import TuneBank.HTML.Help (help)
 import Metronome.Container as Metronome
+import Tutorial.Container as Tutorial
+import Audio.SoundFont (Instrument)
 import Routing.Duplex as RD
 import Routing.Hash (getHash)
 
@@ -50,6 +52,7 @@ type State =
   { route :: Maybe Route
   , genre :: Genre
   , currentUser :: Maybe Credentials
+  , instruments :: Array Instrument
   }
 
 data Query a
@@ -70,6 +73,7 @@ type ChildSlots =
   , tunelist :: TuneList.Slot Unit
   , comment :: Comment.Slot Unit
   , metronome :: Metronome.Slot Unit
+  , tutorial :: Tutorial.Slot Unit
   )
 
 component ::
@@ -82,7 +86,8 @@ component =
   H.mkComponent
     { initialState: \_ -> { route: Nothing
                           , genre : Scandi
-                          , currentUser : Nothing }
+                          , currentUser : Nothing
+                          , instruments : [] }
     , render
     , eval: H.mkEval $ H.defaultEval
         { handleQuery = handleQuery
@@ -97,6 +102,9 @@ component =
     Initialize -> do
       -- we'll get the route the user landed on
       initialRoute <- hush <<< (RD.parse routeCodec) <$> H.liftEffect getHash
+      -- get the instruments from Ref state
+      instruments <- getInstruments
+      H.modify_ _ { instruments = instruments }
       -- and, finally, we'll navigate to the new route (also setting the hash)
       navigate $ fromMaybe Home initialRoute
 
@@ -127,11 +135,11 @@ component =
   -- | Note - links are not well-typed.  Sproxy names must also match the
   -- | child slot names AND the route codec initial URI name.
   renderRoute :: State -> H.ComponentHTML Action ChildSlots m
-  renderRoute { route } =
+  renderRoute state =
     let
-      foo = spy "rendering route: " $ show route
+      foo = spy "rendering route: " $ show state.route
     in
-      case route of
+      case state.route of
         Just r -> case r of
           Home ->
             HH.slot (SProxy :: _ "home") unit SearchForm.component unit absurd
@@ -157,6 +165,8 @@ component =
             HH.slot (SProxy :: _ "comment") unit Comment.component { genre, tuneId, key : (Just $ commentKey user cid) } absurd
           Metronome ->
             HH.slot (SProxy :: _ "metronome") unit Metronome.component unit absurd
+          Tutorial ->
+            HH.slot (SProxy :: _ "tutorial") unit Tutorial.component { instruments : state.instruments } absurd
           About ->
             about
           Credits ->
