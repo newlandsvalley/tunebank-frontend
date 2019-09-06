@@ -176,32 +176,30 @@ h2 {
 
 /* FOOTER
 ---------------------------------------------- */
-.footer h1 {
-	font-size: 100%;
-	margin-bottom: .25em;
-	padding-top: .25em;
+
+.footer {
+	display: block;
 }
 
-.footer p {
-	font-size: .6875em;
+.footer-menu {
+	display: inline;
+	float: left;
 }
 
 .footer-nav {
   float: left;
-  margin: 0 0 0 20px;
-  display: inline-block;
+  margin: 20px 0 0 20px;
   padding-top: 1.5%;
 }
 
 /* Footer Logo */
 .mainlogo {
-   height: 60px;
-   line-height:60px;
    clear: both;
    margin: 0;
    font-family: 'Fondamento', cursive;
-   display:inline;
+   display:block;
    vertical-align: bottom;
+	 font-weight: bold;
 }
 
 .mainlogo-prefix {
@@ -216,7 +214,7 @@ h2 {
   color: black;
 	font-size: 125%;
   vertical-align: bottom;
-  line-height: 70px;
+	margin-top: 20px;
 }
 
 /* FORMS
@@ -580,4 +578,51 @@ div.thumbnail-highlighted > svg {
 
 .thumbnail > div {
   height: 60px;
+}
+
+/* polska metronome */
+
+#tempo-slider {
+  width: 160px;
+	margin-top: 10px;
+}
+
+#skew-slider {
+  width: 160px;
+	margin-top: 10px;
+}
+
+#polska-menu {
+  background-color: #cccc99;
+  font-size: 1.0em;
+}
+
+.instruction-component {
+  float: left;
+  display: inline;
+  margin: 0 0 0 30px;
+  font-size: 1.2em;
+  font-family: Georgia, serif;
+}
+
+.instruction-component > label {
+  display: inline-block;
+  text-align: right;
+  width: 150px;
+  font-size: 1.0em;
+}
+
+.instruction-component > .instruction-text {
+  display: inline;
+	margin-left: 3px;
+}
+
+#canvas {
+  display: block;
+  margin: auto;
+}
+
+#instruction-group {
+  display: block;
+  margin: auto;
 }

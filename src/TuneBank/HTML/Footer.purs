@@ -10,7 +10,7 @@ footer :: forall i p. HH.HTML i p
 footer =
   HH.footer
     [ css "footer" ]
-    [ HH.h1_
+    [ HH.div_
       [ HH.div
         [ css "mainlogo" ]
         [ HH.span
@@ -20,23 +20,24 @@ footer =
           [ css "mainlogo-suffix" ]
           [ HH.text ".org.uk" ]
         ]
-      , HH.div_
-         [ HH.nav
-           [ css "footer-nav"]
-           [ navItem About
-              [ HH.text "about" ]
-           ]
-         , HH.nav
-           [ css "footer-nav"]
-           [ navItem Credits
-              [ HH.text "credits" ]
-           ]
-         , HH.nav
-           [ css "footer-nav"]
-           [ navItem Help
-              [ HH.text "help" ]
-           ]
-         ]
+      ]
+    , HH.span
+      [ css "footer-menu" ]
+      [ HH.nav
+        [ css "footer-nav"]
+        [ navItem About
+          [ HH.text "about" ]
+        ]
+      , HH.nav
+        [ css "footer-nav"]
+        [ navItem Credits
+          [ HH.text "credits" ]
+        ]
+      , HH.nav
+        [ css "footer-nav"]
+        [ navItem Help
+          [ HH.text "help" ]
+        ]
       ]
     ]
 
