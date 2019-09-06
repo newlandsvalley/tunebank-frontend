@@ -156,9 +156,9 @@ component =
           UserList pageParams  ->
             HH.slot (SProxy :: _ "userlist") unit UserList.component { pageParams } absurd
           Tune genre tuneId  ->
-            HH.slot (SProxy :: _ "tune") unit Tune.component { genre, tuneId } absurd
+            HH.slot (SProxy :: _ "tune") unit Tune.component { genre, tuneId, instruments : state.instruments } absurd
           TuneList searchParams ->
-            HH.slot (SProxy :: _ "tunelist") unit TuneList.component { searchParams } absurd
+            HH.slot (SProxy :: _ "tunelist") unit TuneList.component { searchParams, instruments : state.instruments } absurd
           Comments genre tuneId  ->
             HH.slot (SProxy :: _ "comment") unit Comment.component { genre, tuneId, key : Nothing } absurd
           Comment genre tuneId user cid ->

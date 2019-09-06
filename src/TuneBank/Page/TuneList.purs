@@ -55,7 +55,9 @@ type State =
   }
 
 type Input =
-  { searchParams :: SearchParams }
+  { searchParams :: SearchParams
+  , instruments :: Array Instrument
+  }
 
 -- type Query = (Const Void)
 data Query a =
@@ -123,11 +125,11 @@ component =
   where
 
   initialState :: Input -> State
-  initialState { searchParams } =
+  initialState { searchParams, instruments } =
      { genre : Scandi
      , searchParams
      , searchResult : Left ""
-     , instruments : []
+     , instruments
      , vexRenderers : []
      , hasThumbnails : false
      , selectedThumbnail : Nothing
@@ -280,8 +282,7 @@ component =
   handleAction = case _ of
     Initialize -> do
       genre <- getCurrentGenre
-      instruments <- getInstruments
-      H.modify_ (\state -> state { genre = genre, instruments = instruments } )
+      H.modify_ (\state -> state { genre = genre } )
       _ <- handleQuery (FetchResults unit)
       pure unit
 

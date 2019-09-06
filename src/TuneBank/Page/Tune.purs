@@ -66,6 +66,7 @@ type State =
 type Input =
   { genre :: Genre
   , tuneId :: TuneId
+  , instruments :: Array Instrument
   }
 
 type Query = (Const Void)
@@ -114,7 +115,7 @@ component =
     , tempoNoteLength : "1/4"
     , isPlaying : false
     , comments : []
-    , instruments : []
+    , instruments : input.instruments
     }
 
   render :: State -> H.ComponentHTML Action ChildSlots m
@@ -358,7 +359,6 @@ component =
       currentUser <- getUser
       baseURL <- getBaseURL
       -- corsBaseURL <- getCorsBaseURL only temporary for live server
-      instruments <- getInstruments
       -- tuneMetadataResult <- requestCleanTune baseURL (asUriComponent genre) state.tuneId
       tuneMetadataResult <- requestTune baseURL state.genre state.tuneId
       let
@@ -384,7 +384,6 @@ component =
         , originalBpm = bpm
         , tempoNoteLength = tempoNoteLength
         , comments = either (const []) identity comments
-        , instruments = instruments
         } )
 
     Finalize -> do
