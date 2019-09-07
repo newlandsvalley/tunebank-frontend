@@ -36,12 +36,13 @@ import TuneBank.HTML.Credits (credits)
 import TuneBank.HTML.Help (help)
 import Metronome.Container as Metronome
 import Tutorial.Container as Tutorial
+import Editor.Container as Editor
 import Audio.SoundFont (Instrument)
 import Routing.Duplex as RD
 import Routing.Hash (getHash)
 
 
-import Debug.Trace (spy, trace, traceM)
+import Debug.Trace (spy)
 
 -- | When a component has no queries or messages, it has no public interface and can be
 -- | considered an "opaque" component. The only way for a parent to interact with the component
@@ -74,6 +75,7 @@ type ChildSlots =
   , comment :: Comment.Slot Unit
   , metronome :: Metronome.Slot Unit
   , tutorial :: Tutorial.Slot Unit
+  , editor :: Editor.Slot Unit
   )
 
 component ::
@@ -167,6 +169,8 @@ component =
             HH.slot (SProxy :: _ "metronome") unit Metronome.component unit absurd
           Tutorial ->
             HH.slot (SProxy :: _ "tutorial") unit Tutorial.component { instruments : state.instruments } absurd
+          Editor { initialAbc } ->
+            HH.slot (SProxy :: _ "editor") unit Editor.component { instruments : state.instruments, initialAbc } absurd
           About ->
             about
           Credits ->

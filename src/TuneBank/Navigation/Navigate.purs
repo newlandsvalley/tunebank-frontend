@@ -1,5 +1,5 @@
 module TuneBank.Navigation.Navigate where
-  
+
 
 import Prelude
 

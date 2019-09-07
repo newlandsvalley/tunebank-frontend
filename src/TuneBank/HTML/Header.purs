@@ -29,6 +29,8 @@ header mCredentials genre route =
              [ HH.text "users" ]
           , navItem Metronome
              [ HH.text "metronome" ]
+          , navItem (Editor { initialAbc : Nothing })
+             [ HH.text "abc editor" ]
           , navLogInOut
           ]
         ]

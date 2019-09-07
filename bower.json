@@ -8,7 +8,6 @@
   ],
   "dependencies": {
     "purescript-prelude": "^4.1.1",
-    "purescript-console": "^4.2.0",
     "purescript-effect": "^2.0.1",
     "purescript-routing": "^9.0.0",
     "purescript-routing-duplex": "^0.4.0",
@@ -23,9 +22,11 @@
     "purescript-expand-links": "https://github.com/newlandsvalley/purescript-expand-links.git#master",
     "purescript-polska-metronome": "https://github.com/newlandsvalley/purescript-polska-metronome.git#halogen5",
     "purescript-abc-tutorial": "https://github.com/newlandsvalley/purescript-abc-tutorial.git#halogen5",
+    "purescript-abc-editor": "https://github.com/newlandsvalley/purescript-abc-editor.git#halogen5",
     "purescript-debug": "^4.0.0"
   },
   "devDependencies": {
+    "purescript-console": "^4.2.0",
     "purescript-psci-support": "^4.0.0",
     "purescript-test-unit": "^15.0.0",
     "purescript-console": "^4.2.0"

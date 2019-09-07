@@ -6,6 +6,7 @@ module TuneBank.Navigation.Route where
 
 import Prelude hiding ((/))
 
+import Data.Maybe (Maybe)
 import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show (genericShow)
 import Routing.Duplex (RouteDuplex', optional, root, segment, string, int, as)
@@ -16,7 +17,6 @@ import TuneBank.Data.CommentId (CommentId, commentIdFromString, commentIdToStrin
 import TuneBank.Navigation.SearchParams (SearchParams)
 import TuneBank.Navigation.Endpoint (PageParams)
 import TuneBank.Data.Genre (Genre, genreFromString, genreToString)
-
 
 tuneId :: RouteDuplex' String -> RouteDuplex' TuneId
 tuneId = as tuneIdToString tuneIdFromString
@@ -41,16 +41,11 @@ data Route
   | Comment Genre TuneId String CommentId
   | Metronome
   | Tutorial
+  | Editor  { initialAbc :: Maybe String }
   | About
   | Credits
   | Help
 
-
--- | This seems to fail silently at runtime
--- |    | Tune TuneId
--- | togther with
--- |    "Tune": "genre" / (genre segment) / "tune" / (tuneId segment)
--- | togther with approprite consructor in the router
 
 derive instance genericRoute :: Generic Route _
 derive instance eqRoute :: Eq Route
@@ -86,6 +81,7 @@ routeCodec = root $ sum
   , "Comment": "genre" / (genre segment)  / "tune" / (tuneId segment) / "comment" / segment / (commentId segment)
   , "Metronome" : "metronome" / noArgs
   , "Tutorial" : "tutorial" / noArgs
+  , "Editor" : "editor" ? { initialAbc: (optional <<< string) }
   , "About" : "about" / noArgs
   , "Credits" : "credits" / noArgs
   , "Help" : "help" / noArgs
