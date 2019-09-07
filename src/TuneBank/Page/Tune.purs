@@ -210,24 +210,27 @@ component =
       Nothing ->
         HH.text ""
       Just credentials ->
-        HH.div_
-          [
-            HH.dt
-            []
-            [ HH.text "tune" ]
-          , HH.dd
-            []
-            [ HH.a
-               [ safeHref $ Comments state.genre state.tuneId ]
-               [ HH.text "add comment"]
-            , renderEditAbc state
-            , HH.a
-               [ css "a-internal-link"
-               , HE.onClick \_ -> Just $ DeleteTune state.tuneId
-               ]
-               [ HH.text "delete tune"]
+        if (canEdit state.tuneMetadata credentials) then
+          HH.div_
+            [
+              HH.dt
+              []
+              [ HH.text "tune" ]
+            , HH.dd
+              []
+              [ HH.a
+                [ safeHref $ Comments state.genre state.tuneId ]
+                [ HH.text "add comment"]
+              , renderEditAbc state
+              , HH.a
+                [ css "a-internal-link"
+                , HE.onClick \_ -> Just $ DeleteTune state.tuneId
+                ]
+                [ HH.text "delete tune"]
+              ]
             ]
-          ]
+        else
+          HH.text ""
 
   renderEditAbc :: State -> H.ComponentHTML Action ChildSlots m
   renderEditAbc state =
@@ -488,3 +491,9 @@ removeComment cId state =
     newComments = filter (\c -> c.commentId /= cId) state.comments
   in
     state { comments = newComments }
+
+-- return tru if the user is allowed to edit the tune
+canEdit :: TuneMetadata -> Credentials -> Boolean
+canEdit tuneMetadata credentials =
+  credentials.role == Administrator
+  || credentials.user == tuneMetadata.submitter
