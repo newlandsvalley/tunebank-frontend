@@ -582,11 +582,6 @@ div.thumbnail-highlighted > svg {
 
 /* polska metronome */
 
-#tempo-slider {
-  width: 160px;
-	margin-top: 10px;
-}
-
 #skew-slider {
   width: 160px;
 	margin-top: 10px;
@@ -627,7 +622,32 @@ div.thumbnail-highlighted > svg {
   margin: auto;
 }
 
+/* common to Metronome and ABC Editor */
+
+#tempo-slider {
+  width: 160px;
+	margin-top: 10px;
+}
+
+/* common to both the ABC Editor and Tutorial */
+
+.rightPane {
+  float: left;
+}
+
+.abcEdit {
+  padding: 10px 0px 10px 0px;
+  margin: 0 2px 10px 2px;
+  font-size: 1.5em;
+  font-family: "Times New Roman", "monospace";
+  background-color: rgb 243 246 198;
+  text-align: left;
+  margin: 0px 2px 0px 2px;
+  display: block;
+}
+
 /* ABC tutorial */
+
 #instruction, #hint {
   font-size: 1.3em;
   font-family: "Times New Roman", "monospace";
@@ -641,34 +661,59 @@ div.thumbnail-highlighted > svg {
   width: 25em;
 }
 
-
-.abcEdit {
-  padding: 10px 0px 10px 0px;
-  font-size: 1.5em;
-  font-family: "Times New Roman", "monospace";
-  background-color: rgb 243 246 198;
-  text-align: left;
-  margin: 0px 2px 0px 2px;
-  display: block;
-}
-
-.leftPane {
+#abcTutorial > .leftPane {
   float: left;
   width: 800px;
 }
 
-.leftPanelComponent {
+#abcTutorial .leftPanelComponent {
   float: left;
   margin: 10px 0px 10px 50px;
 }
 
-.rightPane {
+
+/* ABC Editpr */
+
+#transposition-menu {
+  background-color: #cccc99;
+  font-size: 1.0em;
+}
+
+#tune-title {
+  width: 800px;
+  float: left;
+  text-align: left;
+  margin: 12px 0px 0px 0px;
+}
+
+#abcEditor .fileInputLabel {
+  /* the label for a file input */
+  margin: 10px 20px 0 0;
+  /* padding: 1px 8px 0 8px; */
+  font-size: 1.1em;
+	max-width: 100px;
+  display: inline-block;
+}
+
+.labelAlignment {
+  /* align labels at the LHS of a frame */
+  display: inline-block;
+  width: 165px;
+  font-size: 1.2em;
+}
+
+#abcEditor > .leftPane {
+  width: 420px;
   float: left;
 }
 
-.center {
-  text-align: center;
-  margin-left: auto;
-  margin-right: auto;
+#abcEditor .leftPanelComponent {
+  /* align items in the LHS panel */
+  margin: 10px 0 0 0;
+  font-size: 1.2em;
+  font-family: Georgia, serif;
 }
+
+
+© 2019 GitHub, Inc.
 © 2019 GitHub, Inc.
