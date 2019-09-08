@@ -271,7 +271,7 @@ component =
             Left _ ->
               pure unit
             Right _ ->
-              -- go back to the tune page which should now show the commebt
+              -- go back to the tune page which should now show the comment
               navigate $ Tune state.genre state.tuneId
 
 -- | replace any double quotes with single quotes

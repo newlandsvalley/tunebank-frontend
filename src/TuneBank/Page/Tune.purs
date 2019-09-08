@@ -9,7 +9,6 @@ import Data.Abc (AbcTune)
 import Data.Abc.Midi (toMidiAtBpm)
 import Data.Abc.Parser (parse)
 import Data.Abc.Tempo (defaultTempo, getAbcTempo, getBpm)
-import Data.Abc.Canonical (fromTune)
 import Data.Array (filter, length)
 import Data.Bifunctor (lmap)
 import Data.Const (Const)
@@ -41,7 +40,6 @@ import TuneBank.HTML.Utils (css, safeHref, renderKV, showRatio, tsToDateString)
 import TuneBank.Navigation.Navigate (class Navigate, navigate)
 import TuneBank.Navigation.Route (Route(..))
 import TuneBank.Page.Utils.Environment (getBaseURL, getUser)
-import Editor.Container as Editor
 
 -- | there is no tune yet
 nullParsedTune :: Either String AbcTune
@@ -210,40 +208,40 @@ component =
       Nothing ->
         HH.text ""
       Just credentials ->
-        if (canEdit state.tuneMetadata credentials) then
-          HH.div_
-            [
-              HH.dt
-              []
-              [ HH.text "tune" ]
-            , HH.dd
-              []
-              [ HH.a
-                [ safeHref $ Comments state.genre state.tuneId ]
-                [ HH.text "add comment"]
-              , renderEditAbc state
-              , HH.a
-                [ css "a-internal-link"
-                , HE.onClick \_ -> Just $ DeleteTune state.tuneId
-                ]
-                [ HH.text "delete tune"]
-              ]
+        HH.div_
+          [
+            HH.dt_
+            [ HH.text "tune" ]
+          , HH.dd_
+            [ HH.a
+              [ safeHref $ Comments state.genre state.tuneId ]
+              [ HH.text "add comment"]
+            , renderEditAbc state credentials
+            , renderDeleteAbc state credentials
             ]
-        else
-          HH.text ""
+          ]
 
-  renderEditAbc :: State -> H.ComponentHTML Action ChildSlots m
-  renderEditAbc state =
-    case state.tuneResult of
-      Right tune ->
-        let
-          abc = fromTune tune
-        in
-          HH.a
-            [ safeHref $ Editor { initialAbc : Just abc }  ]
-            [ HH.text "edit tune"]
-      _ ->
-        HH.text ""
+  -- | a user can edit the ABC if he submitted the tune or is the administrator
+  renderEditAbc :: State -> Credentials -> H.ComponentHTML Action ChildSlots m
+  renderEditAbc state credentials =
+    if (canEdit state.tuneMetadata credentials) then
+      HH.a
+        [ safeHref $ Editor { initialAbc : Just state.tuneMetadata.abc }  ]
+        [ HH.text "edit tune"]
+    else
+      HH.text ""
+
+  -- | a user can delete the ABC if he submitted the tune or is the administrator
+  renderDeleteAbc :: State -> Credentials -> H.ComponentHTML Action ChildSlots m
+  renderDeleteAbc state credentials =
+    if (canEdit state.tuneMetadata credentials) then
+      HH.a
+        [ css "a-internal-link"
+        , HE.onClick \_ -> Just $ DeleteTune state.tuneId
+        ]
+        [ HH.text "delete tune"]
+    else
+      HH.text ""
 
   renderPlayer ::  State -> H.ComponentHTML Action ChildSlots m
   renderPlayer state =
