@@ -6,14 +6,13 @@ module TuneBank.Data.TuneId
   , encodeTuneIdURIComponent
   ) where
 
-
 import Prelude
 
 import Data.Either (Either(..))
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.String (replaceAll)
-import Data.String.CodePoints (indexOf, lastIndexOf, length)
+import Data.String.CodePoints (lastIndexOf, length)
 import Data.String.CodeUnits (slice)
 import Data.String.Pattern (Pattern(..), Replacement(..))
 import Data.Tuple (Tuple(..))
@@ -71,20 +70,6 @@ decodeTuneIdURIComponent s =
 cleanTuneTitle :: String -> String
 cleanTuneTitle =
   replaceAll (Pattern "+") (Replacement " ")
-
-{- not needed I think }
-unsafeTuneIdFromString :: String -> TuneId
-unsafeTuneIdFromString s =
-  case lastIndexOf (Pattern "-") s of
-    Just ix ->
-      TuneId { title : safeSlice 0 ix s
-             , tuneType : safeSlice (ix + 1) (length s) s
-             }
-    Nothing ->
-      TuneId { title : s
-             , tuneType : ""
-             }
--}
 
 encodeTuneIdURIComponent :: TuneId -> String
 encodeTuneIdURIComponent =

@@ -1,10 +1,8 @@
 module TuneBank.HTML.Footer (footer) where
 
-import Prelude (($), (==))
 import Halogen.HTML as HH
 import TuneBank.HTML.Utils (css, safeHref)
 import TuneBank.Navigation.Route (Route(..))
-
 
 footer :: forall i p. HH.HTML i p
 footer =

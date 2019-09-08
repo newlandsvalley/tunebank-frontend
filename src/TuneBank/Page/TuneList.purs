@@ -34,7 +34,7 @@ import TuneBank.HTML.PaginationRendering  (renderPagination)
 import TuneBank.Navigation.Navigate (class Navigate)
 import TuneBank.Navigation.Route (Route(..))
 import TuneBank.Navigation.SearchParams (SearchParams)
-import TuneBank.Page.Utils.Environment (getBaseURL, getCurrentGenre, getInstruments)
+import TuneBank.Page.Utils.Environment (getBaseURL, getCurrentGenre)
 import VexFlow.Abc.Alignment (justifiedScoreConfig, rightJustify)
 import VexFlow.Score (Renderer, clearCanvas, createScore, renderScore, initialiseCanvas, resizeCanvas)
 import VexFlow.Types (Config)
@@ -380,7 +380,6 @@ component =
                 tuneRef = unsafePartial $ unsafeIndex tunesPage.tunes idx
               case (Tuple (parse tuneRef.abc) (index state.vexRenderers idx)) of
                 (Tuple (Right abcTune) (Just renderer)) -> do
-                  _ <- H.liftEffect $ clearCanvas renderer
                   let
                     foo =
                       spy "rendering thumbnail for" idx
@@ -451,6 +450,6 @@ getThumbnailMelody :: String -> Melody
 getThumbnailMelody abc =
   case (parse abc) of
     Right abcTune ->
-      (toMelody_ 0.25 <<< toMidi <<< removeRepeatMarkers <<< thumbnail) abcTune
+      (toMelody_ 0.50 <<< toMidi <<< removeRepeatMarkers <<< thumbnail) abcTune
     _ ->
       []

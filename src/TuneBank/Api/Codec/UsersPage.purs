@@ -4,9 +4,8 @@ module TuneBank.Api.Codec.UsersPage
   , UserRef
   , decodeUsersPage) where
 
-
 import Prelude
-import Data.Argonaut (class EncodeJson, class DecodeJson, Json, encodeJson, decodeJson, (.:))
+import Data.Argonaut (class DecodeJson, Json, decodeJson, (.:))
 import Data.Either (Either)
 import Data.Traversable (traverse)
 import TuneBank.Api.Codec.Pagination (PageNum, decodeJsonPageNum)
@@ -22,7 +21,6 @@ decodeJsonUserRef json = do
     name <- obj .: "name"
     email <- obj .: "email"
     pure $ { name, email }
-
 
 type UserRefArray = Array UserRef
 

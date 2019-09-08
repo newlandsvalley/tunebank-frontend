@@ -26,8 +26,6 @@ import TuneBank.Navigation.Navigate (class Navigate, navigate)
 import TuneBank.Navigation.Route (Route(..))
 import TuneBank.Page.Utils.Environment (getBaseURL, getUser)
 
-import Debug.Trace (spy, trace, traceM)
-
 -- | Edit a comment
 -- | This is used both for editing existing comments and new ones
 

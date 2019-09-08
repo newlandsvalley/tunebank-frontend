@@ -5,9 +5,9 @@ module TuneBank.Data.Types
   , Validated
   ) where
 
-import Prelude
+import Prelude  (class Eq, class Ord, class Show)
 import Data.List.Types (NonEmptyList)
-import Data.Validation.Semigroup
+import Data.Validation.Semigroup (V)
 import TuneBank.Data.Session (Session)
 
 -- | A flag to control the environment for logging messages.

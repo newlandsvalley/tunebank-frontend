@@ -4,15 +4,12 @@ module TuneBank.Api.Codec.Utils
   , decodeURIComponent
   , safeSlice) where
 
-import Prelude ((<<<), (>>>), ($), (>=), (<=), (&&))
-import Data.Maybe (Maybe(..), fromMaybe)
+import Prelude ((<<<), ($), (>=), (<=), (&&))
+import Data.Maybe (Maybe, fromMaybe)
 import Data.Foldable (any)
 import Data.Nullable as Nullable
 import Data.String.CodeUnits (slice)
 import Data.String.CodePoints (CodePoint, codePointFromChar, toCodePointArray)
-import Global.Unsafe (unsafeDecodeURIComponent, unsafeEncodeURIComponent)
-
-
 
 foreign import encodeURIComponent :: String -> String
 

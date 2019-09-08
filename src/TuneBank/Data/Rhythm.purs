@@ -1,12 +1,9 @@
 module TuneBank.Data.Rhythm where
 
 import Prelude
-import Data.Maybe (Maybe(..))
 import Data.Generic.Rep (class Generic)
 import Data.Newtype (class Newtype)
-import Data.String.CodeUnits (slice)
 import TuneBank.Data.Genre (Genre(..))
-
 
 newtype Rhythm = Rhythm String
 

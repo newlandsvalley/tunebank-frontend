@@ -7,14 +7,12 @@ module TuneBank.Data.CommentId
   , fromNow
   ) where
 
-
 import Prelude
 import Data.Either (Either(..))
 import Effect (Effect)
 import Effect.Now (now)
 import Data.DateTime.Instant (unInstant)
 import Data.Time.Duration (Milliseconds(..))
-import Data.String.Common (null)
 import Data.Number.Format (toString)
 
 newtype CommentId = CommentId String

@@ -40,8 +40,7 @@ import TuneBank.Api.Codec.Utils (encodeURIComponent)
 import TuneBank.Authorization.BasicAuth (authorizationHeader)
 import TuneBank.BugFix.Backend (fixSearchParams)
 
-import Data.Foldable (intercalate)
-import Debug.Trace (spy, trace)
+import Debug.Trace (spy)
 
 defaultJsonGetRequest :: BaseURL -> Maybe Credentials -> Endpoint -> Request Json
 defaultJsonGetRequest (BaseURL baseUrl) mCredentials endpoint =
