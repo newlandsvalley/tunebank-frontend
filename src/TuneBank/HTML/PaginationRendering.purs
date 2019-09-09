@@ -17,6 +17,13 @@ maxPageLinks = 10
 
 renderPagination :: ∀ i p. Route -> Pagination ->  HH.HTML i p
 renderPagination route pagination =
+  if (pagination.maxPages > 1) then
+    renderPaginationLinks route pagination
+  else
+    HH.text ""
+
+renderPaginationLinks :: ∀ i p. Route -> Pagination ->  HH.HTML i p
+renderPaginationLinks route pagination =
   HH.ul
         [ css "pagination"]
         ( [ renderFirstPage  ] <>
