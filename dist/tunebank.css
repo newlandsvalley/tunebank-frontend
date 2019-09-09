@@ -331,7 +331,6 @@ input[type='submit'] {
     font-size: 100%;
 	color: black;
 	margin: 12px;
-	/* padding: 8px; */
 	padding: 5px;
   -webkit-transition-duration: 0.2s;
   -moz-transition-duration: 0.2s;
@@ -340,6 +339,7 @@ input[type='submit'] {
 
 /* individual forms */
 #loginform,
+#logout,
 #registrationform,
 #uploadform,
 #searchform {

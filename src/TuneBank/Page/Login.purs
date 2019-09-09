@@ -89,8 +89,9 @@ component =
           , renderLinks
           ]
       Just cred ->
-        HH.div_
-         [ HH.text ("log out " <> cred.user <> " ?")
+        HH.div
+         [ HP.id_ "logout" ]
+         [ HH.text ("log out " <> cred.user <> " ? ")
          , renderLoginOutButton state.currentUser
          ]
 
