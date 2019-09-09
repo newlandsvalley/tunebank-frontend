@@ -10,7 +10,7 @@ import Data.FormURLEncoded (FormURLEncoded, fromArray) as FUE
 import Effect.Aff.Class (class MonadAff)
 import Effect.Aff (try)
 import Halogen as H
-import Data.Either (Either(..), isLeft)
+import Data.Either (Either(..))
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Array (fromFoldable, head, filter)
 import Data.Tuple (Tuple(..))
@@ -160,10 +160,6 @@ requestTuneAbc baseUrl genre tuneId = do
 
 requestTuneSearch :: forall m. MonadAff m => BaseURL -> String -> SearchParams -> m (Either String (Tuple TunesPage Pagination))
 requestTuneSearch baseUrl genre searchParams = do
-  {-}
-  let
-    foo = spy "search params" searchParams
-  -}
   res <- H.liftAff $ request $ defaultJsonGetRequest baseUrl Nothing (Search genre searchParams)
   let
     pagination = getPagination res.headers
@@ -191,10 +187,12 @@ checkUser baseUrl credentials = do
     Right res -> do
       let
         response = (lmap printResponseFormatError res.body)
+        {-}
         foo = spy "status text" res.statusText
         bar = spy "status code" res.status
         baz = spy "is left" (isLeft res.body)
         bozo = spy "body" res.body
+        -}
       pure $ response
 
 -- | check the MusicRest service is up by attempting to get a welcome message

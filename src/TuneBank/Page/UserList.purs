@@ -82,7 +82,7 @@ component =
               [
               HH.h4
                  [ css "center" ]
-                 [HH.text ("page "
+                 [HH.text ("user list page "
                            <> show state.pageParams.page
                            <> " of "
                            <> show pagination.maxPages
@@ -95,22 +95,20 @@ component =
   renderUserList :: State -> Array UserRef -> H.ComponentHTML Action ChildSlots m
   renderUserList state users =
     let
-      -- f :: forall w i. TuneRef -> HH.HTML w i
       f userRef =
-          tableRow userRef.name userRef.email
+          tableRow userRef
     in
       HH.table_ $
         map f users
     where
-      tableRow name email =
-        HH.tr
-          []
-          [ HH.td
-            []
-            [ HH.text name]
-          , HH.td
-            []
-            [ HH.text email]
+      tableRow userRef =
+        HH.tr_
+          [ HH.td_
+            [ HH.text userRef.name]
+          , HH.td_
+            [ HH.text userRef.email]
+          , HH.td_
+            [ HH.text userRef.valid]
           ]
 
 

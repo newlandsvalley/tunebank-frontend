@@ -5,7 +5,7 @@ module TuneBank.Api.Codec.UsersPage
   , decodeUsersPage) where
 
 import Prelude
-import Data.Argonaut (class DecodeJson, Json, decodeJson, (.:))
+import Data.Argonaut (Json, decodeJson, (.:))
 import Data.Either (Either)
 import Data.Traversable (traverse)
 import TuneBank.Api.Codec.Pagination (PageNum, decodeJsonPageNum)
@@ -13,6 +13,7 @@ import TuneBank.Api.Codec.Pagination (PageNum, decodeJsonPageNum)
 type UserRef =
   { name :: String
   , email :: String
+  , valid :: String
   }
 
 decodeJsonUserRef :: Json -> Either String UserRef
@@ -20,7 +21,8 @@ decodeJsonUserRef json = do
     obj <- decodeJson json
     name <- obj .: "name"
     email <- obj .: "email"
-    pure $ { name, email }
+    valid <- obj .: "valid"
+    pure $ { name, email, valid }
 
 type UserRefArray = Array UserRef
 
