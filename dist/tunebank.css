@@ -622,11 +622,12 @@ div.thumbnail-highlighted > svg {
   margin: auto;
 }
 
-/* common to Metronome and ABC Editor */
+/* common to Metronome, ABC Editor and Tune page */
 
 #tempo-slider {
   width: 160px;
 	margin-top: 10px;
+	margin-bottom: 10px;
 }
 
 /* common to both the ABC Editor and Tutorial */
@@ -670,7 +671,6 @@ div.thumbnail-highlighted > svg {
   float: left;
   margin: 10px 0px 10px 50px;
 }
-
 
 /* ABC Editpr */
 

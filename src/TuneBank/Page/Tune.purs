@@ -267,11 +267,10 @@ component =
     in
       if (isVisible) then
         HH.div
-          [ HP.class_ (H.ClassName "leftPanelComponent")]
-          [ HH.p
-            [  ]
-            [ HH.text ("set tempo: " <> state.tempoNoteLength <> "=" <> (show state.currentBpm)) ]
-
+          [ HP.class_ (H.ClassName "leftPanelComponent")
+          , HP.id_ "tempo-slider-div"
+          ]
+          [ HH.text "set tempo: "
           , HH.input
             [ HE.onValueInput  (Just <<< HandleTempoInput <<< toTempo)
             , HP.type_ HP.InputRange
@@ -281,6 +280,7 @@ component =
             , HP.value (show state.currentBpm)
             , HP.disabled state.isPlaying
             ]
+          , HH.text ("  " <> state.tempoNoteLength <> "=" <> (show state.currentBpm))
           ]
       else
         HH.text ""
