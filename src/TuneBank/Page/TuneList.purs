@@ -33,7 +33,7 @@ import TuneBank.HTML.Utils (css, safeHref, truncateTo, tsToDateString)
 import TuneBank.HTML.PaginationRendering  (renderPagination)
 import TuneBank.Navigation.Navigate (class Navigate)
 import TuneBank.Navigation.Route (Route(..))
-import TuneBank.Navigation.SearchParams (SearchParams)
+import TuneBank.Navigation.SearchParams (SearchParams, paramsSummary)
 import TuneBank.Page.Utils.Environment (getBaseURL, getCurrentGenre)
 import VexFlow.Abc.Alignment (justifiedScoreConfig, rightJustify)
 import VexFlow.Score (Renderer, clearCanvas, createScore, renderScore, initialiseCanvas, resizeCanvas)
@@ -150,16 +150,27 @@ component =
       Right (Tuple tunesPage pagination) ->
         case (length tunesPage.tunes) of
           0 ->
-             HH.text "no matching tunes found"
+             HH.div
+               [ css "center" ]
+               [HH.h4_
+                  [ HH.text ( "search results for: "
+                           <> paramsSummary state.searchParams
+                          )
+                  ]
+                , HH.p_
+                    [HH.text "no matching tunes found"]
+               ]
           _ ->
             HH.div_
               [
               HH.h4
                  [ css "center" ]
-                 [HH.text ("page "
-                           <> show state.searchParams.page
-                           <> " of "
-                           <> show pagination.maxPages
+                 [HH.text ( "search results for: "
+                            <> paramsSummary state.searchParams
+                            <> " page "
+                            <> show state.searchParams.page
+                            <> " of "
+                            <> show pagination.maxPages
                            )
                  ]
               , renderTuneList state tunesPage.tunes

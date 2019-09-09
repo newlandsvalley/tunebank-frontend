@@ -1,17 +1,20 @@
 module TuneBank.Navigation.SearchParams
   ( SearchParams
   , defaultSearchParams
-  , parseParams )  where
+  , parseParams
+  , paramsSummary)  where
 
 -- | search parameters in common to the Router and the Endpoint
 
-import Prelude ((<$>), (<*>), (*>), ($), show)
-import Data.Maybe (Maybe(..))
+import Prelude ((<$>), (<*>), (*>), (<>), ($), map, show)
+import Data.Maybe (Maybe(..), isJust, maybe)
 import Data.Tuple (Tuple(..))
 import Data.List (List)
+import Data.Array (filter)
 import Data.Either (Either)
-import Data.Foldable (foldl)
+import Data.Foldable (foldl, intercalate)
 import Data.Bifunctor (lmap)
+import Data.Traversable (sequence)
 import Text.Parsing.StringParser (Parser, runParser)
 import Text.Parsing.StringParser.Combinators (sepBy)
 import Text.Parsing.StringParser.CodePoints (string, regex)
@@ -85,3 +88,21 @@ buildParams kvs =
           params
   in
     foldl f defaultSearchParams kvs
+
+paramsSummary :: SearchParams -> String
+paramsSummary sps =
+  let
+    params :: Maybe (Array String)
+    params = sequence $ filter isJust
+      [ map (\t -> "key=" <> t) sps.key
+      , map (\t -> "rhythm=" <> t) sps.rhythm
+      , map (\t -> "title=" <> t) sps.title
+      , map (\t -> "source=" <> t) sps.source
+      , map (\t -> "origin=" <> t) sps.origin
+      , map (\t -> "composer=" <> t) sps.composer
+      , map (\t -> "transcriber=" <> t) sps.transcriber
+      , map (\t -> "abc=" <> t) sps.abc
+      , Just ("sort by " <> sps.sort)
+      ]
+  in
+    maybe "" (intercalate ", ") params
