@@ -20,7 +20,7 @@ import TuneBank.Data.Types (BaseURL)
 import TuneBank.HTML.Utils (css, safeHref)
 import TuneBank.Navigation.Navigate (class Navigate, navigate)
 import TuneBank.Navigation.Route (Route(..))
-import TuneBank.Page.Utils.Environment (getBaseURL, getUser)
+import TuneBank.Page.Utils.Environment (getBaseURL)
 
 
 type Slot = H.Slot Query Void
@@ -33,36 +33,40 @@ type State =
 
 type Query = (Const Void)
 
+type Input =
+  { currentUser :: Maybe Credentials }
+
 type ChildSlots = ()
 
 data Action
-  = Initialize
+  = HandleInput Input
   | HandleUserName String
   | HandlePassword String
   | LoginUser
   | LogoutUser
 
-component :: ∀ i o m r
+component :: ∀ o m r
   . MonadAff m
   => MonadAsk { session :: Session, baseURL :: BaseURL | r } m
   => Navigate m
-  => H.Component HH.HTML Query i o m
+  => H.Component HH.HTML Query Input o m
 component =
   H.mkComponent
     { initialState
     , render
     , eval: H.mkEval $ H.defaultEval
         { handleAction = handleAction
-        , initialize = Just Initialize
+        , receive = Just <<< HandleInput
+        , initialize = Nothing
         , finalize = Nothing
         }
     }
   where
 
-  initialState :: i -> State
-  initialState _ =
+  initialState :: Input -> State
+  initialState input =
     { credentials : blankCredentials
-    , currentUser : Nothing
+    , currentUser : input.currentUser
     , userCheckResult : Left ""
     }
 
@@ -162,9 +166,8 @@ component =
 
   handleAction ∷ Action -> H.HalogenM State Action ChildSlots o m Unit
   handleAction = case _ of
-    Initialize -> do
-      mUser <- getUser
-      _ <- H.modify (\state -> state { currentUser = mUser } )
+    HandleInput input -> do
+      _ <- H.modify (\state -> state { currentUser = input.currentUser } )
       pure unit
     HandleUserName name -> do
       if (length name > 0)

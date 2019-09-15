@@ -151,7 +151,7 @@ component =
           Genre ->
             HH.slot (SProxy :: _ "genre") unit GenreMenu.component unit absurd
           Login ->
-            HH.slot (SProxy :: _ "login") unit Login.component unit absurd
+            HH.slot (SProxy :: _ "login") unit Login.component { currentUser : state.currentUser } absurd
           Register ->
             HH.slot (SProxy :: _ "register") unit Register.component unit absurd
           Upload ->
