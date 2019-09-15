@@ -25,6 +25,8 @@ import Routing.Hash (matchesWith)
 import Audio.SoundFont (loadPianoSoundFont)
 import AppM (runAppM)
 
+import Debug.Trace (spy)
+
 -- | production Musicrest server
 -- |  baseURL = BaseURL "http://www.tradtunedb.org.uk:8080/musicrest"
 -- | dev server
@@ -63,10 +65,10 @@ main = HA.runHalogenAff do
     environment = { session, baseURL, logLevel }
 
 
-    rootComponent :: H.Component HH.HTML Router.Query Unit Void Aff
+    rootComponent :: H.Component HH.HTML Router.Query Router.Input Void Aff
     rootComponent = H.hoist (runAppM environment) Router.component
 
-  halogenIO <- runUI rootComponent unit body
+  halogenIO <- runUI rootComponent { instruments : singleton instrument } body
 
   -- The app is running. All that's left is to notify the router
   -- any time the location changes in the URL.
@@ -82,4 +84,6 @@ main = HA.runHalogenAff do
   -- https://github.com/natefaubion/purescript-routing-duplex/blob/v0.2.0/README.md
   void $ liftEffect $ matchesWith (parse routeCodec) \old new ->
     when (old /= Just new) do
+      let
+        foo = spy "main instructing router to" new
       launchAff_ $ halogenIO.query $ H.tell $ Router.Navigate new

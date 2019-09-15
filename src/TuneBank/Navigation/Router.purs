@@ -44,11 +44,6 @@ import Routing.Hash (getHash)
 
 import Debug.Trace (spy)
 
--- | When a component has no queries or messages, it has no public interface and can be
--- | considered an "opaque" component. The only way for a parent to interact with the component
--- | is by sending input.
-type OpaqueSlot = H.Slot (Const Void) Void
-
 type State =
   { route :: Maybe Route
   , genre :: Genre
@@ -61,6 +56,10 @@ data Query a
 
 data Action
   = Initialize
+  | HandleInput Input
+
+type Input =
+  { instruments :: Array Instrument }
 
 type ChildSlots =
   ( home ::  SearchForm.Slot  Unit
@@ -83,17 +82,18 @@ component ::
     . MonadAff m
     => MonadAsk { session :: Session, baseURL :: BaseURL | r } m
     => Navigate m
-    => H.Component HH.HTML Query Unit Void m
+    => H.Component HH.HTML Query Input Void m
 component =
   H.mkComponent
-    { initialState: \_ -> { route: Nothing
-                          , genre : Scandi
-                          , currentUser : Nothing
-                          , instruments : [] }
+    { initialState: \input -> { route: Nothing
+                              , genre : Scandi
+                              , currentUser : Nothing
+                              , instruments : input.instruments }
     , render
     , eval: H.mkEval $ H.defaultEval
         { handleQuery = handleQuery
         , handleAction = handleAction
+        , receive = Just <<< HandleInput
         , initialize = Just Initialize
         }
     }
@@ -104,11 +104,14 @@ component =
     Initialize -> do
       -- we'll get the route the user landed on
       initialRoute <- hush <<< (RD.parse routeCodec) <$> H.liftEffect getHash
-      -- get the instruments from Ref state
-      instruments <- getInstruments
-      H.modify_ _ { instruments = instruments }
+      let
+        foo = spy "Initialize Router route" initialRoute
       -- and, finally, we'll navigate to the new route (also setting the hash)
       navigate $ fromMaybe Home initialRoute
+
+    HandleInput input -> do
+      H.modify_ _ { instruments = input.instruments }
+      pure unit
 
   handleQuery :: forall a. Query a -> H.HalogenM State Action ChildSlots Void m (Maybe a)
   handleQuery = case _ of

@@ -182,17 +182,14 @@ checkUser :: forall m. MonadAff m => BaseURL -> Credentials-> m (Either String S
 checkUser baseUrl credentials = do
   res1 <- H.liftAff $ try $ request $ defaultStringGetRequest baseUrl (Just credentials) UserCheck (MediaType "text/plain; charset=UTF-8")
   case res1 of
-    Left err ->
+    Left err -> do
+      let
+        foo = spy "check user Left response" err
       pure $ Left $ show err
     Right res -> do
       let
         response = (lmap printResponseFormatError res.body)
-        {-}
-        foo = spy "status text" res.statusText
-        bar = spy "status code" res.status
-        baz = spy "is left" (isLeft res.body)
-        bozo = spy "body" res.body
-        -}
+        foo = spy "check user Right response" res
       pure $ response
 
 -- | check the MusicRest service is up by attempting to get a welcome message
