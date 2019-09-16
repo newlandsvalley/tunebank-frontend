@@ -12,6 +12,8 @@ import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
+import Web.Event.Event (preventDefault)
+import Web.UIEvent.MouseEvent (MouseEvent, toEvent)
 import Prelude (Unit, Void, ($), (<<<), (>), (<>), (==), bind, const, pure, unit)
 import TuneBank.Api.Request (checkUser)
 import TuneBank.Data.Credentials (Credentials, Role(..), blankCredentials)
@@ -42,8 +44,8 @@ data Action
   = HandleInput Input
   | HandleUserName String
   | HandlePassword String
-  | LoginUser
-  | LogoutUser
+  | LoginUser MouseEvent
+  | LogoutUser MouseEvent
 
 component :: ∀ o m r
   . MonadAff m
@@ -132,11 +134,11 @@ component =
   renderLoginOutButton :: Maybe Credentials -> H.ComponentHTML Action ChildSlots m
   renderLoginOutButton mCred =
     let
-      action = maybe LoginUser (const LogoutUser) mCred
+      action = maybe (\ev -> LoginUser ev) (const (\ev -> LogoutUser ev)) mCred
       buttonText = maybe "login" (const "logout") mCred
     in
       HH.button
-        [ HE.onClick \_ -> Just action
+        [ HE.onClick (Just <<< action)
         , css "hoverable"
         , HP.enabled true
         ]
@@ -191,7 +193,8 @@ component =
             credentials = state.credentials { pass = pass }
           H.modify_ (\st -> st { credentials = credentials } )
         else pure unit
-    LoginUser -> do
+    LoginUser event -> do
+      _ <- H.liftEffect $ preventDefault $ toEvent event
       state <- H.get
       baseURL <- getBaseURL
       userCheckResult <- checkUser baseURL state.credentials
@@ -203,7 +206,8 @@ component =
           -- if the user logs in, we MUST navigate in order to update the headers
           navigate Home
         else  pure unit
-    LogoutUser -> do
+    LogoutUser event -> do
+      _ <- H.liftEffect $ preventDefault $ toEvent event
       session <- asks _.session
       _ <- H.liftEffect $ Ref.write Nothing session.user
       _ <- H.modify (\st -> st { currentUser = Nothing } )

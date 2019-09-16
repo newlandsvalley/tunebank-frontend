@@ -13,6 +13,8 @@ import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
+import Web.Event.Event (preventDefault)
+import Web.UIEvent.MouseEvent (MouseEvent, toEvent)
 import TuneBank.Api.Codec.Comments (Comment, defaultComment)
 import TuneBank.Api.Request (postComment, requestComment)
 import TuneBank.Data.Credentials (Credentials)
@@ -56,7 +58,7 @@ data Action
   = Initialize
   | HandleSubject String
   | HandleText String
-  | SubmitComment
+  | SubmitComment MouseEvent
 
 component
    :: ∀ o m r
@@ -190,7 +192,7 @@ component =
         if enabled then "hoverable" else "unhoverable"
     in
       HH.button
-        [ HE.onClick \_ -> Just SubmitComment
+        [ HE.onClick (Just <<< SubmitComment)
         , css className
         , HP.enabled enabled
         ]
@@ -244,7 +246,8 @@ component =
       let
         newSubmission = state.submission { text = text }
       H.modify_ (\st -> st { submission = newSubmission } )
-    SubmitComment -> do
+    SubmitComment event -> do
+      _ <- H.liftEffect $ preventDefault $ toEvent event
       state <- H.get
       case state.currentUser of
         Nothing ->

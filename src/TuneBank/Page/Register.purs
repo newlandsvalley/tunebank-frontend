@@ -12,6 +12,8 @@ import Data.String.Common (null)
 import Data.String.Pattern (Pattern(..))
 import Data.Validation.Semigroup (invalid, unV)
 import Effect.Aff.Class (class MonadAff)
+import Web.Event.Event (preventDefault)
+import Web.UIEvent.MouseEvent (MouseEvent, toEvent)
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
@@ -44,7 +46,7 @@ data Action
   | HandleEmail String
   | HandlePassword String
   | HandlePasswordConfirmation String
-  | RegisterUser
+  | RegisterUser MouseEvent
 
 component
    :: ∀ i o m r
@@ -148,7 +150,7 @@ component =
   renderRegisterButton :: H.ComponentHTML Action ChildSlots m
   renderRegisterButton =
     HH.button
-      [ HE.onClick \_ -> Just RegisterUser
+      [ HE.onClick (Just <<< RegisterUser)
       , css "hoverable"
       , HP.enabled true
       ]
@@ -194,7 +196,8 @@ component =
       let
         newSubmission = state.submission { password2 = password }
       H.modify_ (\st -> st { submission = newSubmission } )
-    RegisterUser -> do
+    RegisterUser event -> do
+      _ <- H.liftEffect $ preventDefault $ toEvent event
       state <- H.get
       baseURL <- getBaseURL
       -- reset any previous error text

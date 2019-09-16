@@ -11,6 +11,8 @@ import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
+import Web.Event.Event (preventDefault)
+import Web.UIEvent.MouseEvent (MouseEvent, toEvent)
 import TuneBank.Navigation.Route (Route(..))
 import TuneBank.Navigation.SearchParams (SearchParams, defaultSearchParams)
 import TuneBank.Data.Genre (Genre(..))
@@ -44,7 +46,7 @@ data Action
   | HandleKey String
   | HandleRhythm String
   | HandleOrdering String
-  | Search
+  | Search MouseEvent
 
 defaultOrdering :: String
 defaultOrdering =
@@ -144,7 +146,8 @@ component =
               defaultOrdering
         searchParams = state.searchParams { sort = sortKey }
       H.modify_ (\st -> st { searchParams = searchParams } )
-    Search -> do
+    Search event -> do
+      _ <- H.liftEffect $ preventDefault $ toEvent event
       state <- H.get
       navigate $ TuneList state.searchParams
 
@@ -257,7 +260,7 @@ orderingOptions default =
 renderSearchButton :: forall m. State -> H.ComponentHTML Action ChildSlots m
 renderSearchButton state =
     HH.button
-      [ HE.onClick \_ -> Just Search
+      [ HE.onClick (Just <<< Search)
       , css "hoverable"
       , HP.enabled true
       ]

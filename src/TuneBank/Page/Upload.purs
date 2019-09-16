@@ -10,6 +10,8 @@ import Data.MediaType (MediaType(..))
 import Data.Symbol (SProxy(..))
 import Data.Tuple (Tuple(..))
 import Effect.Aff.Class (class MonadAff)
+import Web.Event.Event (preventDefault)
+import Web.UIEvent.MouseEvent (MouseEvent, toEvent)
 import Halogen as H
 import Halogen.FileInputComponent as FIC
 import Halogen.HTML as HH
@@ -59,7 +61,7 @@ abcFileInputCtx =
 data Action
   = Initialize
   | HandleABCFile FIC.Message
-  | UploadFile
+  | UploadFile MouseEvent
 
 component
    :: ∀ i o m r
@@ -120,7 +122,8 @@ component =
                                 ,  abc = filespec.contents
                                 , errorText = "" } )
       pure unit
-    UploadFile -> do
+    UploadFile event -> do
+      _ <- H.liftEffect $ preventDefault $ toEvent event
       _ <- handleQuery (PostTune unit)
       pure unit
 
@@ -194,7 +197,7 @@ renderSelectFile state =
 renderUploadButton :: forall m. State -> H.ComponentHTML Action ChildSlots m
 renderUploadButton state =
     HH.button
-      [ HE.onClick \_ -> Just UploadFile
+      [ HE.onClick (Just <<< UploadFile)
       , css "hoverable"
       , HP.enabled true
       ]

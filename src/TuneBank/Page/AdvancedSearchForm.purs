@@ -12,6 +12,8 @@ import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
+import Web.Event.Event (preventDefault)
+import Web.UIEvent.MouseEvent (MouseEvent, toEvent)
 import TuneBank.Navigation.Route (Route(..))
 import TuneBank.Navigation.SearchParams (SearchParams, parseParams)
 import TuneBank.Data.Genre (Genre(..))
@@ -37,7 +39,7 @@ type ChildSlots = ()
 data Action
   = Initialize
   | HandleCriteria String
-  | Search
+  | Search MouseEvent
 
 
 component
@@ -90,7 +92,8 @@ component =
     HandleCriteria criteria -> do
       state <- H.get
       H.modify_ (\st -> st { criteria = criteria, parsedParams = Left "" } )
-    Search -> do
+    Search event -> do
+      _ <- H.liftEffect $ preventDefault $ toEvent event
       state <- H.get
       let
         parsedParams = parseParams state.criteria
@@ -143,7 +146,7 @@ renderAdvisoryText =
 renderSearchButton :: forall m. State -> H.ComponentHTML Action ChildSlots m
 renderSearchButton state =
     HH.button
-      [ HE.onClick \_ -> Just Search
+      [ HE.onClick (Just <<< Search)
       , css "hoverable"
       , HP.enabled true
       ]
