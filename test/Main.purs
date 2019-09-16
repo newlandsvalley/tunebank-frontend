@@ -12,6 +12,7 @@ import Global.Unsafe (unsafeDecodeURIComponent, unsafeEncodeURIComponent)
 import Test.Unit (Test, TestF, suite, test, failure, success)
 import Test.Unit.Assert as Assert
 import Test.Unit.Main (runTest)
+import Routing.Duplex (print)
 import TuneBank.Data.Types (BaseURL(..))
 import TuneBank.Data.TuneId (TuneId(..))
 import TuneBank.Data.Genre (Genre(..))
@@ -20,6 +21,7 @@ import TuneBank.Api.Request (requestTune, requestTuneAbc, requestCleanTune, requ
        requestTuneSearch, requestTuneSearchStr, checkUser, requestUsers, requestComments,
        requestCommentsStr)
 import TuneBank.Navigation.Endpoint (PageParams)
+import TuneBank.Navigation.Route (Route(..), routeCodec)
 import TuneBank.Navigation.SearchParams (SearchParams, defaultSearchParams, parseParams)
 
 
@@ -95,6 +97,7 @@ main :: Effect Unit
 main = runTest do
   apiSuite
   codecSuite
+  routesSuite
 
 apiSuite :: Free TestF Unit
 apiSuite =
@@ -166,7 +169,28 @@ codecSuite =
         expected = defaultSearchParams { rhythm = Just "reel", key = Just "BMin" }
       Assert.equal (Right expected) (parseParams "rhythm=reel&key=BMin")
 
-
+routesSuite :: Free TestF Unit
+routesSuite =
+  suite "Routes" do
+    test "Home" do
+      Assert.equal "/" (print routeCodec Home)
+    test "Login" do
+      Assert.equal "/login" (print routeCodec Login)
+    test "TuneList" do
+      Assert.equal "/tunelist?sort=alpha&page=1" (print routeCodec $
+        TuneList
+             { key : Nothing
+             , rhythm : Nothing
+             , title : Nothing
+             , source : Nothing
+             , origin : Nothing
+             , composer : Nothing
+             , transcriber : Nothing
+             , abc : Nothing
+             , page: 1
+             , sort : "alpha" })
+    test "UserList" do
+      Assert.equal "/users?page=1" (print routeCodec $ UserList { page : 1 })
 
 {-}
 predicateSuite :: Free TestF Unit

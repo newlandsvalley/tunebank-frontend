@@ -30,7 +30,7 @@ import TuneBank.Data.Genre (Genre(..))
 import TuneBank.Data.Credentials (Credentials)
 import TuneBank.HTML.Footer (footer)
 import TuneBank.HTML.Header (header)
-import TuneBank.Page.Utils.Environment (getUser, getCurrentGenre, getInstruments)
+import TuneBank.Page.Utils.Environment (getUser, getCurrentGenre)
 import TuneBank.HTML.About (about)
 import TuneBank.HTML.Credits (credits)
 import TuneBank.HTML.Help (help)
@@ -40,7 +40,6 @@ import Editor.Container as Editor
 import Audio.SoundFont (Instrument)
 import Routing.Duplex as RD
 import Routing.Hash (getHash)
-
 
 import Debug.Trace (spy)
 
