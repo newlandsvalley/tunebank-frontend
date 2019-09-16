@@ -15,6 +15,8 @@ import Data.Tuple (Tuple(..))
 import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Aff.Class (class MonadAff)
+import Effect.Aff (delay)
+import Data.Time.Duration (Milliseconds(..))
 import Data.Symbol (SProxy(..))
 import Halogen as H
 import Halogen.HTML as HH
@@ -298,8 +300,6 @@ component =
       pure unit
 
     HandleInput input -> do
-      let
-        foo = spy "new TuneList input" input
       H.modify_ (\st -> st { searchParams = input.searchParams } )
       _ <- handleQuery (ClearThumbnails unit)
       _ <- handleQuery (FetchResults unit)
@@ -372,6 +372,8 @@ component =
 
     -- render the thumbnail at index idx
     Thumbnail idx next -> do
+      -- we delay here to give the UI chance to re-render between each thumbnail
+      _ <- H.liftAff $ delay (Milliseconds 25.0 )
       let
         bazz =
           spy "Thumbnail Query for index: " idx
@@ -411,8 +413,6 @@ component =
                   let
                     baz =
                       spy "tuneRef not parsed for index: " idx
-                    baz1 =
-                        spy "abc: " tuneRef.abc
                   handleQuery (Thumbnail (idx + 1) next)
 
     ClearThumbnails next -> do
