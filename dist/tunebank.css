@@ -695,23 +695,20 @@ div.thumbnail-highlighted > svg {
   display: inline-block;
 }
 
-.labelAlignment {
+#abcEditor .labelAlignment {
   /* align labels at the LHS of a frame */
   display: inline-block;
   width: 165px;
-  font-size: 1.2em;
 }
 
 #abcEditor > .leftPane {
-  width: 420px;
+  width: 400px;
   float: left;
 }
 
 #abcEditor .leftPanelComponent {
   /* align items in the LHS panel */
   margin: 10px 0 0 0;
-  font-size: 1.2em;
-  font-family: Georgia, serif;
 }
 
 
