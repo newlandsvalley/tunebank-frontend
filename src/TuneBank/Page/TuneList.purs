@@ -316,13 +316,14 @@ component =
       pure unit
 
     PlayThumbnail idx -> do
-      _ <- H.query _thumbnailPlayer unit $ H.tell TNP.StopMelody
+      -- play the tumbnail unless the thumbnail player is still playing
+      isPlaying <- H.query _thumbnailPlayer unit $ H.request TNP.IsPlaying
       state <- H.get
       case state.searchResult of
         Left err ->
           pure unit
         Right (Tuple tunesPage pagination) ->
-          if (idx >= (length $ tunesPage.tunes) )
+          if ((idx >= (length $ tunesPage.tunes) ) || ( isPlaying == Just true))
             then do
               pure unit
             else do
