@@ -711,6 +711,11 @@ div.thumbnail-highlighted > svg {
   margin: 10px 0 0 0;
 }
 
+/* the ABC editor text area */
+.abcEdit {
+	border:2px solid green;
+}
+
 
 © 2019 GitHub, Inc.
 © 2019 GitHub, Inc.
