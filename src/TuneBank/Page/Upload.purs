@@ -175,7 +175,7 @@ renderAdvisoryText state =
        "Upload an ABC file to the " <>
         (show state.genre) <>
          " genre. (The file extension should be "  <>
-         ".txt although some browsers support .abc)."
+         ".abc although .txt is also allowed.)"
     text2 =
        "The file should contain a single tune."
   in
