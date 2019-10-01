@@ -9,6 +9,8 @@ import Data.Maybe (Maybe(..), maybe)
 import Data.MediaType (MediaType(..))
 import Data.Symbol (SProxy(..))
 import Data.Tuple (Tuple(..))
+import Data.String.CodeUnits (contains)
+import Data.String.Pattern (Pattern(..))
 import Effect.Aff.Class (class MonadAff)
 import Web.Event.Event (preventDefault)
 import Web.UIEvent.MouseEvent (MouseEvent, toEvent)
@@ -133,8 +135,9 @@ component =
       state <- H.get
       baseURL <- getBaseURL
       -- basic validation - the ABC tune parses and has a title
+      -- and there are no chords in the body
       let
-        eTuneTitle = getTuneTitle state.abc
+        eTuneTitle = validateTune state.abc
       case (Tuple state.currentUser eTuneTitle) of
         (Tuple (Just credentials) (Right title) ) -> do
           postResult <- postTune state.abc baseURL state.genre credentials
@@ -143,20 +146,21 @@ component =
           H.modify_ (\st -> st { errorText = errorText } )
           case postResult of
             -- we posted OK and got a good response
-            Right tuneIdStr -> do
+            Right resultStr -> do
               let
-                eTuneId = tuneIdFromString tuneIdStr
+                eTuneId = tuneIdFromString resultStr
               case eTuneId of
-                -- the response is not a valid tuneIf - shouldn;t happen -
-                -- just navigate home
-                Left _ -> do
-                  _ <- navigate Home
+                -- the response is not a valid tuneId - shouldn't happen -
+                Left err -> do
+                  -- _ <- navigate HomepostResult
+                  H.modify_ (\st -> st { errorText = err } )
                   pure (Just next)
                 -- we got a valid tuneId so navigate to that tune
                 Right tuneId -> do
                   _ <- navigate $ Tune state.genre tuneId
                   pure (Just next)
-            Left _ ->
+            Left err -> do
+              H.modify_ (\st -> st { errorText = err } )
               pure (Just next)
         (Tuple _ (Left err) ) -> do
           H.modify_ (\st -> st { errorText = err } )
@@ -209,9 +213,25 @@ renderError state =
     []
     [ HH.text state.errorText ]
 
-getTuneTitle :: String -> Either String String
-getTuneTitle abc =
+validateTune :: String -> Either String String
+validateTune abc =
+  if (textContainsQuotes abc)
+    then
+      Left ("Embedded double quotes are not supported" <>
+         " - i.e. ABC containing chord symbols is rejected")
+    else
+      validTuneTitle abc
+
+validTuneTitle :: String -> Either String String
+validTuneTitle abc =
   case parse (abc <> "\r\n")  of
     Left err -> Left ("invalid ABC: " <> show err)
     Right tune ->
       maybe (Left "No tune title present") (\t -> Right t) $ getTitle tune
+
+-- | check whether the parsed ABC text is invalid for submission to the server
+-- | at the moment, just one check is performed - the server doesn't accept
+-- | embedded double quotes - i.e. it rejects chotds
+textContainsQuotes :: String -> Boolean
+textContainsQuotes text =
+  contains (Pattern "\"") text
