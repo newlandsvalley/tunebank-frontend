@@ -4,7 +4,8 @@
 /output/
 /generated-docs/
 /deprecated/
-/production/
+/production/tunebank.js
+/production/assets
 /dist/tunebank.js
 /.psc-package/
 /.psc*

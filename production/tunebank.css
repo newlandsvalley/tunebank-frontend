@@ -1,0 +1,721 @@
+/* GENERAL
+---------------------------------------------- */
+body {
+	color: #1d3d76;
+	font: 100% "Trebuchet MS", Verdana, sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+	color: #b74e07;
+	font-weight: bold;
+}
+
+h1 {
+	font-size: 1.5em; /* 24px/16px */
+	margin-bottom: .75em;
+	text-transform: lowercase;
+}
+
+h2 {
+	font-size: 1.375em; /* 22px/16px */
+	margin-bottom: .50em;
+}
+
+.center {
+	text-align: center;
+}
+
+
+.center-image {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+	width: 40%
+}
+
+/* Site Nav - the upper navigation bar */
+
+/* Banner Navigation in the first masthead line */
+.nav {
+	overflow: hidden;
+	list-style-type: none;  /* don't display the bullets in the nav bar */
+  clear: both;
+  float: left;
+  background-color: #224422; /* hard dark green */
+  width: 97%;
+  height: 40px;
+}
+
+/* an li used as a navigation link */
+.nav .nav-item {
+	float: left;
+	font-size: .75em;  /* makes the bullets smaller */
+	padding: 3.3px 3px 3.3px 25px;
+}
+
+/* used as additional text to a nav item */
+.nav .nav-item .additional-info {
+	font-size: 1.7em;
+	color: #e69900;
+	display: inline-block;
+	padding: 6.3px 23px 3.3px 2px;
+}
+
+.nav li a {
+  display: inline-block;
+	font-size: 1.8em;  /* makes the linked text larger than the bullets */
+  color: #cccc99; /* light greenish grey */
+  text-decoration: none;
+  list-style-type: none;
+}
+
+.nav li:first-child {
+	list-style: none;
+	padding-left: 2px;
+}
+
+.nav li:last-child {
+  float: right;
+	padding-right: 30px;
+}
+
+.nav li a.current,
+.nav li a:hover {
+  color: white;
+  background-color: #224422; /* hard dark green */
+}
+
+/* the second masthead line showing login state */
+
+.masthead2-genre {
+	float: left;
+  text-align: left;
+  padding-left: 80px;
+	display: inline-block;
+  color: blue;
+}
+
+.masthead2-user {
+	float: right;
+  text-align: right;
+  padding-right: 20px;
+  display: inline-block;
+  color: blue;
+}
+
+
+
+
+
+/* buttons */
+
+.hoverable {
+  border: none;
+  border-radius: 6px;
+  padding: 2px 10px;
+  margin: 10px 20px 10px 0;
+  font-size: 1.1em;
+  background-color: #67d665;  /* lighter green */
+  color: black;
+  box-shadow: 3px 3px #669966;  /* darker green */
+  transition: 500ms;
+}
+
+.hoverable:hover {
+  box-shadow: 0 0;
+  background-color: #669966;   /* darker green */
+}
+
+/* unhoverable means greyed and disabled */
+.unhoverable {
+  border: none;
+  border-radius: 6px;
+  padding: 2px 10px;
+  margin: 10px 20px 10px 0;
+  font-size: 1.1em;
+  background-color: lightGray;
+  color: darkGray;
+  transition: 500ms;
+}
+
+#canvas:hover {
+  box-shadow: 0 0;
+  /* background-color: #d2ed97;  */  /* very light green */
+  background-color: #daffa4;   /* very light green */
+  transition: 750ms;
+}
+
+/* dropdown menus within the navigation bar */
+
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #224422; /* hard dark green */
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+}
+
+
+.dropdown-content a {
+    color: black;
+    text-decoration: none;
+    display: block;
+    text-align: left;
+}
+
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+/* FOOTER
+---------------------------------------------- */
+
+.footer {
+	display: block;
+}
+
+.footer-menu {
+	display: inline;
+	float: left;
+}
+
+.footer-nav {
+  float: left;
+  margin: 20px 0 0 20px;
+  padding-top: 1.5%;
+}
+
+/* Footer Logo */
+.mainlogo {
+   clear: both;
+   margin: 0;
+   font-family: 'Fondamento', cursive;
+   display:block;
+   vertical-align: bottom;
+	 font-weight: bold;
+}
+
+.mainlogo-prefix {
+   float: left;
+   color: green;
+   font-size: 250%;
+   vertical-align: bottom;
+}
+
+.mainlogo-suffix {
+	float: left;
+  color: black;
+	font-size: 125%;
+  vertical-align: bottom;
+	margin-top: 20px;
+}
+
+/* FORMS
+---------------------------------------------- */
+
+fieldset {
+  background-color: #f1f1f1;
+  border: none;
+  border-radius: 2px;
+  margin-bottom: 12px;
+  overflow: hidden;
+  padding: 0 10px;
+}
+
+legend ul {
+  background-color: #fff;
+  border: 1px solid #eaeaea;
+  list-style: none;
+  margin: 12px;
+  padding: 12px;
+}
+
+
+fieldset ul li {
+  /* margin: 0.5em o; */
+  margin: 5px auto 5px auto;
+  list-style-type: none;
+}
+
+fieldset ul li:first-child {
+   padding-top: 0.5em;
+}
+
+label {
+  display: inline-block;
+  padding: 3px 6px;
+  text-align: right;
+  width: 100px;
+  vertical-align: top;
+	font-size: 1.25em;
+	margin-top: 8px; /* match with select (dropdown) */
+}
+
+
+/* label alignment in forms */
+
+legend {
+  background-color: #669966; /* dark green */
+  border-top: 1px solid #d4d4d4;
+  border-bottom: 1px solid #d4d4d4;
+  -moz-box-shadow: 3px 3px 3px #ccc;
+  -webkit-box-shadow: 3px 3px 3px #ccc;
+  box-shadow: 3px 3px 3px #ccc;
+  font-size: 1.25em;
+  padding: 0.3em 1em;
+}
+
+
+input[type="email"],
+input[type="password"],
+input[type="text"] {
+	padding: 2px 3px;
+  color: black;
+  background: #f3f6c6;
+	width: 200px;
+	margin-top: 8px;   /* match with label */
+  font-size: 1.25em;
+}
+
+/* override default text input width for search criteria */
+#search-criteria {
+	width: 450px;
+}
+
+/* comment textarea */
+.textinput-div textarea {
+	padding: 2px 3px;
+	background: #f3f6c6;
+	margin-top: 8px;   /* match with label */
+  font-size: 1.25em;
+}
+
+/* select dropdown on forms */
+select {
+   background-color: #cccc99;
+	 margin-top: 8px;   /* match with label */
+   font-size: 1.25em;
+}
+
+.fileInputLabel {
+	max-width: 90px;
+  display: inline-block;
+	text-align: left;
+}
+
+/* the upload file button */
+#uploadselectfile label {
+	width: 150px;
+}
+
+/* the upload file button */
+#uploadform div p {
+	font-size: 1.25em;
+}
+
+/* the submit (and other) buttons */
+.button-link,
+input[type='submit'] {
+	background: #66cc66;
+	border: none;
+	border-radius: 4px;
+	box-shadow: 2px 2px 2px #333;
+	cursor: pointer;
+    font-size: 100%;
+	color: black;
+	margin: 12px;
+	padding: 5px;
+  -webkit-transition-duration: 0.2s;
+  -moz-transition-duration: 0.2s;
+  transition-duration: 0.2s;
+}
+
+/* individual forms */
+#loginform,
+#logout,
+#registrationform,
+#uploadform,
+#searchform {
+  width: 400px;
+  text-align: middle;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#genreform {
+  width: 250px;
+  text-align: middle;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#commentform {
+  width: 650px;
+  text-align: middle;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#advancedsearchform {
+  width: 640px;
+  text-align: middle;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* center search examples in advanced search page */
+#search-examples-div {
+  width: 640px;
+	margin-top: 10px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+
+/* link states */
+a {
+	padding: .2em;
+}
+
+a:link {
+	color: #597dbd;
+	text-decoration: underline;
+}
+
+a:visited {
+	text-decoration: none;
+	color: #597dbd;
+}
+
+a:focus,
+a:hover,
+a:active {
+  color: black;
+	background: #f3f6c6;
+	text-decoration: none;
+}
+
+
+a:hover.current {
+	cursor: default;
+	text-decoration: none;
+}
+
+/* an a link without an href but with an OnClick action
+   referring to a Halogen action on the same page */
+.a-internal-link {
+	color: #597dbd;
+	text-decoration: underline;
+}
+
+/** definition lists */
+
+dl {
+    padding: 0.5em;
+  }
+  dt {
+    float: left;
+    clear: left;
+    font-weight: bold;
+    color: blue;
+  }
+  dt:after {
+    content: ":";
+  }
+  dd {
+    margin: 0 0 0 110px;
+    width: 400px;
+    padding: 0 0 0.3em 0;
+  }
+
+/* override dl settings for advanced search examples */
+#search-examples dt {
+	width: 200px;
+	padding: 0 0, 0.3em 0;
+	margin-left: 10px;
+}
+
+#search-examples dd {
+	width: 600px;
+}
+
+
+/* links alignment */
+
+#download {
+    float: left;
+}
+
+
+/* TABLES
+---------------------------------------------- */
+
+table#samplesearch {
+    margin: 12px;
+    table-layout: fixed;
+    border-collapse:separate;
+    border-spacing:10px 2px;
+}
+
+/*
+td {
+    white-space: nowrap;
+}
+
+.tunelist table tr td {
+   padding: 0.25em 1em;
+}
+
+.tunelist table tr td a:hover {
+   color: black;
+   text-decoration: underline;
+   background: transparent;
+}
+
+
+.userlist table tr td {
+   padding: 0.25em 1em;
+}
+
+.userlist table tr td a:hover {
+   color: black;
+   text-decoration: underline;
+   background: transparent;
+}
+*/
+
+table tr td {
+   padding: 0.25em 1em;
+	 white-space: nowrap;
+}
+
+table tr td a:hover {
+   color: black;
+   text-decoration: underline;
+   background: transparent;
+}
+
+table.textalign tr td  {
+   padding-left: 2em;
+   padding-right: 2em;
+}
+
+/** navigation for pagination */
+
+.pagination ul {
+    padding-left: 15px;
+}
+
+.pagination li {
+   float: left;
+   padding: 3.5px 4px 3.5px 4px;
+   /* font-size: .90em; */
+   font-size: 1.3em;
+   list-style-type: none;
+   display: inline;
+}
+
+.pagination li:last-child {
+    float: left;
+    padding-right: 20px;
+}
+
+.pagination li a {
+   color: blue;
+   text-decoration: none;
+   display: inline-block;
+}
+
+.pagination li a:hover {
+   color: black;
+   text-decoration: underline;
+   background: transparent;
+}
+
+.pagination li a.current {
+   color: black;
+   text-decoration: none;
+}
+
+/* static pages */
+#aboutdiv,
+#helpdiv,
+#creditsdiv {
+  width: 80%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.tune-metadata {
+	margin: 0 auto;
+	width: 40%;
+	display: block;
+}
+
+/* tune lists with thumbnail images */
+
+.tunelist {
+	margin: 0 auto;
+	width: 90%;
+	text-align: left;
+}
+
+div.thumbnail > svg {
+  overflow: hidden;
+}
+
+div.thumbnail-highlighted > svg {
+  overflow: hidden;
+	background: #f3f6c6;
+}
+
+.thumbnail > div {
+  height: 60px;
+}
+
+/* polska metronome */
+
+#skew-slider {
+  width: 160px;
+	margin-top: 10px;
+}
+
+#polska-menu {
+  background-color: #cccc99;
+  font-size: 1.0em;
+}
+
+.instruction-component {
+  float: left;
+  display: inline;
+  margin: 0 0 0 30px;
+  font-size: 1.2em;
+  font-family: Georgia, serif;
+}
+
+.instruction-component > label {
+  display: inline-block;
+  text-align: right;
+  width: 150px;
+  font-size: 1.0em;
+}
+
+.instruction-component > .instruction-text {
+  display: inline;
+	margin-left: 3px;
+}
+
+#canvas {
+  display: block;
+  margin: auto;
+}
+
+#instruction-group {
+  display: block;
+  margin: auto;
+}
+
+/* common to Metronome, ABC Editor and Tune page */
+
+#tempo-slider {
+  width: 160px;
+	margin-top: 10px;
+	margin-bottom: 10px;
+}
+
+/* common to both the ABC Editor and Tutorial */
+
+.rightPane {
+  float: left;
+}
+
+.abcEdit {
+  padding: 10px 0px 10px 0px;
+  margin: 0 2px 10px 2px;
+  font-size: 1.5em;
+  font-family: "Times New Roman", "monospace";
+  background-color: rgb 243 246 198;
+  text-align: left;
+  margin: 0px 2px 0px 2px;
+  display: block;
+}
+
+/* ABC tutorial */
+
+#instruction, #hint {
+  font-size: 1.3em;
+  font-family: "Times New Roman", "monospace";
+  text-align:  left;
+  margin: 10px 80px 20px 40px;
+  height: 4.0em;
+  display: block;
+}
+
+#hint {
+  width: 25em;
+}
+
+#abcTutorial > .leftPane {
+  float: left;
+  width: 800px;
+}
+
+#abcTutorial .leftPanelComponent {
+  float: left;
+  margin: 10px 0px 10px 50px;
+}
+
+/* ABC Editpr */
+
+#transposition-menu {
+  background-color: #cccc99;
+  font-size: 1.0em;
+}
+
+#tune-title {
+  width: 800px;
+  float: left;
+  text-align: left;
+  margin: 12px 0px 0px 0px;
+}
+
+#abcEditor .fileInputLabel {
+  /* the label for a file input */
+  margin: 10px 20px 0 0;
+  /* padding: 1px 8px 0 8px; */
+  font-size: 1.1em;
+	max-width: 100px;
+  display: inline-block;
+}
+
+#abcEditor .labelAlignment {
+  /* align labels at the LHS of a frame */
+  display: inline-block;
+  width: 165px;
+}
+
+#abcEditor > .leftPane {
+  width: 400px;
+  float: left;
+}
+
+#abcEditor .leftPanelComponent {
+  /* align items in the LHS panel */
+  margin: 10px 0 0 0;
+}
+
+/* the ABC editor text area */
+.abcEdit {
+	border:2px solid green;
+}
+
+
+© 2019 GitHub, Inc.
+© 2019 GitHub, Inc.
