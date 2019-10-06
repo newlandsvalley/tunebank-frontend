@@ -19,35 +19,34 @@ credits =
         [ HH.text "MusicRest" ]
       , HH.text " web service for storing and transcoding its tunes. This in turn transcodes by means of:"
       ]
-    , HH.table
+    , HH.div
       []
-      [ HH.tr_
-        [ HH.td_
-          [ HH.text "ABC to " ]
-          , HH.a
-            [ HP.href "http://en.wikipedia.org/wiki/PostScript" ]
-            [ HH.text "postscript" ]
-        , HH.td_
-          [ HH.a
-            [ HP.href "http://moinejf.free.fr/" ]
-            [ HH.text "abcm2ps" ]
+      [ HH.dl
+        [HP.id_ "credits-examples"  ]
+        [ HH.dt_
+          [ HH.text "ABC to "
+            , HH.a
+              [ HP.href "http://en.wikipedia.org/wiki/PostScript" ]
+              [ HH.text "postscript" ]
           ]
-        ]
-      , HH.tr_
-        [ HH.td_
-           [ HH.text "postscript to various formats:" ]
-        , HH.td_
+        , HH.dd_
+           [ HH.a
+              [ HP.href "http://moinejf.free.fr/" ]
+              [ HH.text "abcm2ps" ]
+           ]
+        , HH.dt_
+           [ HH.text "postscript to various formats " ]
+        , HH.dd_
           [ HH.a
               [ HP.href "http://linux.about.com/od/commands/l/blcmdl1_convert.htm" ]
               [ HH.text "convert" ]
           ]
-        ]
-      , HH.tr_
-        [ HH.td_
-          [ HH.text "ABC to " ]
-          , HH.a
-            [ HP.href "http://en.wikipedia.org/wiki/MIDI" ]
-            [ HH.text "MIDI" ]
+        , HH.dt_
+          [ HH.text "ABC to "
+            , HH.a
+              [ HP.href "http://en.wikipedia.org/wiki/MIDI" ]
+              [ HH.text "MIDI" ]
+            ]
         , HH.td_
           [ HH.a
             [ HP.href "http://abc.sourceforge.net/abcMIDI/" ]

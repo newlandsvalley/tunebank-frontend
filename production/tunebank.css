@@ -446,6 +446,12 @@ dl {
 	width: 600px;
 }
 
+/* override dl settings for credots page examples */
+#credits-examples dt {
+	width: 250px;
+	padding: 0 0, 0.3em 0;
+}
+
 
 /* links alignment */
 
@@ -463,33 +469,6 @@ table#samplesearch {
     border-collapse:separate;
     border-spacing:10px 2px;
 }
-
-/*
-td {
-    white-space: nowrap;
-}
-
-.tunelist table tr td {
-   padding: 0.25em 1em;
-}
-
-.tunelist table tr td a:hover {
-   color: black;
-   text-decoration: underline;
-   background: transparent;
-}
-
-
-.userlist table tr td {
-   padding: 0.25em 1em;
-}
-
-.userlist table tr td a:hover {
-   color: black;
-   text-decoration: underline;
-   background: transparent;
-}
-*/
 
 table tr td {
    padding: 0.25em 1em;
