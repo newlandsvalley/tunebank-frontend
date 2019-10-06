@@ -29,6 +29,12 @@ help =
         " when searching for tunes. The search dropdowns show the rhythms and keys that are supported for each genre." <>
         " If you want to, you can also use an advanced search where (for example) you can look for a particular sequence of notes.")
     , HH.h2_
+       [ HH.text "How do I search for a tune that I can hum but don't know anything about?" ]
+    , HH.text $
+       ("Probably the best way is simply to click on search and then, for each page of results, select the  " <>
+       " add thumbnails button. This displays the first two or three bars of each tune in the list and you can click " <>
+       " on a thumbnail to hear how the tune starts.")      
+    , HH.h2_
        [ HH.text "How do learn ABC?" ]
     , HH.text "You can use the interactive "
     , HH.a
