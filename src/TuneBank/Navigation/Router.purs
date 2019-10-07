@@ -3,7 +3,6 @@ module TuneBank.Navigation.Router where
 -- | The Router Halogen Component
 
 import Prelude
-import Data.Const (Const)
 import Data.Maybe (Maybe(..), fromMaybe, maybe)
 import Data.Either (hush)
 import Effect.Aff.Class (class MonadAff)
@@ -33,6 +32,7 @@ import TuneBank.HTML.Header (header)
 import TuneBank.Page.Utils.Environment (getUser, getCurrentGenre)
 import TuneBank.HTML.About (about)
 import TuneBank.HTML.Credits (credits)
+import TuneBank.HTML.ContactUs (contactUs)
 import TuneBank.HTML.Help (help)
 import Metronome.Container as Metronome
 import Tutorial.Container as Tutorial
@@ -177,6 +177,8 @@ component =
             about
           Credits ->
             credits
+          ContactUs ->
+            contactUs
           Help ->
             help
 

@@ -44,6 +44,7 @@ data Route
   | Editor  { initialAbc :: Maybe String }
   | About
   | Credits
+  | ContactUs
   | Help
 
 
@@ -84,5 +85,6 @@ routeCodec = root $ sum
   , "Editor" : "editor" ? { initialAbc: (optional <<< string) }
   , "About" : "about" / noArgs
   , "Credits" : "credits" / noArgs
+  , "ContactUs" : "contact" / noArgs
   , "Help" : "help" / noArgs
   }

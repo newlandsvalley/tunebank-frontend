@@ -526,6 +526,7 @@ table.textalign tr td  {
 /* static pages */
 #aboutdiv,
 #helpdiv,
+#contactusdiv,
 #creditsdiv {
   width: 80%;
   margin-left: auto;

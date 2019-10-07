@@ -17,13 +17,4 @@ about =
           "but it may help you to learn the basics of a tune because you can vary the tempo. Currently, the player works with the latest " <>
           " releases of all the major browsers other than Internet Explorer. The best quality sound output is to be found with Chrome")
        ]
-    , HH.p_
-      [ HH.text $
-         ("TradTuneDb has been developed by Bayswater Software. You may like to add further music genres, or perhaps you have other suggestions" <>
-          "for improvement or new features.Please ")
-      , HH.a
-         [ HP.href "mailto:john.watson@@gmx.co.uk"]
-         [ HH.text "contact us"]
-      , HH.text " and your request will be considered."
-      ]
     ]

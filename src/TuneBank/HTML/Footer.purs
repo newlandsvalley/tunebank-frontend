@@ -41,6 +41,11 @@ footer =
         [ navItem Tutorial
           [ HH.text "ABC tutorial" ]
         ]
+      , HH.nav
+        [ css "footer-nav"]
+        [ navItem ContactUs
+          [ HH.text "contact us" ]
+        ]
       ]
     ]
 
