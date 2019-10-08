@@ -17,4 +17,12 @@ about =
           "but it may help you to learn the basics of a tune because you can vary the tempo. Currently, the player works with the latest " <>
           " releases of all the major browsers other than Internet Explorer. The best quality sound output is to be found with Chrome")
        ]
+     , HH.p_
+       [
+         HH.text "The Scandi section has been developed in cooperation with the "
+       , HH.a
+          [ HP.href "https://www.londonscandisession.co.uk/"]
+          [ HH.text "London Scandi Session"]
+       , HH.text ". It represents a fair cross-section of tunes that are regularly played at the session."
+       ]
     ]

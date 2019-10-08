@@ -17,12 +17,4 @@ contactUs =
         [ HH.text "contact us"]
       , HH.text " and we'd be delighted to hear from you."
       ]
-    , HH.p_
-      [
-        HH.text "The Scandi section has been developed in cooperation with the "
-      , HH.a
-         [ HP.href "https://www.londonscandisession.co.uk/"]
-         [ HH.text "London Scandi Session"]
-      , HH.text ". It represents a fair cross-section of tunes that are regularly played at the session."
-      ]
     ]
