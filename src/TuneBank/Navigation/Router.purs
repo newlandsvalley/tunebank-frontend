@@ -129,9 +129,11 @@ component =
   render :: State -> H.ComponentHTML Action ChildSlots m
   render state = do
     let
-      route = maybe Home identity state.route
+      -- the route we give to the header defaults to Home which we use
+      -- simply to highlight the menu options appropriately
+      headerRoute = maybe Home identity state.route
     HH.div_
-        [  header state.currentUser state.genre route
+        [  header state.currentUser state.genre headerRoute
         ,  renderRoute state
         ,  footer
         ]
