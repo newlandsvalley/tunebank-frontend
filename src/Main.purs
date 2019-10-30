@@ -15,6 +15,8 @@ import Halogen.HTML as HH
 import Halogen.VDom.Driver (runUI)
 import Web.HTML (window)
 import Web.HTML.Window (localStorage)
+import Web.HTML.HTMLElement (toNode)
+import Web.DOM.Node (setTextContent)
 import Web.Storage.Storage (getItem)
 import TuneBank.Navigation.Route (routeCodec)
 import TuneBank.Navigation.Router as Router
@@ -48,7 +50,13 @@ getBaseURL = do
 main :: Effect Unit
 main = HA.runHalogenAff do
   body <- HA.awaitBody
+  let
+    bodyNode = toNode body
+    
+  -- loading the piano soundfont may take time - issue a warning
+  liftEffect $ setTextContent "Loading piano soundfont - please wait" bodyNode
   instrument <- loadPianoSoundFont "assets/soundfonts"
+  liftEffect $ setTextContent "" bodyNode
 
   user <- liftEffect $ Ref.new Nothing
   genre <- liftEffect $ Ref.new Scandi
