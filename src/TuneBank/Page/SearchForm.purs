@@ -1,28 +1,28 @@
 module TuneBank.Page.SearchForm where
 
-import Prelude (Unit, Void, ($), (==), (<<<), (>), (/=), bind, identity, pure, map, unit)
-import Data.Const (Const)
-import Data.String.CodePoints (length)
-import Data.Maybe (Maybe(..), maybe, fromMaybe)
-import Effect.Aff.Class (class MonadAff)
 import Control.Monad.Reader (class MonadAsk)
-import TuneBank.Navigation.Navigate (class Navigate, navigate)
+import Data.Const (Const)
+import Data.Maybe (Maybe(..), maybe, fromMaybe)
+import Data.String.CodePoints (length)
+import Effect.Aff.Class (class MonadAff)
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
-import Web.Event.Event (preventDefault)
-import Web.UIEvent.MouseEvent (MouseEvent, toEvent)
-import TuneBank.Navigation.Route (Route(..))
-import TuneBank.Navigation.SearchParams (SearchParams, defaultSearchParams)
+import Prelude (Unit, Void, ($), (==), (<<<), (>), (/=), (<>), bind, identity, pure, map, unit)
 import TuneBank.Data.Genre (Genre(..))
-import TuneBank.Data.Session (Session)
-import TuneBank.Data.Types (BaseURL)
 import TuneBank.Data.Key (keySearchTerm)
 import TuneBank.Data.Key as K
 import TuneBank.Data.Rhythm as R
+import TuneBank.Data.Session (Session)
+import TuneBank.Data.Types (BaseURL)
 import TuneBank.HTML.Utils (css, safeHref)
+import TuneBank.Navigation.Navigate (class Navigate, navigate)
+import TuneBank.Navigation.Route (Route(..))
+import TuneBank.Navigation.SearchParams (SearchParams, defaultSearchParams)
 import TuneBank.Page.Utils.Environment (getCurrentGenre)
+import Web.Event.Event (preventDefault)
+import Web.UIEvent.MouseEvent (MouseEvent, toEvent)
 
 -- type Slot = H.Slot Query Void
 type Slot = H.Slot (Const Void) Void
@@ -103,6 +103,10 @@ component =
             , renderSearchButton state
             ]
         , renderLink
+        , HH.p_
+          [ HH.text ("Following a serious cyber attack against the server on October 30th, I think " <>
+           "I've recovered most, if not all, of the tunes although registered users and comments " <>
+           "have been lost. I'd be grateful if you'd let me know if you spot that something is missing.") ]
         ]
       ]
 

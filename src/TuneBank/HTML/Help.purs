@@ -33,7 +33,7 @@ help =
     , HH.text $
        ("Probably the best way is simply to click on search and then, for each page of results, select the  " <>
        " add thumbnails button. This displays the first two or three bars of each tune in the list and you can click " <>
-       " on a thumbnail to hear how the tune starts.")      
+       " on a thumbnail to hear how the tune starts.")
     , HH.h2_
        [ HH.text "How do learn ABC?" ]
     , HH.text "You can use the interactive "
@@ -60,15 +60,31 @@ help =
         "You can also use it to change octave or transpose to a different key.  Once you are happy, you can save " <>
         "the ABC to file and load it to tradtunedb.")
     , HH.h2_
+        [ HH.text "What restrictions are there in acceptable ABC?" ]
+    , HH.ul_
+       [ HH.li_
+         [ HH.text ("Names in TradTuneDB are in unicode - you should use a unicode-aware editor. " <>
+                   "Particularly important for Scandi tunes where a good many names are non-ASCII.")]
+       , HH.li_
+         [ HH.text ("Tunes must be submitted one at a time. They should have a single voice " <>
+                     "(at the moment, harmony lines are not properly supported).")]
+       , HH.li_
+         [ HH.text "Tune headers must contain a title (T:)." ]
+       , HH.li_
+         [ HH.text ("Tune headers must contain a rhythm (R:) appropriate for the genre. " <>
+                    "These are to be found in the rhythm dropdowns in the search page.") ]
+       , HH.li_
+         [ HH.text "Tune headers must contain a key (K:) indicator - e.g. GMaj, GMajor, GMinor, Gm. etc."]
+       , HH.li_
+         [ HH.text "Chord symbols in the tune body (e.g. \"Gm\" ) are not supported."]
+       ]
+    , HH.h2_
       [ HH.text "How do I submit a tune?" ]
     , HH.text $
        ("Once you have logged in, the Upload menu item becomes available from where you can upload an ABC file. " <>
-        "Whereas the ABC Editor is very liberal, upload conditions are a good deal stricter.  You must ensure that the " <>
-        "ABC headers include X (reference number), T (tune title), K (key) and R (rhythm) and that the rhythm is appropriate " <>
-        "to the genre in question. This is to ensure that tune searches are more accurate. The file should include only a single tune. " <>
-        "TradTuneDB does not support chord symbols in the ABC (or any other places where double quotes may occur). " <>
-        "Note, too, that TradTuneDB is unicode-aware and so you should be careful to upload tunes that have been prepared by a " <>
-        "unicode-aware editor. This is particularly important for Scandi tunes where a good many names are non-ASCII."
+        "Whereas the ABC Editor is very liberal, upload conditions are a good deal stricter (see the restrictions above). " <>
+        "These are in place in order to ensure that tune searches are more accurate. " <>
+        "and that the MIDI-player sounds reasonable."
        )
      , HH.h2_
        [ HH.text "How do I correct a tune I have submitted?" ]
