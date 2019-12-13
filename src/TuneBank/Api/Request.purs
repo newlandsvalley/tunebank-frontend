@@ -158,25 +158,21 @@ requestTuneAbc baseUrl genre tuneId = do
   res <- H.liftAff $ request $ defaultStringGetRequest baseUrl Nothing (Tune genre tuneId)  (MediaType "text/vnd.abc")
   pure $ lmap printResponseFormatError res.body
 
-requestTuneSearch :: forall m. MonadAff m => BaseURL -> String -> SearchParams -> m (Either String (Tuple TunesPage Pagination))
+requestTuneSearch :: forall m. MonadAff m => BaseURL -> String -> SearchParams -> m (Either String TunesPage)
 requestTuneSearch baseUrl genre searchParams = do
   res <- H.liftAff $ request $ defaultJsonGetRequest baseUrl Nothing (Search genre searchParams)
   let
-    pagination = getPagination res.headers
     tunesPage = (lmap printResponseFormatError res.body)
       >>= decodeTunesPage
-    tuple = rmap (\page -> Tuple page pagination) tunesPage
-  pure $ tuple
+  pure $ tunesPage
 
-requestUsers :: forall m. MonadAff m => BaseURL -> Maybe Credentials-> PageParams -> m (Either String (Tuple UsersPage Pagination))
+requestUsers :: forall m. MonadAff m => BaseURL -> Maybe Credentials-> PageParams -> m (Either String UsersPage)
 requestUsers baseUrl mCredentials pageParams = do
   res <- H.liftAff $ request $ defaultJsonGetRequest baseUrl mCredentials (Users pageParams)
   let
-    pagination = getPagination res.headers
     usersPage = (lmap printResponseFormatError res.body)
       >>= decodeUsersPage
-    tuple = rmap (\page -> Tuple page pagination) usersPage
-  pure tuple
+  pure usersPage
 
 checkUser :: forall m. MonadAff m => BaseURL -> Credentials-> m (Either String String)
 checkUser baseUrl credentials = do

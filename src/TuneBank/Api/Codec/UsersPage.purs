@@ -8,7 +8,7 @@ import Prelude
 import Data.Argonaut (Json, decodeJson, (.:))
 import Data.Either (Either)
 import Data.Traversable (traverse)
-import TuneBank.Api.Codec.Pagination (PageNum, decodeJsonPageNum)
+import TuneBank.Api.Codec.Pagination (Pagination, decodeJsonPagination)
 
 type UserRef =
   { name :: String
@@ -28,7 +28,7 @@ type UserRefArray = Array UserRef
 
 type UsersPage =
   { users :: UserRefArray
-  , pageNum :: PageNum
+  , pagination :: Pagination
   }
 
 decodeUserRefArray :: Json -> Either String UserRefArray
@@ -38,5 +38,5 @@ decodeUsersPage :: Json -> Either String UsersPage
 decodeUsersPage json = do
   obj <- decodeJson json
   users <- obj .: "user" >>= decodeUserRefArray
-  pageNum <- obj .: "pagination" >>= decodeJsonPageNum
-  pure $ { users, pageNum }
+  pagination <- obj .: "pagination" >>= decodeJsonPagination
+  pure $ { users, pagination }

@@ -115,19 +115,20 @@ apiSuite =
       assertRight resource
     test "simple search" do
       response <- requestTuneSearch baseURL "irish" simpleSearch
-      Assert.equal (Right "15") $ rmap (\(Tuple tunes pagination) -> tunes.pageNum.size) response
-      Assert.equal (Right 1) $  rmap (\(Tuple tunes pagination) -> pagination.page) response
-      Assert.equal (Right 5) $  rmap (\(Tuple tunes pagination) -> pagination.maxPages) response
-      -- production server
-      -- Assert.equal (Right 6) $  rmap (\(Tuple tunes pagination) -> pagination.maxPages) response
+      -- these tests below now fail
+      Assert.equal (Right 15) $ rmap (\tunes -> tunes.pagination.size) response
+      Assert.equal (Right 1) $  rmap (\tunes -> tunes.pagination.page) response
+      Assert.equal (Right 5) $  rmap (\tunes -> tunes.pagination.maxPages) response
     test "complex search" do
+    -- these tests below now fail
       response <- requestTuneSearch baseURL "scandi" complexSearch
-      Assert.equal (Right "15") $ rmap (\(Tuple tunes pagination) -> tunes.pageNum.size) response
-      Assert.equal (Right 3) $ rmap (\(Tuple tunes pagination) -> pagination.maxPages) response
+      Assert.equal (Right 15) $ rmap (\tunes -> tunes.pagination.size) response
+      Assert.equal (Right 3) $  rmap (\tunes -> tunes.pagination.maxPages) response
     test "get users" do
+      -- these tests below now fail
       response  <- requestUsers baseURL (Just adminUser) page1
-      Assert.equal (Right "15") $  rmap (\(Tuple users pagination) -> users.pageNum.size) response
-      Assert.equal (Right 1) $  rmap (\(Tuple users pagination) -> pagination.page) response
+      Assert.equal (Right 15) $  rmap (\users -> users.pagination.size) response
+      Assert.equal (Right 1) $  rmap (\users -> users.pagination.page) response
     test "check good user" do
       userCheck <- checkUser baseURL adminUser
       Assert.equal (Right "user is valid") userCheck

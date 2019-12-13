@@ -1,9 +1,8 @@
 module TuneBank.Api.Codec.Pagination
-  ( PageNum
-  , Pagination
+  ( Pagination
   , defaultPagination
   , decodePagination
-  , decodeJsonPageNum) where
+  , decodeJsonPagination) where
 
 
 import Prelude
@@ -14,29 +13,29 @@ import Text.Parsing.StringParser (Parser, runParser)
 import Text.Parsing.StringParser.CodePoints (string, char, regex, skipSpaces)
 import Data.Int (fromString)
 
-
--- | a page number in results from a search request
-type PageNum =
-  { page :: String
-  , size :: String
+type Pagination =
+  { page :: Int
+  , size :: Int
+  , maxPages :: Int
   }
 
 -- | decode the JSON results of a search request page number
-decodeJsonPageNum :: Json -> Either String PageNum
-decodeJsonPageNum json = do
+decodeJsonPagination :: Json -> Either String Pagination
+decodeJsonPagination json = do
    obj <- decodeJson json
-   page <- obj .: "page"
-   size <- obj .: "size"
-   pure $ { page, size }
-
-type Pagination =
-  { page :: Int
-  , maxPages :: Int
-  }
+   pageS <- obj .: "page"
+   sizeS <- obj .: "size"
+   maxPagesS <- obj .: "maxPages"
+   let
+     page = (fromMaybe 1) $ fromString pageS
+     size = (fromMaybe 15) $ fromString sizeS
+     maxPages = (fromMaybe 1) $ fromString maxPagesS
+   pure $ { page, size, maxPages }
 
 defaultPagination :: Pagination
 defaultPagination =
   { page : 1
+  , size : 15
   , maxPages : 1
   }
 
@@ -72,4 +71,4 @@ anyInt =
 
 buildPagination :: Int -> Int -> Pagination
 buildPagination page maxPages =
-  { page, maxPages }
+  { page, size: 15, maxPages }

@@ -49,7 +49,7 @@ type Slot = H.Slot Query Void
 type State =
   { genre :: Genre
   , searchParams :: SearchParams
-  , searchResult :: Either String (Tuple TunesPage Pagination)
+  , searchResult :: Either String TunesPage
   , instruments :: Array Instrument
   , vexRenderers :: Array Renderer
   , hasThumbnails :: Boolean
@@ -149,7 +149,7 @@ component =
     case state.searchResult of
       Left err ->
         HH.text err
-      Right (Tuple tunesPage pagination) ->
+      Right tunesPage ->
         case (length tunesPage.tunes) of
           0 ->
              HH.div
@@ -170,14 +170,13 @@ component =
                  [HH.text ( "search results for: "
                             <> paramsSummary state.searchParams
                             <> " page "
-                            <> show state.searchParams.page
+                            <> show tunesPage.pagination.page
                             <> " of "
-                            <> show pagination.maxPages
+                            <> show tunesPage.pagination.maxPages
                            )
                  ]
               , renderTuneList state tunesPage.tunes
-              -- , renderPagination pagination
-              , renderPagination (TuneList state.searchParams) pagination
+              , renderPagination (TuneList state.searchParams) tunesPage.pagination
               , renderAddThumbnailsButton state
               ]
 
@@ -322,7 +321,7 @@ component =
       case state.searchResult of
         Left err ->
           pure unit
-        Right (Tuple tunesPage pagination) ->
+        Right tunesPage  ->
           if ((idx >= (length $ tunesPage.tunes) ) || ( isPlaying == Just true))
             then do
               pure unit
@@ -382,7 +381,7 @@ component =
       case state.searchResult of
         Left err ->
           pure (Just next)
-        Right (Tuple tunesPage pagination) ->
+        Right tunesPage ->
           if (idx >= (length $ tunesPage.tunes) )
             then do
               let
@@ -426,9 +425,9 @@ component =
       _ <- H.liftEffect $ traverse (clearCanvas) state.vexRenderers
       pure (Just next)
 
-resultRows :: Either String (Tuple TunesPage Pagination) -> Int
+resultRows :: Either String TunesPage -> Int
 resultRows = case _ of
-  Right (Tuple tunePage pagination) ->
+  Right tunePage  ->
     length tunePage.tunes
   _ ->
     0

@@ -1,6 +1,13 @@
 tunebank-frontend
 =================
 
+WARNING!
+--------
+
+This branch is not yet compatible with any server.  Tests for user and tune lists fail.
+
+We await changes to Musicrest to accommodate maxPages in the pagination section for these JSON results.
+
 [try it here](http://www.tradtunedb.org.uk:8604)
 
 This is an overhaul of the [tradtunedb](http://www.tradtunedb.org.uk/) website which freshens it up a bit and makes it more maintainable. The front end (currently: Scala / Play with embedded PureScript) is now written entirely in PureScript / Halogen 5.

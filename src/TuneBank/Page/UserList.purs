@@ -27,7 +27,7 @@ type Slot = H.Slot Query Void
 type State =
   { currentUser :: Maybe Credentials
   , pageParams :: PageParams
-  , usersResult :: Either String (Tuple UsersPage Pagination)
+  , usersResult :: Either String UsersPage
   }
 
 data Query a =
@@ -73,7 +73,7 @@ component =
     case state.usersResult of
       Left err ->
         HH.text err
-      Right (Tuple usersPage pagination) ->
+      Right usersPage ->
         case (length usersPage.users) of
           0 ->
              HH.text "no users found"
@@ -83,13 +83,13 @@ component =
               HH.h4
                  [ css "center" ]
                  [HH.text ("user list page "
-                           <> show state.pageParams.page
+                           <> show usersPage.pagination.page
                            <> " of "
-                           <> show pagination.maxPages
+                           <> show usersPage.pagination.maxPages
                            )
                  ]
               , renderUserList state usersPage.users
-              , renderPagination (UserList state.pageParams) pagination
+              , renderPagination (UserList state.pageParams) usersPage.pagination
               ]
 
   renderUserList :: State -> Array UserRef -> H.ComponentHTML Action ChildSlots m
