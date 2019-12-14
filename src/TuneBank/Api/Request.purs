@@ -34,7 +34,6 @@ import TuneBank.Api.Codec.UsersPage (UsersPage, decodeUsersPage)
 import TuneBank.Api.Codec.Tune (TuneMetadata, fixJson, decodeTune)
 import TuneBank.Api.Codec.Comments (Comment, Comments, decodeComment, decodeComments)
 import TuneBank.Api.Codec.Comments (Comment,  encodeFormData) as Comments
-import TuneBank.Api.Codec.Pagination (Pagination, defaultPagination, decodePagination)
 import TuneBank.Api.Codec.Register ( Submission, encodeFormData ) as Register
 import TuneBank.Api.Codec.Utils (encodeURIComponent)
 import TuneBank.Authorization.BasicAuth (authorizationHeader)
@@ -299,6 +298,8 @@ tryRequest r = H.liftAff do
     Right res -> do
       pure $ lmap printResponseFormatError res.body
 
+{- These functions are no longer needed - we now ger pagination information
+   directly from the JSON and not from the custom pagination header
 
 getPagination :: Array ResponseHeader-> Pagination
 getPagination headers =
@@ -307,3 +308,5 @@ getPagination headers =
 paginationResponse :: Array ResponseHeader -> Maybe String
 paginationResponse headers =
   map value $ head $ filter (\h -> name h == "musicrest-pagination") headers
+
+  -}

@@ -1,16 +1,19 @@
 module TuneBank.Api.Codec.Pagination
   ( Pagination
-  , defaultPagination
-  , decodePagination
   , decodeJsonPagination) where
 
+-- | Pagination responses are now held solely in the returned JSON for
+-- | Tune and User lists
+-- | The commented-out code represents the alternative mechanism of
+-- | pagination via a custom Musicrest-Response header which is now
+-- | deprecated
 
 import Prelude
 import Data.Argonaut (Json, decodeJson, (.:))
-import Data.Either (Either, hush)
+import Data.Either (Either)
 import Data.Maybe (fromMaybe)
-import Text.Parsing.StringParser (Parser, runParser)
-import Text.Parsing.StringParser.CodePoints (string, char, regex, skipSpaces)
+-- import Text.Parsing.StringParser (Parser, runParser)
+-- import Text.Parsing.StringParser.CodePoints (string, char, regex, skipSpaces)
 import Data.Int (fromString)
 
 type Pagination =
@@ -31,6 +34,9 @@ decodeJsonPagination json = do
      size = (fromMaybe 15) $ fromString sizeS
      maxPages = (fromMaybe 1) $ fromString maxPagesS
    pure $ { page, size, maxPages }
+
+
+{-
 
 defaultPagination :: Pagination
 defaultPagination =
@@ -72,3 +78,5 @@ anyInt =
 buildPagination :: Int -> Int -> Pagination
 buildPagination page maxPages =
   { page, size: 15, maxPages }
+
+-}
