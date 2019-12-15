@@ -4,6 +4,7 @@
 /output/
 /generated-docs/
 /deprecated/
+/haskell-backend/
 /production/tunebank.js
 /production/assets
 /dist/tunebank.js

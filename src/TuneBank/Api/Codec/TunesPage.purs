@@ -40,6 +40,6 @@ decodeTuneRefArray json = decodeJson json >>= traverse decodeJsonTuneRef
 decodeTunesPage :: Json -> Either String TunesPage
 decodeTunesPage json = do
   obj <- decodeJson json
-  tunes <- obj .: "tune" >>= decodeTuneRefArray
+  tunes <- obj .: "tunes" >>= decodeTuneRefArray
   pagination <- obj .: "pagination" >>= decodeJsonPagination
   pure $ { tunes, pagination }

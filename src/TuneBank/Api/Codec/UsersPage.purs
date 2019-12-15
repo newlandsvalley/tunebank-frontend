@@ -37,6 +37,6 @@ decodeUserRefArray json = decodeJson json >>= traverse decodeJsonUserRef
 decodeUsersPage :: Json -> Either String UsersPage
 decodeUsersPage json = do
   obj <- decodeJson json
-  users <- obj .: "user" >>= decodeUserRefArray
+  users <- obj .: "users" >>= decodeUserRefArray
   pagination <- obj .: "pagination" >>= decodeJsonPagination
   pure $ { users, pagination }
