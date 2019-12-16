@@ -4,17 +4,10 @@ module TuneBank.Api.Codec.Pagination
 
 -- | Pagination responses are now held solely in the returned JSON for
 -- | Tune and User lists
--- | The commented-out code represents the alternative mechanism of
--- | pagination via a custom Musicrest-Response header which is now
--- | deprecated
 
 import Prelude
 import Data.Argonaut (Json, decodeJson, (.:))
 import Data.Either (Either)
-import Data.Maybe (fromMaybe)
--- import Text.Parsing.StringParser (Parser, runParser)
--- import Text.Parsing.StringParser.CodePoints (string, char, regex, skipSpaces)
-import Data.Int (fromString)
 
 type Pagination =
   { page :: Int
@@ -23,60 +16,11 @@ type Pagination =
   }
 
 -- | decode the JSON results of a search request page number
+
 decodeJsonPagination :: Json -> Either String Pagination
 decodeJsonPagination json = do
    obj <- decodeJson json
-   pageS <- obj .: "page"
-   sizeS <- obj .: "size"
-   maxPagesS <- obj .: "maxPages"
-   let
-     page = (fromMaybe 1) $ fromString pageS
-     size = (fromMaybe 15) $ fromString sizeS
-     maxPages = (fromMaybe 1) $ fromString maxPagesS
+   page <- obj .: "page"
+   size <- obj .: "size"
+   maxPages <- obj .: "maxPages"
    pure $ { page, size, maxPages }
-
-
-{-
-
-defaultPagination :: Pagination
-defaultPagination =
-  { page : 1
-  , size : 15
-  , maxPages : 1
-  }
-
-decodePagination :: String -> Pagination
-decodePagination s =
-  fromMaybe defaultPagination $ hush $ runParser pagination s
-
-pagination :: Parser Pagination
-pagination =
-  leftBracket *> proportion <* rightBracket
-
-proportion :: Parser Pagination
-proportion =
-  buildPagination <$>
-    anyInt <*> (ofText *> anyInt)
-
-leftBracket :: Parser Char
-leftBracket =
-  char '['
-
-rightBracket :: Parser Char
-rightBracket =
-  char ']'
-
-ofText :: Parser String
-ofText =
-  skipSpaces *> string "of" <* skipSpaces
-
-anyInt :: Parser Int
-anyInt =
-  fromMaybe 1 <$> fromString <$>
-    regex "([1-9][0-9]*)"
-
-buildPagination :: Int -> Int -> Pagination
-buildPagination page maxPages =
-  { page, size: 15, maxPages }
-
--}
