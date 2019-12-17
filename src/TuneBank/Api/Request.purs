@@ -125,7 +125,16 @@ defaultDeleteRequest (BaseURL baseUrl) mCredentials endpoint  =
   }
 
 
--- | this gives a bad JSON error because it really is bad!
+{- don't need this - just for debug
+requestTune :: forall m. MonadAff m => BaseURL -> Genre -> TuneId -> m (Either String TuneMetadata)
+requestTune baseUrl genre tuneId = do
+  res <- H.liftAff $ request $ defaultJsonAsStrGetRequest baseUrl Nothing (Tune genre tuneId)
+  let
+    tune = (lmap printResponseFormatError res.body)
+    foo = spy "tune metadata" $ tune
+  pure $ Left "artificial error"
+-}
+
 requestTune :: forall m. MonadAff m => BaseURL -> Genre -> TuneId -> m (Either String TuneMetadata)
 requestTune baseUrl genre tuneId = do
   res <- H.liftAff $ request $ defaultJsonGetRequest baseUrl Nothing (Tune genre tuneId)
