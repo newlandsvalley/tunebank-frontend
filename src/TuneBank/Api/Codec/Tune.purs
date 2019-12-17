@@ -10,12 +10,12 @@ import Data.Maybe (Maybe(..))
 
 type TuneMetadata =
   { title :: String
+  , rhythm :: String
   , source :: Maybe String
   , composer :: Maybe String
   , origin :: Maybe String
   , transcriber :: Maybe String
   , submitter :: String
-  , tid :: String
   , ts :: String
   , abc :: String
   }
@@ -23,17 +23,36 @@ type TuneMetadata =
 nullTuneMetadata :: TuneMetadata
 nullTuneMetadata =
   { title : ""
+  , rhythm : ""
   , source : Nothing
   , composer : Nothing
   , origin : Nothing
   , transcriber : Nothing
   , submitter : ""
-  , tid : ""
   , ts : ""
   , abc : ""
   }
 
+
+-- | this is what's provided by the Haskell backend
 decodeTune :: Json -> Either String TuneMetadata
+decodeTune json = do
+  obj <- decodeJson json
+  title <- obj .: "title"
+  rhythm <- obj .: "rhythm"
+  source <- obj .:? "source"
+  composer <- obj .:? "composer"
+  origin <- obj .:? "origin"
+  transcriber <- obj .:? "transcriber"
+  submitter <- obj .: "submitter"
+  abc <- obj .: "abc"
+  -- ts <- obj .: "ts"
+  let
+    ts = "timestamp"
+  pure $ { title, rhythm, source, composer, origin, transcriber, submitter, ts, abc }
+
+{-
+-- | this is what's provided by the Scala backend
 decodeTune json = do
   obj <- decodeJson json
   title <- obj .: "T"
@@ -46,4 +65,4 @@ decodeTune json = do
   abc <- obj .: "abc"
   ts <- obj .: "ts"
   pure $ { title, source, composer, origin, transcriber, submitter, tid, ts, abc }
-  
+-}
