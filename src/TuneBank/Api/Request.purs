@@ -11,14 +11,12 @@ import Effect.Aff.Class (class MonadAff)
 import Effect.Aff (try)
 import Halogen as H
 import Data.Either (Either(..))
-import Data.Maybe (Maybe(..), fromMaybe)
-import Data.Array (fromFoldable, head, filter)
+import Data.Maybe (Maybe(..))
+import Data.Array (fromFoldable)
 import Data.Tuple (Tuple(..))
-import Data.Bifunctor (bimap, lmap, rmap)
+import Data.Bifunctor (lmap)
 import Data.HTTP.Method (Method(..))
 import Data.Argonaut.Core (Json)
-import Data.Argonaut.Decode (decodeJson)
-import Data.Argonaut.Parser (jsonParser)
 import Data.MediaType (MediaType(..))
 import Data.MediaType.Common (applicationJSON)
 import Routing.Duplex (print)
@@ -31,7 +29,7 @@ import TuneBank.Data.Credentials (Credentials)
 import TuneBank.Data.Genre (Genre)
 import TuneBank.Api.Codec.TunesPage (TunesPage, decodeTunesPage)
 import TuneBank.Api.Codec.UsersPage (UsersPage, decodeUsersPage)
-import TuneBank.Api.Codec.Tune (TuneMetadata, fixJson, decodeTune)
+import TuneBank.Api.Codec.Tune (TuneMetadata, decodeTune)
 import TuneBank.Api.Codec.Comments (Comment, Comments, decodeComment, decodeComments)
 import TuneBank.Api.Codec.Comments (Comment,  encodeFormData) as Comments
 import TuneBank.Api.Codec.Register ( Submission, encodeFormData ) as Register
@@ -133,17 +131,6 @@ requestTune baseUrl genre tuneId = do
   res <- H.liftAff $ request $ defaultJsonGetRequest baseUrl Nothing (Tune genre tuneId)
   let
     tune = (lmap printResponseFormatError res.body)
-      >>= decodeTune
-  pure $ tune
-
--- | only needed against pre v1.2.0 musicrest which exhibits JSON errors
-requestCleanTune :: forall m. MonadAff m => BaseURL -> Genre -> TuneId -> m (Either String TuneMetadata)
-requestCleanTune baseUrl genre tuneId = do
-  res <- H.liftAff $ request $ defaultJsonAsStrGetRequest baseUrl Nothing (Tune genre tuneId)
-  let
-    tune = (bimap printResponseFormatError fixJson res.body)
-      >>= (\s -> jsonParser $ fixJson s)
-      >>= decodeJson
       >>= decodeTune
   pure $ tune
 

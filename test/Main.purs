@@ -6,7 +6,6 @@ import Data.Array (length) as A
 import Data.Maybe (Maybe(..))
 import Data.Either (Either(..))
 import Data.Bifunctor (rmap)
-import Data.Tuple (Tuple(..))
 import Effect (Effect)
 import Global.Unsafe (unsafeDecodeURIComponent, unsafeEncodeURIComponent)
 import Test.Unit (Test, TestF, suite, test, failure, success)
@@ -17,7 +16,7 @@ import TuneBank.Data.Types (BaseURL(..))
 import TuneBank.Data.TuneId (TuneId(..))
 import TuneBank.Data.Genre (Genre(..))
 import TuneBank.Data.Credentials (Role(..), Credentials)
-import TuneBank.Api.Request (requestTune, requestTuneAbc, requestCleanTune, requestTuneStr,
+import TuneBank.Api.Request (requestTune, requestTuneAbc, requestTuneStr,
        requestTuneSearch, requestTuneSearchStr, checkUser, requestUsers, requestComments,
        requestCommentsStr)
 import TuneBank.Navigation.Endpoint (PageParams)
@@ -103,7 +102,7 @@ apiSuite :: Free TestF Unit
 apiSuite =
   suite "Endpoint API" do
     test "get tune" do
-      resource <- requestCleanTune baseURL Irish sampleTune
+      resource <- requestTune baseURL Irish sampleTune
       assertRight resource
     {-
     test "get tune" do

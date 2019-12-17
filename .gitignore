@@ -4,8 +4,8 @@
 /output/
 /generated-docs/
 /deprecated/
-/haskell-backend/
 /production/tunebank.js
+/production/haskell-backend-index.js
 /production/assets
 /dist/tunebank.js
 /.psc-package/
