@@ -4,8 +4,8 @@ import Prelude
 import Affjax (Request, printResponseFormatError, request)
 import Affjax.RequestHeader (RequestHeader(..))
 import Affjax.RequestBody (formURLEncoded)
-import Affjax.ResponseHeader (ResponseHeader, name, value)
 import Affjax.ResponseFormat as RF
+import Affjax.StatusCode (StatusCode(..))
 import Data.FormURLEncoded (FormURLEncoded, fromArray) as FUE
 import Effect.Aff.Class (class MonadAff)
 import Effect.Aff (try)
@@ -169,19 +169,19 @@ requestUsers baseUrl mCredentials pageParams = do
       >>= decodeUsersPage
   pure usersPage
 
+
 checkUser :: forall m. MonadAff m => BaseURL -> Credentials-> m (Either String String)
 checkUser baseUrl credentials = do
   res1 <- H.liftAff $ try $ request $ defaultStringGetRequest baseUrl (Just credentials) UserCheck (MediaType "text/plain; charset=UTF-8")
   case res1 of
     Left err -> do
-      let
-        foo = spy "check user Left response" err
       pure $ Left $ show err
     Right res -> do
-      let
-        response = (lmap printResponseFormatError res.body)
-        foo = spy "check user Right response" res
-      pure $ response
+      case res.status of
+        (StatusCode 200) ->
+          pure $ lmap printResponseFormatError res.body
+        _ ->
+          pure $ Left res.statusText
 
 -- | check the MusicRest service is up by attempting to get a welcome message
 -- | we never need to bother to decode the JSON
