@@ -35,17 +35,17 @@ import TuneBank.Api.Codec.Comments (Comment,  encodeFormData) as Comments
 import TuneBank.Api.Codec.Register ( Submission, encodeFormData ) as Register
 import TuneBank.Api.Codec.Utils (encodeURIComponent)
 import TuneBank.Authorization.BasicAuth (authorizationHeader)
-import TuneBank.BugFix.Backend (fixSearchParams)
+-- import TuneBank.BugFix.Backend (fixSearchParams)
 
 import Debug.Trace (spy)
 
 defaultJsonGetRequest :: BaseURL -> Maybe Credentials -> Endpoint -> Request Json
 defaultJsonGetRequest (BaseURL baseUrl) mCredentials endpoint =
   let
-    foo = spy "endpoint" $ fixSearchParams endpoint $ print endpointCodec endpoint
+    foo = spy "endpoint" $ print endpointCodec endpoint
   in
     { method: Left GET
-    , url: baseUrl <> (fixSearchParams endpoint $ print endpointCodec endpoint)
+    , url: baseUrl <> (print endpointCodec endpoint)
     , headers: [  Accept (MediaType "application/json; charset=UTF-8")
                ] <>
                  (fromFoldable $ authorizationHeader mCredentials)
@@ -87,10 +87,10 @@ defaultStringGetRequest (BaseURL baseUrl) mCredentials endpoint mediaType =
 defaultJsonAsStrGetRequest :: BaseURL -> Maybe Credentials -> Endpoint -> Request String
 defaultJsonAsStrGetRequest (BaseURL baseUrl) mCredentials endpoint =
   let
-    foo = spy "endpoint" $ fixSearchParams endpoint $ print endpointCodec endpoint
+    foo = spy "endpoint" $ print endpointCodec endpoint
   in
     { method: Left GET
-    , url: baseUrl <> (fixSearchParams endpoint $ print endpointCodec endpoint)
+    , url: baseUrl <> (print endpointCodec endpoint)
     , headers: [Accept applicationJSON ]<>
                 (fromFoldable $ authorizationHeader mCredentials)
     , content: Nothing
@@ -200,6 +200,7 @@ requestComments baseUrl genre tuneId = do
       let
         comments = (lmap printResponseFormatError res.body)
           >>= decodeComments
+        foo = spy "tune comments response" $ res.body
       pure $ comments
 
 requestComment :: forall m. MonadAff m => BaseURL -> Genre -> TuneId -> CommentKey -> Credentials -> m (Either String Comment)
