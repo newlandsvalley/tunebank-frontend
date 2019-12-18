@@ -13,7 +13,7 @@ import TuneBank.Api.Codec.Pagination (Pagination, decodeJsonPagination)
 type UserRef =
   { name :: String
   , email :: String
-  , valid :: String
+  , valid :: Boolean
   }
 
 decodeJsonUserRef :: Json -> Either String UserRef
@@ -22,7 +22,7 @@ decodeJsonUserRef json = do
     name <- obj .: "name"
     email <- obj .: "email"
     valid <- obj .: "valid"
-    pure $ { name, email, valid }
+    pure $ { name, email, valid  }
 
 type UserRefArray = Array UserRef
 

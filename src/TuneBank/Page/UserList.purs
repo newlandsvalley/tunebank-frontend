@@ -108,7 +108,7 @@ component =
           , HH.td_
             [ HH.text userRef.email]
           , HH.td_
-            [ HH.text userRef.valid]
+            [ HH.text $ show userRef.valid]
           ]
 
 
