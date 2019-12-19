@@ -206,9 +206,7 @@ requestComments baseUrl genre tuneId = do
 requestComment :: forall m. MonadAff m => BaseURL -> Genre -> TuneId -> CommentKey -> Credentials -> m (Either String Comment)
 requestComment baseUrl genre tuneId key credentials =
   H.liftAff do
-    let
-      encodedUser = encodeURIComponent key.user
-    res1 <- tryRequest $ defaultJsonGetRequest baseUrl (Just credentials) (Comment genre tuneId encodedUser key.commentId)
+    res1 <- tryRequest $ defaultJsonGetRequest baseUrl (Just credentials) (Comment genre tuneId key.commentId)
     case res1 of
       Left err ->
         pure $ Left $ show err
@@ -278,9 +276,7 @@ deleteTune baseUrl genre tuneId credentials =
 deleteComment :: forall m. MonadAff m => BaseURL -> Genre -> TuneId -> CommentId -> Credentials -> m (Either String String)
 deleteComment baseUrl genre tuneId commentId credentials =
   H.liftAff do
-    let
-      encodedUser = encodeURIComponent credentials.user
-    res <- tryRequest $ defaultDeleteRequest baseUrl (Just credentials) (Comment genre tuneId encodedUser commentId)
+    res <- tryRequest $ defaultDeleteRequest baseUrl (Just credentials) (Comment genre tuneId commentId)
     pure res
 
 -- | The default manner of attempting a request. All errors will be collected
