@@ -40,6 +40,7 @@ import TuneBank.HTML.Utils (css, safeHref, renderKV, showRatio, tsToDateString)
 import TuneBank.Navigation.Navigate (class Navigate, navigate)
 import TuneBank.Navigation.Route (Route(..))
 import TuneBank.Page.Utils.Environment (getBaseURL, getUser)
+import Editor.Window (print)
 
 -- | there is no tune yet
 nullParsedTune :: Either String AbcTune
@@ -84,6 +85,7 @@ data Action
   | HandleTempoInput Int
   | DeleteTune TuneId
   | DeleteComment CommentId
+  | PrintScore
 
 component
    :: ∀ o m r
@@ -146,7 +148,9 @@ component =
       imageURI = urlPreface state <> "/png"
     in
       HH.div
-        [ css "center-image" ]
+        [ HP.id_ "score"
+        , css "center-image"
+        ]
         [HH.img
           [ HP.src imageURI
           , HP.alt title
@@ -202,24 +206,32 @@ component =
       Just v ->
         renderKV k v
 
+
   renderTuneControls :: State -> H.ComponentHTML Action ChildSlots m
   renderTuneControls state =
     case state.currentUser of
       Nothing ->
-        HH.text ""
+        HH.div_
+          [ HH.dt_
+             [ HH.text "tune" ]
+          , HH.dd_
+             [ renderPrintScore state ]
+          ]
       Just credentials ->
         HH.div_
           [
             HH.dt_
-            [ HH.text "tune" ]
+             [ HH.text "tune" ]
           , HH.dd_
-            [ HH.a
-              [ safeHref $ Comments state.genre state.tuneId ]
-              [ HH.text "add comment"]
-            , renderEditAbc state credentials
-            , renderDeleteAbc state credentials
+             [ HH.a
+               [ safeHref $ Comments state.genre state.tuneId ]
+               [ HH.text "add comment"]
+             , renderEditAbc state credentials
+             , renderDeleteAbc state credentials
+             , renderPrintScore state
             ]
           ]
+
 
   -- | a user can edit the ABC if he submitted the tune or is the administrator
   renderEditAbc :: State -> Credentials -> H.ComponentHTML Action ChildSlots m
@@ -242,6 +254,14 @@ component =
         [ HH.text "delete tune"]
     else
       HH.text ""
+
+  renderPrintScore :: State -> H.ComponentHTML Action ChildSlots m
+  renderPrintScore state =
+    HH.a
+      [ css "a-internal-link"
+      , HE.onClick \_ -> Just PrintScore
+      ]
+      [ HH.text "print score"]
 
   renderPlayer ::  State -> H.ComponentHTML Action ChildSlots m
   renderPlayer state =
@@ -450,7 +470,9 @@ component =
               pure unit
         Nothing ->
           pure unit
-
+    PrintScore -> do
+      _ <-  H.liftEffect print
+      pure unit
 
 -- refresh the state of the player by passing it the tune result and the tempo
 refreshPlayerState :: ∀ o m
