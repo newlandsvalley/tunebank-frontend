@@ -42,7 +42,6 @@ import TuneBank.Navigation.Route (Route(..))
 import TuneBank.Page.Utils.Environment (getBaseURL, getUser)
 import Editor.Window (print)
 
-
 -- | there is no tune yet
 nullParsedTune :: Either String AbcTune
 nullParsedTune =
