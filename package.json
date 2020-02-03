@@ -1,7 +1,7 @@
 {
   "private": true,
   "scripts": {
-    "build": "pulp build --to dist/tunebank.js",
+    "build": "pulp build --to dist/tunebank-haskell.js",
     "optimise": "npm run uglify --s dist/tunebank.js --output dist/tunebankmin.js --compress --mangle"
   },
   "devDependencies": {
