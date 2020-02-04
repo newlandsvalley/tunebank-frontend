@@ -187,7 +187,8 @@ component =
       f i tuneRef =
         let
           tuneId = decodeTuneIdURIComponent tuneRef.uri
-          dateString = tsToDateString tuneRef.ts
+          -- dateString = tsToDateString tuneRef.ts
+          dateString = tuneRef.date
         in
           tableRow tuneId dateString i
     in
