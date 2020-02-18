@@ -10,6 +10,7 @@ Differences between the Scala and Haskell compliant branches of tunebank-fronten
   * The `checkUser` login check request differs.  The Haskell version correctly returns 403 (Forbidden) for bad credentials but the Scala version does not (just returning Y/N).  Consequently `checkUser` is improved.
   * The `valid` field in a JSON `UserRef` (in lists of users) is a Boolean in the Haskell backend (it is a String in the Scala backend).
   * The `Comment` endpoint for a single comment differs.  In the Scala backend, the user name is a URL parameter.  However, this endpoint is only ever used by tunebank-frontend in the context of editing or deleting a comment where the user credentials are always required.  In the Haskell backend, the user name is taken from the credentials and is not required to be repeated in the URL.
+  * The `Comments` endpoint, when asked for a JSON list of comments, just receives the comment array - no JSON object is involved. 
   * The handling of creation timestamps differs.  The scala backend returns them as epoch times (ms from time zero) formatted as strings whilst (at the moment) the haskell backend returns them as pre-formatted date strings.
 
 
