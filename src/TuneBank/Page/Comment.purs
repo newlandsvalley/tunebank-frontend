@@ -28,6 +28,9 @@ import TuneBank.Navigation.Navigate (class Navigate, navigate)
 import TuneBank.Navigation.Route (Route(..))
 import TuneBank.Page.Utils.Environment (getBaseURL, getUser)
 
+
+import Debug.Trace (spy)
+
 -- | Edit a comment
 -- | This is used both for editing existing comments and new ones
 
@@ -229,7 +232,9 @@ component =
                   -- edit comment
                   H.put $ newState { submission = comment }
                   pure unit
-                Left _ -> do
+                Left err -> do
+                  let
+                    foo = spy "getting comment response" $ (show err)
                   -- new comment
                   H.put newState
                   pure unit

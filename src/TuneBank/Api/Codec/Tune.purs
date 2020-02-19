@@ -46,9 +46,7 @@ decodeTune json = do
   transcriber <- obj .:? "transcriber"
   submitter <- obj .: "submitter"
   abc <- obj .: "abc"
-  -- ts <- obj .: "ts"
-  let
-    ts = "timestamp"
+  ts <- obj .: "ts"
   pure $ { title, rhythm, source, composer, origin, transcriber, submitter, ts, abc }
 
 {-

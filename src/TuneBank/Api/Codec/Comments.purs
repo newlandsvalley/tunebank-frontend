@@ -45,11 +45,6 @@ decodeComment json = do
 
 type Comments = Array Comment
 
-{-}
-decodeCommentArray :: Json -> Either String Comments
-decodeCommentArray json = decodeJson json >>= traverse decodeComment
--}
-
 -- | the returned JSON now consists only of an unnamed array of Comment
 decodeComments :: Json -> Either String Comments
 decodeComments json =

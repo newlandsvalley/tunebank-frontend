@@ -162,6 +162,7 @@ component =
     HH.dl
       [ ]
       [ renderKV "submitter" state.tuneMetadata.submitter
+      , renderKV "submitted" (tsToDateString state.tuneMetadata.ts)
       , renderOptionalKV "composer" state.tuneMetadata.composer
       , renderOptionalKV "source" state.tuneMetadata.source
       , renderOptionalKV "origin" state.tuneMetadata.origin
