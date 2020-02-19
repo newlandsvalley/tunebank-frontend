@@ -12,7 +12,7 @@ import TuneBank.Api.Codec.Pagination (Pagination, decodeJsonPagination)
 
 type TuneRef =
   { uri :: String
-  , date :: String
+  , ts :: String
   , abc :: String
   }
 
@@ -20,9 +20,9 @@ decodeJsonTuneRef :: Json -> Either String TuneRef
 decodeJsonTuneRef json = do
     obj <- decodeJson json
     uri <- obj .: "uri"
-    date <- obj .: "date"
+    ts <- obj .: "ts"
     abc <- obj .: "abc"
-    pure $ { uri, date, abc }
+    pure $ { uri, ts, abc }
 
 type TunesPage =
   { tunes :: TuneRefArray

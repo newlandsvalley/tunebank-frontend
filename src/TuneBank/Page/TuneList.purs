@@ -24,7 +24,6 @@ import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
 import Halogen.ThumbnailPlayerComponent (Query(..), Slot, component) as TNP
 import Partial.Unsafe (unsafePartial)
-import TuneBank.Api.Codec.Pagination (Pagination)
 import TuneBank.Api.Codec.TunesPage (TunesPage, TuneRefArray)
 import TuneBank.Api.Request (requestTuneSearch)
 import TuneBank.Data.Genre (Genre(..), asUriComponent)
@@ -187,8 +186,7 @@ component =
       f i tuneRef =
         let
           tuneId = decodeTuneIdURIComponent tuneRef.uri
-          -- dateString = tsToDateString tuneRef.ts
-          dateString = tuneRef.date
+          dateString = tsToDateString tuneRef.ts
         in
           tableRow tuneId dateString i
     in
