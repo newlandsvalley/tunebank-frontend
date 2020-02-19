@@ -263,6 +263,8 @@ postComment baseUrl genre tuneId comment credentials =
     let
       formData = Comments.encodeFormData comment
     res <- tryRequest $ defaultPostRequest baseUrl (Just credentials) formData (Comments genre tuneId)
+    let
+      foo = spy "post comment result" $ show res
     pure res
 
 -- | DELETE

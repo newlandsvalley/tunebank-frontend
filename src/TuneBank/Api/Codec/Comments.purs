@@ -38,10 +38,10 @@ decodeComment :: Json -> Either String Comment
 decodeComment json = do
     obj <- decodeJson json
     user <- obj .: "user"
-    timestamp <- obj .: "cid"
+    commentId <- obj .: "commentId"
     subject <- obj .: "subject"
     text <- obj .: "text"
-    pure $ { user, commentId : CommentId timestamp, subject, text }
+    pure $ { user, commentId : CommentId commentId, subject, text }
 
 type Comments = Array Comment
 
@@ -62,7 +62,7 @@ encodeFormData comment =
   in
     fromArray
        [ Tuple "user"  (Just comment.user)
-       , Tuple "timestamp"  (Just timestamp)
+       , Tuple "commentId"  (Just timestamp)
        , Tuple "subject"  (Just comment.subject)
        , Tuple "text"  (Just comment.text)
        ]
