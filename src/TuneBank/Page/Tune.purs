@@ -3,11 +3,10 @@ module TuneBank.Page.Tune where
 import Prelude
 
 import Audio.SoundFont (Instrument)
-import Audio.SoundFont.Melody.Class (MidiRecording(..))
 import Control.Monad.Reader (class MonadAsk, asks)
 import Data.Abc (AbcTune)
-import Data.Abc.Midi (toMidiAtBpm)
 import Data.Abc.Parser (parse)
+import Data.Abc.PlayableAbc (PlayableAbc(..))
 import Data.Abc.Tempo (defaultTempo, getAbcTempo, getBpm)
 import Data.Array (filter, length)
 import Data.Bifunctor (lmap)
@@ -63,6 +62,7 @@ type State =
   , isPlaying :: Boolean
   , comments :: Comments
   , instruments :: Array Instrument
+  , generateIntro :: Boolean
   }
 
 type Input =
@@ -74,7 +74,7 @@ type Input =
 type Query = (Const Void)
 
 type ChildSlots =
-   (player :: (PC.Slot MidiRecording) Unit)
+   (player :: (PC.Slot PlayableAbc) Unit)
 
 _player = SProxy :: SProxy "player"
 
@@ -82,6 +82,7 @@ data Action
   = Initialize
   | Finalize
   | HandleTuneIsPlaying PC.Message
+  | ToggleGenerateIntro
   | HandleTempoInput Int
   | DeleteTune TuneId
   | DeleteComment CommentId
@@ -119,6 +120,7 @@ component =
     , isPlaying : false
     , comments : []
     , instruments : input.instruments
+    , generateIntro : false
     }
 
   render :: State -> H.ComponentHTML Action ChildSlots m
@@ -137,6 +139,7 @@ component =
             [ renderTuneMetadata state
             , renderTempoSlider state
             , renderPlayer state
+            , renderIntroButton state
             , renderComments state
             , renderDebug state
             ]
@@ -272,7 +275,7 @@ component =
           [ HP.class_ (H.ClassName "leftPanelComponent")
           , HP.id_  "player-div"
           ]
-          [ HH.slot _player unit (PC.component (toPlayable abcTune state.currentBpm) state.instruments) unit (Just <<< HandleTuneIsPlaying) ]
+          [ HH.slot _player unit (PC.component (toPlayable abcTune state.generateIntro state.currentBpm) state.instruments) unit (Just <<< HandleTuneIsPlaying) ]
       Left err ->
         HH.div_
           [  ]
@@ -306,6 +309,26 @@ component =
       else
         HH.text ""
 
+  renderIntroButton :: State -> H.ComponentHTML Action ChildSlots m
+  renderIntroButton state =
+    let
+      label =
+        if state.generateIntro
+          then "On"
+          else "Off"
+    in
+      HH.div
+        [ HP.id_ "include-intro-div" ]
+        [
+          HH.text "Include intro when tune plays"
+        , HH.button
+            [ css "hoverable"
+            , HP.id_ "include-intro-button"
+            , HE.onClick \_ -> Just ToggleGenerateIntro
+            , HP.enabled true
+            ]
+            [ HH.text label ]
+        ]
 
   renderComments ::  State -> H.ComponentHTML Action ChildSlots m
   renderComments state =
@@ -433,6 +456,15 @@ component =
       _ <- H.modify_ (\st -> st { isPlaying = isPlaying } )
       pure unit
 
+    ToggleGenerateIntro -> do
+      state <- H.get
+      let
+        generateIntro = not state.generateIntro
+        newState =  state { generateIntro = generateIntro }
+      _ <- H.put newState
+      _ <- refreshPlayerState newState
+      pure unit
+
     HandleTempoInput bpm -> do
       state <- H.get
       _ <- H.query _player unit $ H.tell PC.StopMelody
@@ -483,14 +515,16 @@ refreshPlayerState :: ∀ o m
 refreshPlayerState state  = do
   _ <- either
      (\_ -> H.query _player unit $ H.tell PC.StopMelody)
-     (\abcTune -> H.query _player unit $ H.tell (PC.HandleNewPlayable (toPlayable abcTune state.currentBpm)))
+     (\abcTune -> H.query _player unit $ H.tell (PC.HandleNewPlayable (toPlayable abcTune state.generateIntro state.currentBpm)))
      state.tuneResult
   pure unit
 
 -- | convert a tune to a format recognized by the player
-toPlayable :: AbcTune -> Int -> MidiRecording
-toPlayable abcTune bpm =
-  MidiRecording $ toMidiAtBpm abcTune bpm
+toPlayable :: AbcTune -> Boolean -> Int -> PlayableAbc
+toPlayable abcTune generateIntro bpm =
+  -- MidiRecording $ toMidiAtBpm abcTune bpm
+  PlayableAbc { abcTune: abcTune, bpm : 120, phraseSize : 0.7, generateIntro  }
+
 
 -- expand YouTube watch links to embedded iframes and geberal links to anchor tags
 expandAllLinks :: String -> String
