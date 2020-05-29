@@ -143,6 +143,10 @@ h2 {
   transition: 500ms;
 }
 
+#include-intro-button {
+	margin-left: 15px;
+}
+
 #canvas:hover {
   box-shadow: 0 0;
   /* background-color: #d2ed97;  */  /* very light green */
@@ -151,7 +155,6 @@ h2 {
 }
 
 /* dropdown menus within the navigation bar */
-
 
 .dropdown-content {
     display: none;

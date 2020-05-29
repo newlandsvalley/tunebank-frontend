@@ -4,12 +4,10 @@ import Control.Monad.Reader (class MonadAsk)
 import Data.Array (length)
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
-import Data.Tuple (Tuple(..))
 import Effect.Aff.Class (class MonadAff)
 import Halogen as H
 import Halogen.HTML as HH
 import Prelude (Unit, Void, ($), (<>), (<<<), bind, discard, map, pure, show, unit)
-import TuneBank.Api.Codec.Pagination (Pagination)
 import TuneBank.Api.Codec.UsersPage (UsersPage, UserRef)
 import TuneBank.Api.Request (requestUsers)
 import TuneBank.Data.Credentials (Credentials)
