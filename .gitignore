@@ -5,10 +5,11 @@
 /generated-docs/
 /deprecated/
 /production/tunebank.js
-/production/tunebankhaskell.js
+/production/tunebank-haskell.js
 /production/haskell-backend-index.js
 /production/assets
 /dist/tunebank.js
+/dist/tunebank-haskell.js
 /.psc-package/
 /.psc*
 /.purs*
