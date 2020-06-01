@@ -5,7 +5,8 @@ import Prelude
 import Control.Monad.Reader (class MonadAsk)
 import Data.Abc.Metadata (thumbnail, removeRepeatMarkers)
 import Data.Abc.Parser (parse)
-import Data.Abc.Midi (toMidi)
+import Data.Abc.Melody (toMelodyDefault)
+-- import Data.Abc.Midi (toMidi)
 import Data.Array (index, length, mapWithIndex, range, unsafeIndex)
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..), maybe)
@@ -24,7 +25,6 @@ import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
 import Halogen.ThumbnailPlayerComponent (Query(..), Slot, component) as TNP
 import Partial.Unsafe (unsafePartial)
-import TuneBank.Api.Codec.Pagination (Pagination)
 import TuneBank.Api.Codec.TunesPage (TunesPage, TuneRefArray)
 import TuneBank.Api.Request (requestTuneSearch)
 import TuneBank.Data.Genre (Genre(..), asUriComponent)
@@ -42,7 +42,6 @@ import VexFlow.Score (Renderer, clearCanvas, createScore, renderScore, initialis
 import VexFlow.Types (Config)
 import Audio.SoundFont (Instrument)
 import Audio.SoundFont.Melody (Melody)
-import Audio.SoundFont.Melody.Maker (toMelody_)
 
 type Slot = H.Slot Query Void
 
@@ -461,6 +460,6 @@ getThumbnailMelody :: String -> Melody
 getThumbnailMelody abc =
   case (parse abc) of
     Right abcTune ->
-      (toMelody_ 0.50 <<< toMidi <<< removeRepeatMarkers <<< thumbnail) abcTune
+      (toMelodyDefault <<< removeRepeatMarkers <<< thumbnail) abcTune
     _ ->
       []

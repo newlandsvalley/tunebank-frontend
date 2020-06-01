@@ -5,7 +5,6 @@ import Prelude
 import Audio.SoundFont (Instrument)
 import Control.Monad.Reader (class MonadAsk, asks)
 import Data.Abc (AbcTune)
--- import Data.Abc.Midi (toMidiAtBpm)
 import Data.Abc.Parser (parse)
 import Data.Abc.Tempo (defaultTempo, getAbcTempo, getBpm)
 import Data.Abc.PlayableAbc (PlayableAbc(..))
