@@ -523,7 +523,7 @@ refreshPlayerState state  = do
 toPlayable :: AbcTune -> Boolean -> Int -> PlayableAbc
 toPlayable abcTune generateIntro bpm =
   -- MidiRecording $ toMidiAtBpm abcTune bpm
-  PlayableAbc { abcTune: abcTune, bpm : 120, phraseSize : 0.7, generateIntro  }
+  PlayableAbc { abcTune: abcTune, bpm, phraseSize : 0.7, generateIntro  }
 
 
 -- expand YouTube watch links to embedded iframes and geberal links to anchor tags
