@@ -9,7 +9,7 @@ import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
-import Prelude (Unit, Void, ($), (==), (<<<), (>), (/=), (<>), bind, identity, pure, map, unit)
+import Prelude (Unit, Void, ($), (==), (<<<), (>), (/=), bind, identity, pure, map, unit)
 import TuneBank.Data.Genre (Genre(..))
 import TuneBank.Data.Key (keySearchTerm)
 import TuneBank.Data.Key as K
@@ -104,9 +104,7 @@ component =
             ]
         , renderLink
         , HH.p_
-          [ HH.text ("Following a serious cyber attack against the server on October 30th, I think " <>
-           "I've recovered most, if not all, of the tunes although registered users and comments " <>
-           "have been lost. I'd be grateful if you'd let me know if you spot that something is missing.") ]
+          [ HH.text ("") ]  -- place for a news message
         ]
       ]
 
