@@ -6,6 +6,7 @@ module TuneBank.Api.Codec.UsersPage
 
 import Prelude
 import Data.Argonaut (Json, decodeJson, (.:))
+import Data.Argonaut.Decode.Error (JsonDecodeError)
 import Data.Either (Either)
 import Data.Traversable (traverse)
 import TuneBank.Api.Codec.Pagination (Pagination, decodeJsonPagination)
@@ -16,7 +17,7 @@ type UserRef =
   , valid :: String
   }
 
-decodeJsonUserRef :: Json -> Either String UserRef
+decodeJsonUserRef :: Json -> Either JsonDecodeError UserRef
 decodeJsonUserRef json = do
     obj <- decodeJson json
     name <- obj .: "name"
@@ -31,10 +32,10 @@ type UsersPage =
   , pagination :: Pagination
   }
 
-decodeUserRefArray :: Json -> Either String UserRefArray
+decodeUserRefArray :: Json -> Either JsonDecodeError UserRefArray
 decodeUserRefArray json = decodeJson json >>= traverse decodeJsonUserRef
 
-decodeUsersPage :: Json -> Either String UsersPage
+decodeUsersPage :: Json -> Either JsonDecodeError UsersPage
 decodeUsersPage json = do
   obj <- decodeJson json
   users <- obj .: "users" >>= decodeUserRefArray

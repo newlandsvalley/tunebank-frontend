@@ -8,12 +8,14 @@ module TuneBank.Api.Codec.Comments
 
 
 import Prelude
+
 import Data.Argonaut (Json, decodeJson, (.:))
-import Data.FormURLEncoded (FormURLEncoded, fromArray)
-import Data.Tuple (Tuple(..))
-import Data.Maybe (Maybe(..))
+import Data.Argonaut.Decode.Error (JsonDecodeError)
 import Data.Either (Either)
+import Data.FormURLEncoded (FormURLEncoded, fromArray)
+import Data.Maybe (Maybe(..))
 import Data.Traversable (traverse)
+import Data.Tuple (Tuple(..))
 import TuneBank.Data.CommentId (CommentId(..))
 
 -- | the type of a comment when returned from the server
@@ -34,9 +36,9 @@ defaultComment =
   }
 
 -- | decode a JSON comment
-decodeComment :: Json -> Either String Comment
+decodeComment :: Json -> Either JsonDecodeError Comment
 decodeComment json = do
-    obj <- decodeJson json
+    obj <-  decodeJson json
     user <- obj .: "user"
     timestamp <- obj .: "cid"
     subject <- obj .: "subject"
@@ -45,10 +47,10 @@ decodeComment json = do
 
 type Comments = Array Comment
 
-decodeCommentArray :: Json -> Either String Comments
+decodeCommentArray :: Json -> Either JsonDecodeError Comments
 decodeCommentArray json = decodeJson json >>= traverse decodeComment
 
-decodeComments :: Json -> Either String Comments
+decodeComments :: Json -> Either JsonDecodeError Comments
 decodeComments json = do
   obj <- decodeJson json
   comments <- obj .: "comment" >>= decodeCommentArray

@@ -7,9 +7,20 @@ This is an overhaul of the [tradtunedb](http://www.tradtunedb.org.uk/) website w
 
 This has been made possible by adding CORS header protection to the MusicRest server to all resources that a JavaScript frontend needs to access.
 
+To Build
+--------
+
+    npm run build
+
+To Test
+-------
+
+    fire up a tradtunedb development server then:
+
+    npm run test 
+
 Still to do (possibly requiring further server changes)
 -------------------------------------------------------
   * Make the css more friendly for mobile devices.
   * Add role (e.g. admin) to the user profile.
   * Add preferred soundfont to the user profile and load it when the user logs in.
-  * Possibly simplify the pagination interface.

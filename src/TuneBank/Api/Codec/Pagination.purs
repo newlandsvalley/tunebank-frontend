@@ -7,6 +7,7 @@ module TuneBank.Api.Codec.Pagination
 
 import Prelude
 import Data.Argonaut (Json, decodeJson, (.:))
+import Data.Argonaut.Decode.Error (JsonDecodeError)
 import Data.Either (Either)
 
 type Pagination =
@@ -17,7 +18,7 @@ type Pagination =
 
 -- | decode the JSON results of a search request page number
 
-decodeJsonPagination :: Json -> Either String Pagination
+decodeJsonPagination :: Json -> Either JsonDecodeError Pagination
 decodeJsonPagination json = do
    obj <- decodeJson json
    page <- obj .: "page"

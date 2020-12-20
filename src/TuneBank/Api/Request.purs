@@ -1,43 +1,44 @@
 module TuneBank.Api.Request where
 
 import Prelude
-import Affjax (Request, printResponseFormatError, request)
-import Affjax.RequestHeader (RequestHeader(..))
+
+import Affjax (Request, printError, request)
 import Affjax.RequestBody (formURLEncoded)
-import Affjax.ResponseHeader (ResponseHeader, name, value)
+import Affjax.RequestHeader (RequestHeader(..))
 import Affjax.ResponseFormat as RF
-import Data.FormURLEncoded (FormURLEncoded, fromArray) as FUE
-import Effect.Aff.Class (class MonadAff)
-import Effect.Aff (try)
-import Halogen as H
-import Data.Either (Either(..))
-import Data.Maybe (Maybe(..))
-import Data.Array (fromFoldable)
-import Data.Tuple (Tuple(..))
-import Data.Bifunctor (lmap)
-import Data.HTTP.Method (Method(..))
+import Affjax.ResponseHeader (ResponseHeader, name, value)
 import Data.Argonaut.Core (Json)
+import Data.Argonaut.Decode.Error (printJsonDecodeError)
+import Data.Array (fromFoldable)
+import Data.Bifunctor (bimap, lmap)
+import Data.Either (Either(..))
+import Data.FormURLEncoded (FormURLEncoded, fromArray) as FUE
+import Data.HTTP.Method (Method(..))
+import Data.Maybe (Maybe(..))
 import Data.MediaType (MediaType(..))
 import Data.MediaType.Common (applicationJSON)
+import Data.Tuple (Tuple(..))
+import Debug.Trace (spy)
+import Effect.Aff (try)
+import Effect.Aff.Class (class MonadAff)
+import Halogen as H
 import Routing.Duplex (print)
-import TuneBank.Navigation.Endpoint (PageParams, Endpoint(..), endpointCodec)
-import TuneBank.Navigation.SearchParams (SearchParams)
-import TuneBank.Data.Types (BaseURL(..))
-import TuneBank.Data.TuneId (TuneId())
-import TuneBank.Data.CommentId (CommentId, CommentKey)
-import TuneBank.Data.Credentials (Credentials)
-import TuneBank.Data.Genre (Genre)
+import TuneBank.Api.Codec.Comments (Comment, Comments, decodeComment, decodeComments)
+import TuneBank.Api.Codec.Comments (Comment, encodeFormData) as Comments
+import TuneBank.Api.Codec.Register (Submission, encodeFormData) as Register
+import TuneBank.Api.Codec.Tune (TuneMetadata, decodeTune)
 import TuneBank.Api.Codec.TunesPage (TunesPage, decodeTunesPage)
 import TuneBank.Api.Codec.UsersPage (UsersPage, decodeUsersPage)
-import TuneBank.Api.Codec.Tune (TuneMetadata, decodeTune)
-import TuneBank.Api.Codec.Comments (Comment, Comments, decodeComment, decodeComments)
-import TuneBank.Api.Codec.Comments (Comment,  encodeFormData) as Comments
-import TuneBank.Api.Codec.Register ( Submission, encodeFormData ) as Register
 import TuneBank.Api.Codec.Utils (encodeURIComponent)
 import TuneBank.Authorization.BasicAuth (authorizationHeader)
 import TuneBank.BugFix.Backend (fixSearchParams)
-
-import Debug.Trace (spy)
+import TuneBank.Data.CommentId (CommentId, CommentKey)
+import TuneBank.Data.Credentials (Credentials)
+import TuneBank.Data.Genre (Genre)
+import TuneBank.Data.TuneId (TuneId)
+import TuneBank.Data.Types (BaseURL(..))
+import TuneBank.Navigation.Endpoint (PageParams, Endpoint(..), endpointCodec)
+import TuneBank.Navigation.SearchParams (SearchParams)
 
 defaultJsonGetRequest :: BaseURL -> Maybe Credentials -> Endpoint -> Request Json
 defaultJsonGetRequest (BaseURL baseUrl) mCredentials endpoint =
@@ -52,23 +53,10 @@ defaultJsonGetRequest (BaseURL baseUrl) mCredentials endpoint =
     , content: Nothing
     , username: Nothing
     , password: Nothing
+    , timeout: Nothing
     , withCredentials: false
     , responseFormat: RF.json
     }
-
-{-
-defaultAbcGetRequest :: BaseURL -> Endpoint -> Request String
-defaultAbcGetRequest (BaseURL baseUrl) endpoint =
-  { method: Left GET
-  , url: baseUrl <> print endpointCodec endpoint <> "/abc"
-  , headers: [ Accept (MediaType "text/vnd.abc")]
-  , content: Nothing
-  , username: Nothing
-  , password: Nothing
-  , withCredentials: true
-  , responseFormat: RF.string
-  }
--}
 
 defaultStringGetRequest :: BaseURL -> Maybe Credentials -> Endpoint -> MediaType -> Request String
 defaultStringGetRequest (BaseURL baseUrl) mCredentials endpoint mediaType =
@@ -79,6 +67,7 @@ defaultStringGetRequest (BaseURL baseUrl) mCredentials endpoint mediaType =
   , content: Nothing
   , username: Nothing
   , password: Nothing
+  , timeout: Nothing
   , withCredentials: false
   , responseFormat: RF.string
   }
@@ -96,6 +85,7 @@ defaultJsonAsStrGetRequest (BaseURL baseUrl) mCredentials endpoint =
     , content: Nothing
     , username: map _.user mCredentials
     , password: map _.pass mCredentials
+    , timeout: Nothing
     , withCredentials: false
     , responseFormat: RF.string
     }
@@ -108,6 +98,7 @@ defaultPostRequest (BaseURL baseUrl) mCredentials fue endpoint  =
   , content: Just $ formURLEncoded fue
   , username: Nothing
   , password: Nothing
+  , timeout: Nothing
   , withCredentials: false
   , responseFormat: RF.string
   }
@@ -120,6 +111,7 @@ defaultDeleteRequest (BaseURL baseUrl) mCredentials endpoint  =
   , content: Nothing
   , username: Nothing
   , password: Nothing
+  , timeout: Nothing
   , withCredentials: false
   , responseFormat: RF.string
   }
@@ -128,51 +120,69 @@ defaultDeleteRequest (BaseURL baseUrl) mCredentials endpoint  =
 -- | this gives a bad JSON error because it really is bad!
 requestTune :: forall m. MonadAff m => BaseURL -> Genre -> TuneId -> m (Either String TuneMetadata)
 requestTune baseUrl genre tuneId = do
-  res <- H.liftAff $ request $ defaultJsonGetRequest baseUrl Nothing (Tune genre tuneId)
-  let
-    tune = (lmap printResponseFormatError res.body)
-      >>= decodeTune
-  pure $ tune
+  res <- H.liftAff $ tryRequest $ defaultJsonGetRequest baseUrl Nothing (Tune genre tuneId)
+  case res of
+    Left err ->
+      pure $ Left $ show err
+    Right json -> do
+      let
+        -- tune :: Either String Tune
+        tune = lmap printJsonDecodeError $ decodeTune json
+      pure $ tune
+
 
 requestTuneStr :: forall m. MonadAff m => BaseURL -> Genre -> TuneId -> m (Either String String)
 requestTuneStr baseUrl genre tuneId = do
-  res <- H.liftAff $ request $ defaultJsonAsStrGetRequest baseUrl Nothing (Tune genre tuneId)
-  pure $ lmap printResponseFormatError res.body
+  res <- H.liftAff $ tryRequest $ defaultJsonAsStrGetRequest baseUrl Nothing (Tune genre tuneId)
+  case res of
+    Left err ->
+      pure $ Left $ show err
+    Right body -> do
+      pure $ Right body
 
 requestTuneAbc :: forall m. MonadAff m => BaseURL -> Genre -> TuneId -> m (Either String String)
 requestTuneAbc baseUrl genre tuneId = do
   res <- H.liftAff $ request $ defaultStringGetRequest baseUrl Nothing (Tune genre tuneId)  (MediaType "text/vnd.abc")
-  pure $ lmap printResponseFormatError res.body
+  pure $ bimap printError _.body res
 
 requestTuneSearch :: forall m. MonadAff m => BaseURL -> String -> SearchParams -> m (Either String TunesPage)
 requestTuneSearch baseUrl genre searchParams = do
-  res <- H.liftAff $ request $ defaultJsonGetRequest baseUrl Nothing (Search genre searchParams)
-  let
-    tunesPage = (lmap printResponseFormatError res.body)
-      >>= decodeTunesPage
-  pure $ tunesPage
+  res <- H.liftAff $ tryRequest $ defaultJsonGetRequest baseUrl Nothing (Search genre searchParams)
+  case res of
+    Left err ->
+      pure $ Left $ show err
+    Right json -> do
+      let
+        -- tunesPage :: Either String TunesPage
+        tunesPage = lmap printJsonDecodeError $ decodeTunesPage json
+      pure $ tunesPage
+
 
 requestUsers :: forall m. MonadAff m => BaseURL -> Maybe Credentials-> PageParams -> m (Either String UsersPage)
 requestUsers baseUrl mCredentials pageParams = do
-  res <- H.liftAff $ request $ defaultJsonGetRequest baseUrl mCredentials (Users pageParams)
-  let
-    usersPage = (lmap printResponseFormatError res.body)
-      >>= decodeUsersPage
-  pure usersPage
+  res <- H.liftAff $ tryRequest $ defaultJsonGetRequest baseUrl mCredentials (Users pageParams)
+  case res of
+    Left err ->
+      pure $ Left $ show err
+    Right json -> do
+      let
+        -- usersPage :: Either String UsersPage
+        usersPage = lmap printJsonDecodeError $ decodeUsersPage json
+      pure $ usersPage
 
 checkUser :: forall m. MonadAff m => BaseURL -> Credentials-> m (Either String String)
 checkUser baseUrl credentials = do
-  res1 <- H.liftAff $ try $ request $ defaultStringGetRequest baseUrl (Just credentials) UserCheck (MediaType "text/plain; charset=UTF-8")
-  case res1 of
+  res <- H.liftAff $ tryRequest $ defaultStringGetRequest baseUrl (Just credentials) UserCheck (MediaType "text/plain; charset=UTF-8")
+  case res of
     Left err -> do
       let
         foo = spy "check user Left response" err
       pure $ Left $ show err
-    Right res -> do
+    Right body -> do
       let
-        response = (lmap printResponseFormatError res.body)
-        foo = spy "check user Right response" res
-      pure $ response
+        -- response = (lmap printError res.body)
+        foo = spy "check user Right response" body
+      pure $ Right body
 
 -- | check the MusicRest service is up by attempting to get a welcome message
 -- | we never need to bother to decode the JSON
@@ -183,14 +193,14 @@ checkService baseUrl =  H.liftAff do
 
 requestComments :: forall m. MonadAff m => BaseURL -> Genre -> TuneId -> m (Either String Comments)
 requestComments baseUrl genre tuneId = do
-  res1 <- H.liftAff $ try $ request $ defaultJsonGetRequest baseUrl Nothing (Comments genre tuneId)
+  res1 <- H.liftAff $ tryRequest $ defaultJsonGetRequest baseUrl Nothing (Comments genre tuneId)
   case res1 of
     Left err ->
       pure $ Left $ show err
-    Right res -> do
+    Right json -> do
       let
-        comments = (lmap printResponseFormatError res.body)
-          >>= decodeComments
+        comments :: Either String Comments
+        comments = lmap printJsonDecodeError $ decodeComments json
       pure $ comments
 
 requestComment :: forall m. MonadAff m => BaseURL -> Genre -> TuneId -> CommentKey -> Credentials -> m (Either String Comment)
@@ -198,38 +208,34 @@ requestComment baseUrl genre tuneId key credentials =
   H.liftAff do
     let
       encodedUser = encodeURIComponent key.user
-    res1 <- tryRequest $ defaultJsonGetRequest baseUrl (Just credentials) (Comment genre tuneId encodedUser key.commentId)
-    case res1 of
+    res <- tryRequest $ defaultJsonGetRequest baseUrl (Just credentials) (Comment genre tuneId encodedUser key.commentId)
+    case res of
       Left err ->
         pure $ Left $ show err
       Right json -> do
         let
           comment :: Either String Comment
-          comment = decodeComment json
+          comment = lmap printJsonDecodeError $ decodeComment json
         pure $ comment
 
-{-
-requestUsersStr :: forall m. MonadAff m => BaseURL -> Maybe Credentials -> PageParams -> m (Either String String)
-requestUsersStr baseUrl mCredentials pageParams = do
-  res <- H.liftAff $ request $ defaultJsonAsStrGetRequest baseUrl mCredentials (Users pageParams)
-  let
-    usersPage = (lmap printResponseFormatError res.body)
-  pure $ usersPage
--}
 
 requestTuneSearchStr :: forall m. MonadAff m => BaseURL -> String -> SearchParams -> m (Either String String)
 requestTuneSearchStr baseUrl genre searchParams = do
-  res <- H.liftAff $ request $ defaultJsonAsStrGetRequest baseUrl Nothing (Search genre searchParams)
-  let
-    tunesPage = (lmap printResponseFormatError res.body)
-  pure $ tunesPage
+  res <- H.liftAff $ tryRequest $ defaultJsonAsStrGetRequest baseUrl Nothing (Search genre searchParams)
+  case res of
+    Left err ->
+      pure $ Left $ show err
+    Right body -> do
+      pure $ Right body
 
 requestCommentsStr :: forall m. MonadAff m => BaseURL -> Genre -> TuneId -> m (Either String String)
 requestCommentsStr baseUrl genre tuneId = do
-  res <- H.liftAff $ request $ defaultJsonAsStrGetRequest baseUrl Nothing (Comments genre tuneId)
-  let
-    commentsPage = (lmap printResponseFormatError res.body)
-  pure $ commentsPage
+  res <- H.liftAff $ tryRequest $ defaultJsonAsStrGetRequest baseUrl Nothing (Comments genre tuneId)
+  case res of
+    Left err ->
+      pure $ Left $ show err
+    Right body -> do
+      pure $ Right body
 
 -- | POST
 
@@ -278,12 +284,13 @@ deleteComment baseUrl genre tuneId commentId credentials =
 -- | or formatting errors.
 tryRequest :: ∀ a m. MonadAff m => Request a -> m (Either String a)
 tryRequest r = H.liftAff do
-  res1 <- try $ request r
+  res1 <- {-try $ -} request r
   case res1 of
     Left err1 ->
-      pure $ Left $ show err1
-    Right res -> do
-      pure $ lmap printResponseFormatError res.body
+      pure $ Left $ printError err1
+    Right response -> do
+      pure $ Right response.body
+
 
 {- These functions are no longer needed - we now ger pagination information
    directly from the JSON and not from the custom pagination header

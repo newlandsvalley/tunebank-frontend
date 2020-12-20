@@ -1,13 +1,14 @@
 {
   "private": true,
   "scripts": {
-    "build": "pulp build --to dist/tunebank.js",
+    "build": "spago bundle-app --to dist/tunebank.js",
+    "pulp-build": "pulp build --to dist/tunebank.js",
+    "test": "spago -x ./test.dhall test",
     "optimise": "npm run uglify --s dist/tunebank.js --output dist/tunebankmin.js --compress --mangle"
   },
   "devDependencies": {
     "pulp": "^15.0.0",
-    "purescript": "^0.13.8",
-    "webpack": "^3.6.0"
+    "purescript": "^0.13.8"
   },
   "dependencies": {
     "uglify": "^0.1.5",
