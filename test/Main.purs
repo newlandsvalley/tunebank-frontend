@@ -34,8 +34,9 @@ assertRight either =
 
 baseURL :: BaseURL
 -- production server
--- baseURL = BaseURL "http://www.tradtunedb.org.uk:8080/musicrest"
-baseURL = BaseURL "http://192.168.0.113:8080/musicrest"
+baseURL = BaseURL "http://192.168.0.3:8080/musicrest"
+-- baseURL = BaseURL "http://192.168.0.113:8080/musicrest"  (London)
+-- baseURL = BaseURL "http://192.168.0.3:8080/musicrest"  (Edinburgh)
 
 sampleTune :: TuneId
 sampleTune =
