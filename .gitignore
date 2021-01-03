@@ -6,7 +6,7 @@
 /deprecated/
 /production/tunebank.js
 /production/tunebank-haskell.js
-/production/haskell-backend-index.html
+/production/haskell-backend-index.js
 /production/assets
 /dist/tunebank.js
 /dist/tunebank-haskell.js
@@ -14,3 +14,4 @@
 /.psc*
 /.purs*
 /.psa*
+/.spago

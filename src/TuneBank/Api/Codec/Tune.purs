@@ -5,6 +5,7 @@ module TuneBank.Api.Codec.Tune
 
 import Prelude
 import Data.Argonaut (Json, decodeJson, (.:), (.:?))
+import Data.Argonaut.Decode.Error (JsonDecodeError)
 import Data.Either (Either)
 import Data.Maybe (Maybe(..))
 
@@ -33,9 +34,7 @@ nullTuneMetadata =
   , abc : ""
   }
 
-
--- | this is what's provided by the Haskell backend
-decodeTune :: Json -> Either String TuneMetadata
+decodeTune :: Json -> Either JsonDecodeError TuneMetadata
 decodeTune json = do
   obj <- decodeJson json
   title <- obj .: "title"

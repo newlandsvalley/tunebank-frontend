@@ -144,7 +144,11 @@ h2 {
 }
 
 #include-intro-button {
+<<<<<<< HEAD
 	margin-left: 15px;
+=======
+	margin-left: 15px; 
+>>>>>>> master
 }
 
 #canvas:hover {
