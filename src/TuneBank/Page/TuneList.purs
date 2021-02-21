@@ -418,7 +418,7 @@ component =
       state <- H.get
       _ <- H.modify_ (\st -> st { hasThumbnails = false } )
       let
-        f :: Int -> Renderer -> Effect Unit
+        f :: Int -> Renderer -> Effect Renderer
         f i renderer = resizeCanvas renderer (defaultThumbnailConfig i)
       _ <- H.liftEffect $ traverseWithIndex f state.vexRenderers
       _ <- H.liftEffect $ traverse (clearCanvas) state.vexRenderers
