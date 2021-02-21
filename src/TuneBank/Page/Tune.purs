@@ -40,6 +40,11 @@ import TuneBank.Navigation.Navigate (class Navigate, navigate)
 import TuneBank.Navigation.Route (Route(..))
 import TuneBank.Page.Utils.Environment (getBaseURL, getUser)
 import Editor.Window (print)
+import VexFlow.Score (Renderer, clearCanvas, createScore, renderScore, initialiseCanvas, 
+    setCanvasDimensionsToScore) as Score
+import VexFlow.Abc.Alignment (rightJustify)
+import VexFlow.Types (Config, VexScore)
+
 
 -- | there is no tune yet
 nullParsedTune :: Either String AbcTune
@@ -65,6 +70,7 @@ type State =
   , generateIntro :: Boolean
   }
 
+
 type Input =
   { genre :: Genre
   , tuneId :: TuneId
@@ -81,12 +87,23 @@ _player = SProxy :: SProxy "player"
 data Action
   = Initialize
   | Finalize
+  | RenderScore
   | HandleTuneIsPlaying PC.Message
   | ToggleGenerateIntro
   | HandleTempoInput Int
   | DeleteTune TuneId
   | DeleteComment CommentId
   | PrintScore
+
+
+vexConfig :: Config
+vexConfig =
+  { parentElementId : "vexflow"
+  , width : 1300
+  , height : 100
+  , scale : 0.8
+  , isSVG : true
+  }  
 
 component
    :: ∀ o m r
@@ -130,10 +147,7 @@ component =
     in
       HH.div
         [ ]
-        [ HH.h1
-           [HP.class_ (H.ClassName "center") ]
-           [HH.text title ]
-        , renderTuneScore state title
+        [ renderScore state title
         , HH.div
             [ css "tune-metadata" ]
             [ renderTuneMetadata state
@@ -145,6 +159,23 @@ component =
             ]
         ]
 
+  
+  renderScore :: State -> String -> H.ComponentHTML Action ChildSlots m
+  renderScore state title =
+    HH.div
+      [ HP.id_ "score"
+      , HP.class_ (H.ClassName "center")  
+      ]
+      [ HH.h1_
+           [HH.text title ]
+      , HH.div
+           [ HP.class_ (H.ClassName "canvasDiv")
+           , HP.id_ "vexflow"
+           ] []
+      ]   
+
+
+  {- get the tune image from the server instead
   renderTuneScore :: State -> String -> H.ComponentHTML Action ChildSlots m
   renderTuneScore state title =
     let
@@ -159,6 +190,7 @@ component =
           , HP.alt title
           ]
         ]
+  -}
 
   renderTuneMetadata :: State -> H.ComponentHTML Action ChildSlots m
   renderTuneMetadata state  =
@@ -209,7 +241,6 @@ component =
         HH.text ""
       Just v ->
         renderKV k v
-
 
   renderTuneControls :: State -> H.ComponentHTML Action ChildSlots m
   renderTuneControls state =
@@ -448,8 +479,25 @@ component =
         , comments = either (const []) identity comments
         } )
 
+      handleAction RenderScore
+
     Finalize -> do
       _ <- H.query _player unit $ H.tell PC.StopMelody
+      pure unit
+
+    RenderScore -> do 
+      state <- H.get
+      -- initialise the VexFlow score renderer 
+      renderer <- H.liftEffect $ Score.initialiseCanvas vexConfig
+      case state.tuneResult of
+        Right tune -> do
+          let
+            vexScore = Score.createScore vexConfig tune
+          _ <- H.liftEffect $ Score.setCanvasDimensionsToScore vexScore vexConfig renderer
+          _ <- displayScore renderer vexScore
+          pure unit
+        _ -> 
+          pure unit
       pure unit
 
     HandleTuneIsPlaying (PC.IsPlaying isPlaying) -> do
@@ -525,6 +573,17 @@ toPlayable abcTune generateIntro bpm =
   -- MidiRecording $ toMidiAtBpm abcTune bpm
   PlayableAbc { abcTune: abcTune, bpm, phraseSize : 0.7, generateIntro  }
 
+displayScore :: ∀ o m.
+       MonadAff m
+    => Score.Renderer
+    -> VexScore
+    -> H.HalogenM State Action ChildSlots o m Unit
+displayScore renderer vexScore = do
+  let 
+    justifiedScore = rightJustify vexConfig.width vexConfig.scale vexScore
+  _ <- H.liftEffect $ Score.clearCanvas $ renderer
+  rendered <- H.liftEffect $ Score.renderScore vexConfig renderer justifiedScore
+  pure unit  
 
 -- expand YouTube watch links to embedded iframes and geberal links to anchor tags
 expandAllLinks :: String -> String
