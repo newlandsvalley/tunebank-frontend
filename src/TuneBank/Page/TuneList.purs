@@ -3,22 +3,20 @@ module TuneBank.Page.TuneList where
 import Prelude
 
 import Control.Monad.Reader (class MonadAsk)
-import Data.Abc.Metadata (thumbnail, removeRepeatMarkers)
+import Data.Abc.Utils (thumbnail, removeRepeatMarkers)
 import Data.Abc.Parser (parse)
-import Data.Abc.Melody (toMelodyDefault)
--- import Data.Abc.Midi (toMidi)
+import Data.Abc.Melody (PlayableAbc(..), defaultPlayableAbcProperties, toPlayableMelody)
 import Data.Array (index, length, mapWithIndex, range, unsafeIndex)
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..), maybe)
 import Data.Traversable (traverse)
 import Data.TraversableWithIndex (traverseWithIndex)
 import Data.Tuple (Tuple(..))
-import Debug.Trace (spy)
+import Debug (spy)
 import Effect (Effect)
 import Effect.Aff.Class (class MonadAff)
 import Effect.Aff (delay)
 import Data.Time.Duration (Milliseconds(..))
-import Data.Symbol (SProxy(..))
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
@@ -37,11 +35,11 @@ import TuneBank.Navigation.Navigate (class Navigate)
 import TuneBank.Navigation.Route (Route(..))
 import TuneBank.Navigation.SearchParams (SearchParams, paramsSummary)
 import TuneBank.Page.Utils.Environment (getBaseURL, getCurrentGenre)
-import VexFlow.Abc.Alignment (justifiedScoreConfig, rightJustify)
-import VexFlow.Score (Renderer, clearCanvas, createScore, renderScore, initialiseCanvas, resizeCanvas)
-import VexFlow.Types (Config)
+import VexFlow.Score (Renderer, clearCanvas, initialiseCanvas, renderThumbnail, resizeCanvas)
+import VexFlow.Types (Config, defaultConfig)
 import Audio.SoundFont (Instrument)
 import Audio.SoundFont.Melody (Melody)
+import Type.Proxy (Proxy(..))
 
 type Slot = H.Slot Query Void
 
@@ -70,7 +68,7 @@ data Query a =
 type ChildSlots =
   ( thumbnailPlayer :: TNP.Slot Unit )
 
-_thumbnailPlayer = SProxy :: SProxy "thumbnailPlayer"
+_thumbnailPlayer = Proxy :: Proxy "thumbnailPlayer"
 
 data Action
   = Initialize               -- initialise the TuneList Page with default values
@@ -98,19 +96,33 @@ canvasWidth =
 -- overridden when the image is justified to its actual dimensions
 defaultThumbnailConfig :: Int -> Config
 defaultThumbnailConfig index =
+  defaultConfig 
+    { parentElementId = ("canvas" <> show index)
+    , width = canvasWidth
+    , height = 10
+    , isSVG = true 
+    , scale = scale
+    , titled = false 
+    }
+
+
+{-}
+defaultThumbnailConfig :: Int -> Config
+defaultThumbnailConfig index =
   { parentElementId : ("canvas" <> show index)
   , width : canvasWidth
   , height : 10       -- set to a small value so we can reduce to this between pages
   , scale : scale
-  , isSVG : true      -- only use Canvas backends for debug
+  , isSVG : true      -- only use Canvas backends for debug  
   }
+-}
 
 component
    :: ∀ o m r
     . MonadAff m
    => MonadAsk { session :: Session, baseURL :: BaseURL | r } m
    => Navigate m
-   => H.Component HH.HTML Query Input o m
+   => H.Component Query Input o m
 component =
   H.mkComponent
     { initialState
@@ -262,16 +274,16 @@ component =
         in
           if (state.hasThumbnails) then
             HH.div
-              [ HP.id_ ("canvas" <> show index)
+              [ HP.id ("canvas" <> show index)
               , css cssSelector
-              , HE.onMouseOver \_ -> Just (HighlightThumbnail index)
-              , HE.onMouseLeave \_ -> Just StopThumbnail
-              , HE.onMouseDown \_ -> Just (PlayThumbnail index)
+              , HE.onMouseOver \_ -> HighlightThumbnail index
+              , HE.onMouseLeave \_ -> StopThumbnail
+              , HE.onMouseDown \_ -> PlayThumbnail index
               ]
               []
           else
             HH.div
-              [ HP.id_ ("canvas" <> show index)
+              [ HP.id ("canvas" <> show index)
               , css "thumbnail"
               ]
               []
@@ -282,7 +294,7 @@ component =
       HH.text ""
     else
       HH.button
-        [ HE.onClick \_ -> Just AddThumbnails
+        [ HE.onClick \_ -> AddThumbnails
         , css "hoverable"
         , HP.enabled true
         ]
@@ -314,11 +326,12 @@ component =
       pure unit
 
     PlayThumbnail idx -> do
-      -- play the tumbnail unless the thumbnail player is still playing
-      isPlaying <- H.query _thumbnailPlayer unit $ H.request TNP.IsPlaying
+      -- play the thumbnail unless the thumbnail player is still playing
+      isPlaying <- H.request _thumbnailPlayer unit TNP.IsPlaying
+      -- isPlaying <- H.query _thumbnailPlayer unit $ H.request TNP.IsPlaying
       state <- H.get
       case state.searchResult of
-        Left err ->
+        Left _err ->
           pure unit
         Right tunesPage  ->
           if ((idx >= (length $ tunesPage.tunes) ) || ( isPlaying == Just true))
@@ -328,12 +341,14 @@ component =
               let
                 tuneRef = unsafePartial $ unsafeIndex tunesPage.tunes idx
                 melody = getThumbnailMelody tuneRef.abc
-              _ <- H.query _thumbnailPlayer unit $ H.tell (TNP.PlayMelody melody)
+              _ <- H.tell _thumbnailPlayer unit (TNP.PlayMelody melody)
+              -- _ <- H.query _thumbnailPlayer unit $ H.tell (TNP.PlayMelody melody)
               pure unit
 
     StopThumbnail -> do
       _ <- H.modify_ (\state -> state { selectedThumbnail = Nothing } )
-      _ <- H.query _thumbnailPlayer unit $ H.tell TNP.StopMelody
+      _ <- H.tell _thumbnailPlayer unit TNP.StopMelody
+      -- _ <- H.query _thumbnailPlayer unit $ H.tell TNP.StopMelody
       pure unit
 
 
@@ -392,6 +407,11 @@ component =
                 tuneRef = unsafePartial $ unsafeIndex tunesPage.tunes idx
               case (Tuple (parse tuneRef.abc) (index state.vexRenderers idx)) of
                 (Tuple (Right abcTune) (Just renderer)) -> do
+                  let 
+                    config = defaultThumbnailConfig idx
+                  _ <- H.liftEffect $ renderThumbnail config renderer abcTune 
+
+                {-}
                   let
                     foo =
                       spy "rendering thumbnail for" idx
@@ -399,7 +419,8 @@ component =
                     score = rightJustify canvasWidth scale unjustifiedScore
                     config = justifiedScoreConfig score (defaultThumbnailConfig idx)
                   _ <- H.liftEffect $ resizeCanvas renderer config
-                  _ <- H.liftEffect $ renderScore config renderer score
+                  _ <- H.liftEffect $ renderFinalTune config renderer abcTune
+                -}
                   -- try to force a re-render after each row
                   H.modify_ (\st -> st { genre = state.genre } )
                   handleQuery (Thumbnail (idx + 1) next)
@@ -449,7 +470,7 @@ renderPhantomRow index =
     , HH.td
       []
       [ HH.div
-        [ HP.id_ ("canvas" <> show index)
+        [ HP.id ("canvas" <> show index)
         , css "thumbnail"
         ]
         []
@@ -460,6 +481,24 @@ getThumbnailMelody :: String -> Melody
 getThumbnailMelody abc =
   case (parse abc) of
     Right abcTune ->
+      let
+        thumbnailTune = (removeRepeatMarkers <<< thumbnail) abcTune
+        props = defaultPlayableAbcProperties
+          { tune = thumbnailTune
+          , phraseSize = 100.0 
+          }
+        playableAbc = PlayableAbc props
+      in
+        toPlayableMelody playableAbc
+    _ ->
+      []
+
+{-}
+getThumbnailMelody :: String -> Melody
+getThumbnailMelody abc =
+  case (parse abc) of
+    Right abcTune ->
       (toMelodyDefault <<< removeRepeatMarkers <<< thumbnail) abcTune
     _ ->
       []
+-}

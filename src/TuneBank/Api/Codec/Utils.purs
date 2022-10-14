@@ -5,7 +5,7 @@ module TuneBank.Api.Codec.Utils
   , safeSlice) where
 
 import Prelude ((<<<), ($), (>=), (<=), (&&))
-import Data.Maybe (Maybe, fromMaybe)
+import Data.Maybe (Maybe)
 import Data.Foldable (any)
 import Data.Nullable as Nullable
 import Data.String.CodeUnits (slice)
@@ -20,7 +20,7 @@ decodeURIComponent = Nullable.toMaybe <<< decodeURIComponentImpl
 
 safeSlice :: Int -> Int -> String -> String
 safeSlice from to str =
-  fromMaybe "" $ slice from to str
+  slice from to str
 
 isDigit :: CodePoint -> Boolean
 isDigit cp =

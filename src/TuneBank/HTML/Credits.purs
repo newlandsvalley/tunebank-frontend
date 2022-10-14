@@ -7,7 +7,7 @@ import Halogen.HTML.Properties as HP
 credits :: forall i p. HH.HTML i p
 credits =
   HH.div
-    [ HP.id_ "creditsdiv" ]
+    [ HP.id "creditsdiv" ]
     [ HH.p_
       [ HH.text "TradTuneDb uses "
       , HH.a
@@ -22,7 +22,7 @@ credits =
     , HH.div
       []
       [ HH.dl
-        [HP.id_ "credits-examples"  ]
+        [HP.id "credits-examples"  ]
         [ HH.dt_
           [ HH.text "ABC to "
             , HH.a

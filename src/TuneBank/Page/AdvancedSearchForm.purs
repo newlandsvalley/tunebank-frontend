@@ -32,8 +32,10 @@ type State =
   , parsedParams :: Either String SearchParams
   }
 
+type Query :: forall k. k -> Type
 type Query = (Const Void)
 
+type ChildSlots :: forall k. Row k
 type ChildSlots = ()
 
 data Action
@@ -47,7 +49,7 @@ component
     . MonadAff m
    => MonadAsk { session :: Session, baseURL :: BaseURL | r } m
    => Navigate m
-   => H.Component HH.HTML Query i o m
+   => H.Component Query i o m
 component =
   H.mkComponent
     { initialState
@@ -71,7 +73,7 @@ component =
   render state =
     HH.div_
       [ HH.form
-        [ HP.id_ "advancedsearchform" ]
+        [ HP.id "advancedsearchform" ]
         [ HH.fieldset
             []
             [ HH.legend_ [HH.text "Advanced Search"]
@@ -90,7 +92,6 @@ component =
       genre <- getCurrentGenre
       H.modify_ (\state -> state { genre = genre } )
     HandleCriteria criteria -> do
-      state <- H.get
       H.modify_ (\st -> st { criteria = criteria, parsedParams = Left "" } )
     Search event -> do
       _ <- H.liftEffect $ preventDefault $ toEvent event
@@ -113,8 +114,8 @@ renderCriteria state =
       [ HH.text "criteria:" ]
     , HH.input
         [ css "textinput"
-        , HP.id_ "search-criteria"
-        , HE.onValueInput  (Just <<< HandleCriteria)
+        , HP.id "search-criteria"
+        , HE.onValueInput  HandleCriteria
         , HP.value state.criteria
         , HP.type_ HP.InputText
         ]
@@ -144,9 +145,9 @@ renderAdvisoryText =
       ]
 
 renderSearchButton :: forall m. State -> H.ComponentHTML Action ChildSlots m
-renderSearchButton state =
+renderSearchButton _state =
     HH.button
-      [ HE.onClick (Just <<< Search)
+      [ HE.onClick Search
       , css "hoverable"
       , HP.enabled true
       ]
@@ -155,10 +156,10 @@ renderSearchButton state =
 renderSearchExamples :: forall m. H.ComponentHTML Action ChildSlots m
 renderSearchExamples =
   HH.div
-    [ HP.id_ "search-examples-div"]
+    [ HP.id "search-examples-div"]
     [ HH.text "Some example searches:"
     , HH.dl
-        [ HP.id_ "search-examples"]
+        [ HP.id "search-examples"]
         [ renderKV "title=Sligo" "'sligo' in the tune name"
         , renderKV "rhythm=slip jig" "slip jigs"
         , renderKV "rhythm=jig" "jigs"

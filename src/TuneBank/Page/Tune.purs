@@ -7,7 +7,7 @@ import Control.Monad.Reader (class MonadAsk, asks)
 import Data.Abc (AbcTune)
 import Data.Abc.Parser (parse)
 import Data.Abc.Tempo (defaultTempo, getAbcTempo, getBpm)
-import Data.Abc.PlayableAbc (PlayableAbc(..))
+import Data.Abc.Melody (PlayableAbc(..), defaultPlayableAbcProperties)
 import Data.Array (filter, length)
 import Data.Bifunctor (lmap)
 import Data.Const (Const)
@@ -16,8 +16,7 @@ import Data.Int (fromString, toNumber)
 import Data.Link (expandLinks, expandYouTubeWatchLinks)
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.MediaType (MediaType(..))
-import Data.Symbol (SProxy(..))
-import Debug.Trace (spy)
+import Debug (spy)
 import Effect.Aff.Class (class MonadAff)
 import Effect.Ref as Ref
 import Halogen as H
@@ -40,10 +39,10 @@ import TuneBank.Navigation.Navigate (class Navigate, navigate)
 import TuneBank.Navigation.Route (Route(..))
 import TuneBank.Page.Utils.Environment (getBaseURL, getUser)
 import Editor.Window (print)
-import VexFlow.Score (Renderer, clearCanvas, createScore, renderScore, initialiseCanvas, 
-    setCanvasDimensionsToScore) as Score
-import VexFlow.Abc.Alignment (rightJustify)
-import VexFlow.Types (Config, VexScore)
+import VexFlow.Score (Renderer, clearCanvas, initialiseCanvas, renderFinalTune) as Score
+import VexFlow.Types (Config, defaultConfig)
+import Type.Proxy (Proxy(..))
+
 
 
 -- | there is no tune yet
@@ -82,7 +81,7 @@ type Query = (Const Void)
 type ChildSlots =
    (player :: (PC.Slot PlayableAbc) Unit)
 
-_player = SProxy :: SProxy "player"
+_player = Proxy :: Proxy "player"
 
 data Action
   = Initialize
@@ -98,19 +97,20 @@ data Action
 
 vexConfig :: Config
 vexConfig =
-  { parentElementId : "vexflow"
-  , width : 1300
-  , height : 100
-  , scale : 0.8
-  , isSVG : true
-  }  
+  defaultConfig 
+    { parentElementId = "vexflow"
+    , width = 1300
+    , height = 100
+    , scale = 0.8
+    , isSVG = true
+    }  
 
 component
    :: ∀ o m r
     . MonadAff m
    => MonadAsk { session :: Session, baseURL :: BaseURL | r } m
    => Navigate m
-   => H.Component HH.HTML Query Input o m
+   => H.Component Query Input o m
 component =
   H.mkComponent
     { initialState
@@ -163,14 +163,14 @@ component =
   renderScore :: State -> String -> H.ComponentHTML Action ChildSlots m
   renderScore state title =
     HH.div
-      [ HP.id_ "score"
+      [ HP.id "score"
       , HP.class_ (H.ClassName "center")  
       ]
       [ HH.h1_
            [HH.text title ]
       , HH.div
            [ HP.class_ (H.ClassName "canvasDiv")
-           , HP.id_ "vexflow"
+           , HP.id "vexflow"
            ] []
       ]   
 
@@ -283,17 +283,17 @@ component =
     if (canEdit state.tuneMetadata credentials) then
       HH.a
         [ css "a-internal-link"
-        , HE.onClick \_ -> Just $ DeleteTune state.tuneId
+        , HE.onClick \_ -> DeleteTune state.tuneId
         ]
         [ HH.text "delete tune"]
     else
       HH.text ""
 
   renderPrintScore :: State -> H.ComponentHTML Action ChildSlots m
-  renderPrintScore state =
+  renderPrintScore _state =
     HH.a
       [ css "a-internal-link"
-      , HE.onClick \_ -> Just PrintScore
+      , HE.onClick \_ -> PrintScore
       ]
       [ HH.text "print score"]
 
@@ -303,10 +303,10 @@ component =
       Right abcTune ->
         HH.div
           [ HP.class_ (H.ClassName "leftPanelComponent")
-          , HP.id_  "player-div"
+          , HP.id  "player-div"
           ]
-          [ HH.slot _player unit (PC.component (toPlayable abcTune state.generateIntro state.currentBpm) state.instruments) unit (Just <<< HandleTuneIsPlaying) ]
-      Left err ->
+          [ HH.slot _player unit (PC.component (toPlayable abcTune state.generateIntro state.currentBpm) state.instruments) unit HandleTuneIsPlaying ]
+      Left _err ->
         HH.div_
           [  ]
 
@@ -322,13 +322,13 @@ component =
       if (isVisible) then
         HH.div
           [ HP.class_ (H.ClassName "leftPanelComponent")
-          , HP.id_ "tempo-slider-div"
+          , HP.id "tempo-slider-div"
           ]
           [ HH.text "set tempo: "
           , HH.input
-            [ HE.onValueInput  (Just <<< HandleTempoInput <<< toTempo)
+            [ HE.onValueInput  (HandleTempoInput <<< toTempo)
             , HP.type_ HP.InputRange
-            , HP.id_ "tempo-slider"
+            , HP.id "tempo-slider"
             , HP.min (toNumber $ div state.originalBpm 2)
             , HP.max (toNumber $ state.originalBpm * 2)
             , HP.value (show state.currentBpm)
@@ -348,13 +348,13 @@ component =
           else "Off"
     in
       HH.div
-        [ HP.id_ "include-intro-div" ]
+        [ HP.id "include-intro-div" ]
         [
           HH.text "Include intro when tune plays"
         , HH.button
             [ css "hoverable"
-            , HP.id_ "include-intro-button"
-            , HE.onClick \_ -> Just ToggleGenerateIntro
+            , HP.id "include-intro-button"
+            , HE.onClick \_ -> ToggleGenerateIntro
             , HP.enabled true
             ]
             [ HH.text label ]
@@ -419,7 +419,7 @@ component =
         HH.div_
           [ HH.a
             [ css "a-internal-link"
-            , HE.onClick \_ -> Just $ DeleteComment comment.commentId
+            , HE.onClick \_ -> DeleteComment comment.commentId
             ]
             [ HH.text "delete comment" ]
           , HH.a
@@ -432,7 +432,7 @@ component =
   renderDebug ::  State -> H.ComponentHTML Action ChildSlots m
   renderDebug state =
     let
-      instrumentCount = length state.instruments
+      -- instrumentCount = length state.instruments
       tuneResult = either (\r -> "tune parse error: " <> r) (const "") state.tuneResult
     in
       HH.div_
@@ -481,7 +481,7 @@ component =
       handleAction RenderScore
 
     Finalize -> do
-      _ <- H.query _player unit $ H.tell PC.StopMelody
+      _ <- H.tell _player unit PC.StopMelody
       pure unit
 
     RenderScore -> do 
@@ -490,10 +490,12 @@ component =
       renderer <- H.liftEffect $ Score.initialiseCanvas vexConfig
       case state.tuneResult of
         Right tune -> do
+          {-}
           let
             vexScore = Score.createScore vexConfig tune
           _ <- H.liftEffect $ Score.setCanvasDimensionsToScore vexScore vexConfig renderer
-          _ <- displayScore renderer vexScore
+          -}
+          _ <- displayScore renderer tune
           pure unit
         _ -> 
           pure unit
@@ -514,7 +516,7 @@ component =
 
     HandleTempoInput bpm -> do
       state <- H.get
-      _ <- H.query _player unit $ H.tell PC.StopMelody
+      _ <- H.tell _player unit PC.StopMelody
       _ <- H.modify_ (\st -> st { currentBpm = bpm } )
       _ <- refreshPlayerState state
       pure unit
@@ -561,29 +563,33 @@ refreshPlayerState :: ∀ o m
   -> H.HalogenM State Action ChildSlots o m Unit
 refreshPlayerState state  = do
   _ <- either
-     (\_ -> H.query _player unit $ H.tell PC.StopMelody)
-     (\abcTune -> H.query _player unit $ H.tell (PC.HandleNewPlayable (toPlayable abcTune state.generateIntro state.currentBpm)))
+     (\_ -> H.tell _player unit PC.StopMelody)
+     (\abcTune -> H.tell _player unit (PC.HandleNewPlayable (toPlayable abcTune state.generateIntro state.currentBpm)))
      state.tuneResult
   pure unit
 
 -- | convert a tune to a format recognized by the player
 toPlayable :: AbcTune -> Boolean -> Int -> PlayableAbc
 toPlayable abcTune generateIntro bpm =
-  -- MidiRecording $ toMidiAtBpm abcTune bpm
-  PlayableAbc { abcTune: abcTune, bpm, phraseSize : 0.7, generateIntro  }
-
+  let
+    props = defaultPlayableAbcProperties
+      { tune = abcTune 
+      , phraseSize = 100.0 
+      , generateIntro = generateIntro
+      }
+  in
+    PlayableAbc props
 
 
 displayScore :: ∀ o m.
        MonadAff m
     => Score.Renderer
-    -> VexScore
+    -> AbcTune
     -> H.HalogenM State Action ChildSlots o m Unit
-displayScore renderer vexScore = do
-  let 
-    justifiedScore = rightJustify vexConfig.width vexConfig.scale vexScore
+displayScore renderer tune = do
   _ <- H.liftEffect $ Score.clearCanvas $ renderer
-  rendered <- H.liftEffect $ Score.renderScore vexConfig renderer justifiedScore
+  _rendered <- H.liftEffect $ Score.renderFinalTune vexConfig renderer tune
+  -- rendered <- H.liftEffect $ Score.renderScore vexConfig renderer justifiedScore
   pure unit  
 
 -- expand YouTube watch links to embedded iframes and geberal links to anchor tags

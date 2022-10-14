@@ -10,7 +10,7 @@ import Data.Maybe (Maybe(..))
 import Data.String (contains, length)
 import Data.String.Common (null)
 import Data.String.Pattern (Pattern(..))
-import Data.Validation.Semigroup (invalid, unV)
+import Data.Validation.Semigroup (invalid, validation)
 import Effect.Aff.Class (class MonadAff)
 import Web.Event.Event (preventDefault)
 import Web.UIEvent.MouseEvent (MouseEvent, toEvent)
@@ -36,8 +36,10 @@ type State =
   , errorText :: String                         -- validation errors
   }
 
+type Query :: forall k. k -> Type
 type Query = (Const Void)
 
+type ChildSlots :: forall k. Row k
 type ChildSlots = ()
 
 data Action
@@ -53,7 +55,7 @@ component
     . MonadAff m
    => MonadAsk { session :: Session, baseURL :: BaseURL  | r } m
    => Navigate m
-   => H.Component HH.HTML Query i o m
+   => H.Component Query i o m
 component =
   H.mkComponent
     { initialState
@@ -76,7 +78,7 @@ component =
   render :: State -> H.ComponentHTML Action ChildSlots m
   render state =
     HH.form
-      [ HP.id_ "registrationform" ]
+      [ HP.id "registrationform" ]
       [ HH.fieldset
         []
         [ HH.legend_ [HH.text "Register"]
@@ -90,7 +92,7 @@ component =
       ]
 
   renderUserName :: State -> H.ComponentHTML Action ChildSlots m
-  renderUserName state =
+  renderUserName _state =
     HH.div
       [ css "textinput-div" ]
       [ HH.label
@@ -98,7 +100,7 @@ component =
         [ HH.text "name:" ]
       , HH.input
           [ css "textinput"
-          , HE.onValueInput  (Just <<< HandleUserName)
+          , HE.onValueInput  HandleUserName
           , HP.value ""
           , HP.type_ HP.InputText
           ]
@@ -106,7 +108,7 @@ component =
 
 
   renderEmail :: State -> H.ComponentHTML Action ChildSlots m
-  renderEmail state =
+  renderEmail _state =
     HH.div
       [ css "textinput-div" ]
       [ HH.label
@@ -114,14 +116,14 @@ component =
         [ HH.text "email:" ]
       , HH.input
           [ css "textinput"
-          , HE.onValueInput  (Just <<< HandleEmail)
+          , HE.onValueInput  HandleEmail
           , HP.value ""
           , HP.type_ HP.InputText
           ]
       ]
 
   renderPassword :: Boolean -> State -> H.ComponentHTML Action ChildSlots m
-  renderPassword isConfirmation state =
+  renderPassword isConfirmation _state =
     let
       action =
         if isConfirmation then
@@ -141,7 +143,7 @@ component =
           [ HH.text label ]
         , HH.input
             [ css "textinput"
-            , HE.onValueInput  (Just <<< action)
+            , HE.onValueInput  action
             , HP.value ""
             , HP.type_ HP.InputPassword
             ]
@@ -150,7 +152,7 @@ component =
   renderRegisterButton :: H.ComponentHTML Action ChildSlots m
   renderRegisterButton =
     HH.button
-      [ HE.onClick (Just <<< RegisterUser)
+      [ HE.onClick RegisterUser
       , css "hoverable"
       , HP.enabled true
       ]
@@ -204,7 +206,7 @@ component =
       H.modify_ (\st -> st { userRegisterResult = Left "" } )
       let
         validated = validate state.submission
-        newState = unV
+        newState = validation
                     (\errs -> state { errorText = foldl (<>) "" errs})
                     (\submission -> state {submission = submission
                                           , errorText = ""

@@ -3,11 +3,11 @@ module TuneBank.Navigation.Router where
 -- | The Router Halogen Component
 
 import Prelude
+import Data.Map (empty)
 import Data.Maybe (Maybe(..), fromMaybe, maybe)
 import Data.Either (hush)
 import Effect.Aff.Class (class MonadAff)
 import Control.Monad.Reader (class MonadAsk)
-import Data.Symbol (SProxy(..))
 import Halogen as H
 import Halogen.HTML as HH
 import TuneBank.Navigation.Route (Route(..), routeCodec)
@@ -40,8 +40,9 @@ import Editor.Container as Editor
 import Audio.SoundFont (Instrument)
 import Routing.Duplex as RD
 import Routing.Hash (getHash)
+import Type.Proxy (Proxy(..))
 
-import Debug.Trace (spy)
+import Debug (spy)
 
 type State =
   { route :: Maybe Route
@@ -81,7 +82,7 @@ component ::
     . MonadAff m
     => MonadAsk { session :: Session, baseURL :: BaseURL | r } m
     => Navigate m
-    => H.Component HH.HTML Query Input Void m
+    => H.Component Query Input Void m
 component =
   H.mkComponent
     { initialState: \input -> { route: Nothing
@@ -148,33 +149,34 @@ component =
       case state.route of
         Just r -> case r of
           Home ->
-            HH.slot (SProxy :: _ "home") unit SearchForm.component unit absurd
+            HH.slot (Proxy :: _ "home") unit SearchForm.component unit absurd
           Genre ->
-            HH.slot (SProxy :: _ "genre") unit GenreMenu.component unit absurd
+            HH.slot (Proxy :: _ "genre") unit GenreMenu.component unit absurd
           Login ->
-            HH.slot (SProxy :: _ "login") unit Login.component { currentUser : state.currentUser } absurd
+            HH.slot (Proxy :: _ "login") unit Login.component { currentUser : state.currentUser } absurd
           Register ->
-            HH.slot (SProxy :: _ "register") unit Register.component unit absurd
+            HH.slot (Proxy :: _ "register") unit Register.component unit absurd
           Upload ->
-            HH.slot (SProxy :: _ "upload") unit Upload.component unit absurd
+            HH.slot (Proxy :: _ "upload") unit Upload.component unit absurd
           AdvancedSearch ->
-            HH.slot (SProxy :: _ "advancedsearch") unit AdvancedSearchForm.component unit absurd
+            HH.slot (Proxy :: _ "advancedsearch") unit AdvancedSearchForm.component unit absurd
           UserList pageParams  ->
-            HH.slot (SProxy :: _ "userlist") unit UserList.component { pageParams } absurd
+            HH.slot (Proxy :: _ "userlist") unit UserList.component { pageParams } absurd
           Tune genre tuneId  ->
-            HH.slot (SProxy :: _ "tune") unit Tune.component { genre, tuneId, instruments : state.instruments } absurd
+            HH.slot (Proxy :: _ "tune") unit Tune.component { genre, tuneId, instruments : state.instruments } absurd
           TuneList searchParams ->
-            HH.slot (SProxy :: _ "tunelist") unit TuneList.component { searchParams, instruments : state.instruments } absurd
+            HH.slot (Proxy :: _ "tunelist") unit TuneList.component { searchParams, instruments : state.instruments } absurd
           Comments genre tuneId  ->
-            HH.slot (SProxy :: _ "comment") unit Comment.component { genre, tuneId, key : Nothing } absurd
+            HH.slot (Proxy :: _ "comment") unit Comment.component { genre, tuneId, key : Nothing } absurd
           Comment genre tuneId user cid ->
-            HH.slot (SProxy :: _ "comment") unit Comment.component { genre, tuneId, key : (Just $ commentKey user cid) } absurd
+            HH.slot (Proxy :: _ "comment") unit Comment.component { genre, tuneId, key : (Just $ commentKey user cid) } absurd
           Metronome ->
-            HH.slot (SProxy :: _ "metronome") unit Metronome.component unit absurd
+            HH.slot (Proxy :: _ "metronome") unit Metronome.component unit absurd
           Tutorial ->
-            HH.slot (SProxy :: _ "tutorial") unit Tutorial.component { instruments : state.instruments } absurd
+            HH.slot (Proxy :: _ "tutorial") unit Tutorial.component { instruments : state.instruments } absurd
           Editor { initialAbc } ->
-            HH.slot (SProxy :: _ "editor") unit Editor.component { instruments : state.instruments, initialAbc } absurd
+            HH.slot (Proxy :: _ "editor") unit Editor.component 
+                               { chordMap: empty, instruments: state.instruments, initialAbc } absurd
           About ->
             about
           Credits ->

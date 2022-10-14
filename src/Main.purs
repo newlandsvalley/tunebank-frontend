@@ -27,7 +27,7 @@ import Routing.Hash (matchesWith)
 import Audio.SoundFont (loadPianoSoundFont)
 import AppM (runAppM)
 
-import Debug.Trace (spy)
+import Debug (spy)
 
 -- | production Musicrest server
 -- |  baseURL = BaseURL "http://www.tradtunedb.org.uk:8080/musicrest"
@@ -73,7 +73,7 @@ main = HA.runHalogenAff do
     environment = { session, baseURL, logLevel }
 
 
-    rootComponent :: H.Component HH.HTML Router.Query Router.Input Void Aff
+    rootComponent :: H.Component Router.Query Router.Input Void Aff
     rootComponent = H.hoist (runAppM environment) Router.component
 
   halogenIO <- runUI rootComponent { instruments : singleton instrument } body
@@ -93,5 +93,8 @@ main = HA.runHalogenAff do
   void $ liftEffect $ matchesWith (parse routeCodec) \old new ->
     when (old /= Just new) do
       let
-        foo = spy "main instructing router to" new
-      launchAff_ $ halogenIO.query $ H.tell $ Router.Navigate new
+        foo = spy "main instructing router to" 
+      launchAff_ do 
+        _response <- halogenIO.query $ H.mkTell $ Router.Navigate new
+        pure unit
+

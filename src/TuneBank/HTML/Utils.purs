@@ -3,14 +3,14 @@ module TuneBank.HTML.Utils where
 import Prelude
 import TuneBank.Navigation.Route (Route, routeCodec)
 import Partial.Unsafe (unsafePartial)
-import Data.Maybe (Maybe(..), maybe)
-import Data.Either (fromRight)
+import Data.Maybe (Maybe(..), fromMaybe, maybe)
+import Data.Either (Either(..), either, fromRight)
+import Data.Number (fromString) as Number
 import Data.String (length, take)
 import Data.DateTime.Instant (instant, toDateTime)
 import Data.Time.Duration (Milliseconds(..))
 import Data.Rational (Rational, numerator, denominator)
-import Data.Formatter.DateTime (Formatter, parseFormatString, format)
-import Global (readFloat)
+import Data.Formatter.DateTime (Formatter, parseFormatString, format, formatDateTime)
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
@@ -53,12 +53,11 @@ truncateTo maxLen s =
 tsToDateString :: String-> String
 tsToDateString tsString =
   let
-     mInstant = instant $ Milliseconds $ readFloat tsString
+     mInstant = instant $ Milliseconds $ fromMaybe 0.0 $ Number.fromString tsString
+     -- mInstant = instant $ Milliseconds $ readFloat tsString
      dateTime = maybe (bottom) (toDateTime) mInstant
-     displayFormatter :: Formatter
-     displayFormatter =  unsafePartial fromRight $ parseFormatString "DD MMM YYYY"
   in
-    format displayFormatter dateTime
+    either (const "bad date") identity $ formatDateTime "DD MM YY" dateTime
 
 -- render key-value pairs as rows in a definition list
 renderKV :: ∀ a s m. String -> String -> H.ComponentHTML a s m

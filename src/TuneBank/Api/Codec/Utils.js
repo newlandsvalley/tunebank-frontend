@@ -1,11 +1,11 @@
 "use strict";
 
-exports.encodeURIComponent = encodeURIComponent
+export {encodeURIComponent};
 
-exports.decodeURIComponentImpl = function(s) {
+export function decodeURIComponentImpl(s) {
   try {
     return decodeURIComponent(s);
   } catch(error) {
     return null;
   }
-};
+}

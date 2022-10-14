@@ -2,12 +2,11 @@ module TuneBank.Page.Upload where
 
 import Control.Monad.Reader (class MonadAsk)
 import DOM.HTML.Indexed.InputAcceptType (mediaType)
-import Data.Abc.Metadata (getTitle)
+import Data.Abc.Utils (getTitle)
 import Data.Abc.Parser (parse)
 import Data.Either (Either(..), either)
 import Data.Maybe (Maybe(..), maybe)
 import Data.MediaType (MediaType(..))
-import Data.Symbol (SProxy(..))
 import Data.Tuple (Tuple(..))
 import Data.String.CodeUnits (contains)
 import Data.String.Pattern (Pattern(..))
@@ -19,7 +18,7 @@ import Halogen.FileInputComponent as FIC
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
-import Prelude (Unit, Void, ($), (<<<), (<>), bind, const, discard, identity, pure, show, unit)
+import Prelude (Unit, Void, ($), (<>), bind, const, discard, identity, pure, show, unit)
 import TuneBank.Api.Request (postTune)
 import TuneBank.Data.Credentials (Credentials)
 import TuneBank.Data.Genre (Genre(..))
@@ -30,6 +29,7 @@ import TuneBank.HTML.Utils (css)
 import TuneBank.Navigation.Navigate (class Navigate, navigate)
 import TuneBank.Navigation.Route (Route(..))
 import TuneBank.Page.Utils.Environment (getBaseURL, getCurrentGenre, getUser)
+import Type.Proxy (Proxy(..))
 
 -- type Slot = H.Slot Query Void
 type Slot = H.Slot Query Void
@@ -50,7 +50,7 @@ type ChildSlots =
    ( abcfile :: FIC.Slot Unit )
 
 
-_abcfile = SProxy :: SProxy "abcfile"
+_abcfile = Proxy :: Proxy "abcfile"
 
 abcFileInputCtx :: FIC.Context
 abcFileInputCtx =
@@ -70,7 +70,7 @@ component
     . MonadAff m
    => MonadAsk { session :: Session, baseURL :: BaseURL | r } m
    => Navigate m
-   => H.Component HH.HTML Query i o m
+   => H.Component Query i o m
 component =
   H.mkComponent
     { initialState
@@ -97,7 +97,7 @@ component =
   render state =
     HH.div_
       [ HH.form
-        [ HP.id_ "uploadform" ]
+        [ HP.id "uploadform" ]
         [ HH.fieldset
             []
             [ HH.legend_ [HH.text "Upload Tune"]
@@ -139,7 +139,7 @@ component =
       let
         eTuneTitle = validateTune state.abc
       case (Tuple state.currentUser eTuneTitle) of
-        (Tuple (Just credentials) (Right title) ) -> do
+        (Tuple (Just credentials) (Right _title) ) -> do
           postResult <- postTune state.abc baseURL state.genre credentials
           let
             errorText = either identity (const "") postResult
@@ -187,21 +187,21 @@ renderAdvisoryText state =
       ]
 
 renderSelectFile :: forall m. MonadAff m => State -> H.ComponentHTML Action ChildSlots m
-renderSelectFile state =
+renderSelectFile _state =
   HH.div
     [ css "fileinput-div"
-    , HP.id_ "uploadselectfile"
+    , HP.id "uploadselectfile"
     ]
     [ HH.label
       [ css "fileinput-label" ]
       [ HH.text "load ABC file:" ]
-    , HH.slot _abcfile unit (FIC.component abcFileInputCtx) unit (Just <<< HandleABCFile)
+    , HH.slot _abcfile unit (FIC.component abcFileInputCtx) unit HandleABCFile
     ]
 
 renderUploadButton :: forall m. State -> H.ComponentHTML Action ChildSlots m
-renderUploadButton state =
+renderUploadButton _state =
     HH.button
-      [ HE.onClick (Just <<< UploadFile)
+      [ HE.onClick UploadFile
       , css "hoverable"
       , HP.enabled true
       ]

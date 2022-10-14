@@ -44,6 +44,7 @@ type State =
   , submitCommentResult :: Either String String  -- result from server
   }
 
+type Query :: forall k. k -> Type
 type Query = (Const Void)
 
 type Input =
@@ -52,6 +53,7 @@ type Input =
   , key :: Maybe CommentKey
   }
 
+type ChildSlots :: forall k. Row k
 type ChildSlots = ()
 
 data Action
@@ -65,7 +67,7 @@ component
     . MonadAff m
    => MonadAsk { session :: Session, baseURL :: BaseURL  | r } m
    => Navigate m
-   => H.Component HH.HTML Query Input o m
+   => H.Component Query Input o m
 component =
   H.mkComponent
     { initialState
@@ -94,7 +96,7 @@ component =
     if (isNothing state.currentUser) then
       HH.div_
        [ HH.form
-         [ HP.id_ "commentform" ]
+         [ HP.id "commentform" ]
          [ HH.text "you must log in before submitting comments"]
        ]
     else
@@ -110,7 +112,7 @@ component =
            [ css "center" ]
            [ HH.text ("comment for " <> title) ]
         , HH.form
-           [ HP.id_ "commentform" ]
+           [ HP.id "commentform" ]
            [ HH.fieldset
              []
              [ HH.legend_ [HH.text "Comment"]
@@ -125,7 +127,7 @@ component =
 
 
   renderAdvisoryText :: State -> H.ComponentHTML Action ChildSlots m
-  renderAdvisoryText state =
+  renderAdvisoryText _state =
     let
       text1 =
         "Your comments can simply be text which may contain links to other sites" <>
@@ -158,7 +160,7 @@ component =
         [ HH.text "subject:" ]
       , HH.input
           [ css "textinput"
-          , HE.onValueInput  (Just <<< HandleSubject)
+          , HE.onValueInput  HandleSubject
           , HP.value state.submission.subject
           , HP.type_ HP.InputText
           ]
@@ -178,7 +180,7 @@ component =
          , HP.autofocus true
          , HP.value state.submission.text
          , css "comment-edit"
-         , HE.onValueInput (Just <<< HandleText)
+         , HE.onValueInput HandleText
          ]
       ]
 
@@ -192,7 +194,7 @@ component =
         if enabled then "hoverable" else "unhoverable"
     in
       HH.button
-        [ HE.onClick (Just <<< SubmitComment)
+        [ HE.onClick SubmitComment
         , css className
         , HP.enabled enabled
         ]

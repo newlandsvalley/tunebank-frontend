@@ -1,13 +1,13 @@
 module TuneBank.Navigation.Endpoint
   (PageParams, Endpoint(..), endpointCodec)  where
 
--- | Endpoints - legitimate URLs at he musicrest backend
+-- | Endpoints - legitimate URLs at the musicrest backend
 
 
 import Prelude hiding ((/))
 
 import Data.Generic.Rep (class Generic)
-import Data.Generic.Rep.Show (genericShow)
+import Data.Show.Generic (genericShow)
 import Routing.Duplex (RouteDuplex', root, segment, as, int, optional, string)
 import Routing.Duplex.Generic (noArgs, sum)
 import Routing.Duplex.Generic.Syntax ((/), (?))
@@ -40,12 +40,14 @@ data Endpoint
   | Comments Genre TuneId
   | Comment Genre TuneId String CommentId
 
+
 derive instance genericEndpoint :: Generic Endpoint _
 derive instance eqEndpoint :: Eq Endpoint
 derive instance ordEndpoint :: Ord Endpoint
 
 instance showEndpoint :: Show Endpoint where
   show = genericShow
+
 
 -- | Our codec will cause a compile-time error if we fail to handle any of our endpoint cases.
 endpointCodec :: RouteDuplex' Endpoint

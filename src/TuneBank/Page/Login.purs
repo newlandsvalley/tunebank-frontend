@@ -33,11 +33,13 @@ type State =
   , userCheckResult :: Either String String
   }
 
+type Query :: forall k. k -> Type
 type Query = (Const Void)
 
 type Input =
   { currentUser :: Maybe Credentials }
 
+type ChildSlots :: forall k. Row k
 type ChildSlots = ()
 
 data Action
@@ -51,7 +53,7 @@ component :: ∀ o m r
   . MonadAff m
   => MonadAsk { session :: Session, baseURL :: BaseURL | r } m
   => Navigate m
-  => H.Component HH.HTML Query Input o m
+  => H.Component Query Input o m
 component =
   H.mkComponent
     { initialState
@@ -83,7 +85,7 @@ component =
     case state.currentUser of
       Nothing ->
         HH.form
-          [ HP.id_ "loginform" ]
+          [ HP.id "loginform" ]
           [ HH.fieldset
             []
             [ HH.legend_ [HH.text "Login"]
@@ -96,13 +98,13 @@ component =
           ]
       Just cred ->
         HH.div
-         [ HP.id_ "logout" ]
+         [ HP.id "logout" ]
          [ HH.text ("log out " <> cred.user <> " ? ")
          , renderLoginOutButton state.currentUser
          ]
 
   renderUserName :: State -> H.ComponentHTML Action ChildSlots m
-  renderUserName state =
+  renderUserName _state =
     HH.div
       [ css "textinput-div" ]
       [ HH.label
@@ -110,14 +112,14 @@ component =
         [ HH.text "name:" ]
       , HH.input
           [ css "textinput"
-          , HE.onValueInput  (Just <<< HandleUserName)
+          , HE.onValueInput  HandleUserName
           , HP.value ""
           , HP.type_ HP.InputText
           ]
       ]
 
   renderPassword :: State -> H.ComponentHTML Action ChildSlots m
-  renderPassword state =
+  renderPassword _state =
     HH.div
       [ css "textinput-div" ]
       [ HH.label
@@ -125,7 +127,7 @@ component =
         [ HH.text "password:" ]
       , HH.input
           [ css "textinput"
-          , HE.onValueInput  (Just <<< HandlePassword)
+          , HE.onValueInput  HandlePassword
           , HP.value ""
           , HP.type_ HP.InputPassword
           ]
@@ -138,7 +140,7 @@ component =
       buttonText = maybe "login" (const "logout") mCred
     in
       HH.button
-        [ HE.onClick (Just <<< action)
+        [ HE.onClick action
         , css "hoverable"
         , HP.enabled true
         ]

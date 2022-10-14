@@ -36,14 +36,17 @@ tuneIdFromString s =
   case lastIndexOf (Pattern "-") s of
     Just ix ->
       let
-        mTitle = slice 0 ix s
-        mTuneType = slice (ix + 1) (length s) s
+        title = slice 0 ix s
+        tuneType = slice (ix + 1) (length s) s
       in
+        Right $ TuneId $ {title, tuneType}
+      {-}
         case Tuple mTitle mTuneType of
           Tuple (Just title) (Just tuneType) ->
             Right $ TuneId $ {title, tuneType}
           _ ->
             Left $ "Not a TuneId: " <> s
+      -}
     _ ->
       Left $ "Not a TuneId: " <> s
 

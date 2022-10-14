@@ -1,6 +1,5 @@
 module TuneBank.Data.Key where
 
-
 import Prelude
 import Data.Maybe (Maybe(..))
 import Data.Generic.Rep (class Generic)
@@ -13,7 +12,6 @@ derive instance newtypeKey :: Newtype Key _
 derive instance genericKey :: Generic Key _
 derive instance eqKey :: Eq Key
 derive instance ordKey :: Ord Key
-
 keys :: Array String
 keys =
   [ "any"
@@ -48,7 +46,7 @@ keySearchTerm' (Key k) =
     "any" ->
        Nothing
     _ ->
-       slice 0 4 k
+       Just $ slice 0 4 k
 
 keySearchTerm :: String -> Maybe String
 keySearchTerm k =
@@ -56,4 +54,4 @@ keySearchTerm k =
     "any" ->
        Nothing
     _ ->
-       slice 0 4 k
+       Just $ slice 0 4 k

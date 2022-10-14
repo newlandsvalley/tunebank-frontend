@@ -6,7 +6,7 @@ import Halogen.HTML.Properties as HP
 contactUs :: forall i p. HH.HTML i p
 contactUs =
   HH.div
-    [ HP.id_ "contactusdiv" ]
+    [ HP.id "contactusdiv" ]
     [ HH.h2_
        [ HH.text "Please get in touch" ]
     , HH.p_

@@ -8,7 +8,7 @@ import Halogen.HTML.Properties as HP
 help :: forall i p. HH.HTML i p
 help =
   HH.div
-    [ HP.id_ "helpdiv"]
+    [ HP.id "helpdiv"]
     [ HH.h2_
        [ HH.text "Why should I register?" ]
     , HH.text $

@@ -1,6 +1,6 @@
 module TuneBank.Page.GenreMenu where
 
-import Prelude (Unit, Void, ($), (==), (<<<), (<>), bind, map, pure, unit, show)
+import Prelude (Unit, Void, ($), (==), (<>), bind, map, pure, unit, show)
 import Data.Const (Const)
 import Data.Maybe (Maybe(..))
 import Data.Enum (enumFromTo)
@@ -20,14 +20,15 @@ import TuneBank.HTML.Utils (css)
 import TuneBank.Page.Utils.Environment (getCurrentGenre)
 
 
--- type Slot = H.Slot Query Void
 type Slot = H.Slot (Const Void) Void
 
 type State =
   { genre :: Genre  }
 
+type Query :: forall k. k -> Type
 type Query = (Const Void)
 
+type ChildSlots :: forall k. Row k
 type ChildSlots = ()
 
 data Action
@@ -39,7 +40,7 @@ component
     . MonadAff m
    => MonadAsk { session :: Session, baseURL :: BaseURL  | r } m
    => Navigate m
-   => H.Component HH.HTML Query i o m
+   => H.Component Query i o m
 component =
   H.mkComponent
     { initialState
@@ -61,7 +62,7 @@ component =
   render state =
     HH.div_
       [ HH.form
-        [ HP.id_ "genreform" ]
+        [ HP.id "genreform" ]
         [ HH.fieldset
             []
             [ HH.legend_ [HH.text "Genre"]
@@ -72,7 +73,7 @@ component =
       ]
 
   renderAdvisoryText :: State -> H.ComponentHTML Action ChildSlots m
-  renderAdvisoryText state =
+  renderAdvisoryText _state =
     let
       text =
          "Choose the genre to be used in all tune searches, " <>
@@ -112,9 +113,9 @@ renderGenreMenu state =
          [ HH.text "select:" ]
          , HH.select
             [ css "nav-selection"
-            , HP.id_  "genre-menu"
+            , HP.id  "genre-menu"
             , HP.value (show state.genre)
-            , HE.onValueChange  (Just <<< HandleGenre)
+            , HE.onValueChange  HandleGenre
             ]
             (genreOptions state.genre)
         ]

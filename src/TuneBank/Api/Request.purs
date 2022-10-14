@@ -2,7 +2,10 @@ module TuneBank.Api.Request where
 
 import Prelude
 
-import Affjax (Request, defaultRequest, printError, request)
+
+import Affjax.Web (defaultRequest, request)
+import Affjax.ResponseFormat as ResponseFormat
+import Affjax (Request, printError)
 import Affjax.RequestBody (formURLEncoded)
 import Affjax.RequestHeader (RequestHeader(..))
 import Affjax.ResponseFormat as RF
@@ -17,7 +20,7 @@ import Data.Maybe (Maybe(..))
 import Data.MediaType (MediaType(..))
 import Data.MediaType.Common (applicationJSON)
 import Data.Tuple (Tuple(..))
-import Debug.Trace (spy)
+import Debug (spy)
 import Effect.Aff.Class (class MonadAff)
 import Halogen as H
 import Routing.Duplex (print)

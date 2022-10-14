@@ -104,96 +104,232 @@ in  upstream
       }
 -------------------------------
 -}
-
 let upstream =
-      https://github.com/purescript/package-sets/releases/download/psc-0.13.8-20201217/packages.dhall sha256:f46d45e29977f3b57717b56d20a5ceac12532224516eea3012a4688f22ac1539
+      https://github.com/purescript/package-sets/releases/download/psc-0.15.4-20221013/packages.dhall
+        sha256:21000b190e1ef14c92feb1400816022319bc40a30280d20f24c0dcacfb85e966
 
 in  upstream
-  with abc-parser.repo = "https://github.com/newlandsvalley/purescript-abc-parser.git"
-  with abc-parser.version = "v1.9.3"
   with abc-melody =
-    { dependencies = [ "abc-parser", "effect", "prelude", "soundfonts" ]
+    { dependencies = 
+      [ "abc-parser"
+      , "arrays"
+      , "bifunctors"
+      , "either"
+      , "foldable-traversable"
+      , "integers"
+      , "lists"
+      , "maybe"
+      , "newtype"
+      , "ordered-collections"
+      , "prelude"
+      , "rationals"
+      , "rhythm-guitar"
+      , "soundfonts"
+      , "transformers"
+      , "tuples"
+      ]
     , repo = "https://github.com/newlandsvalley/purescript-abc-melody.git"
-    , version = "v0.2.3"
+    , version = "v0.3.0"
+    }  
+  with rhythm-guitar =
+    { dependencies =
+      [ "aff"
+      , "affjax"
+      , "affjax-web"
+      , "arrays"
+      , "console"
+      , "control"
+      , "effect"
+      , "either"
+      , "foreign"
+      , "http-methods"
+      , "maybe"
+      , "ordered-collections"
+      , "prelude"
+      , "soundfonts"
+      , "simple-json"
+      , "string-parsers"
+      , "strings"
+      , "tuples"
+      ]
+    , repo = "https://github.com/newlandsvalley/RhythmGuitar.git"
+    , version = "v0.2.0"
     }
   with abc-scores =
-    { dependencies = [ "abc-parser", "console", "effect", "prelude" ]
+    { dependencies = 
+      [ "abc-parser"
+      , "arrays"
+      , "effect"
+      , "either"
+      , "foldable-traversable"
+      , "integers"
+      , "lists"
+      , "maybe"
+      , "newtype"
+      , "ordered-collections"
+      , "prelude"
+      , "profunctor-lenses"
+      , "rationals"
+      , "safe-coerce"
+      , "strings"
+      , "stringutils"
+      , "transformers"
+      , "tuples"
+      , "unfoldable"
+      ]
     , repo = "https://github.com/newlandsvalley/purescript-abc-scores.git"
-    , version = "v0.5.5"
+    , version = "v0.6.0"
     }
   with abc-editor =
-    { dependencies = [ "abc-melody"
-                     , "abc-parser"
-                     , "abc-scores"
-                     , "console"
-                     , "css"
-                     , "effect"
-                     , "halogen"
-                     , "halogen-css"
-                     , "halogen-components"
-                     , "soundfonts" ]
+    { dependencies =
+      [ "abc-melody"
+      , "abc-parser"
+      , "abc-scores"
+      , "aff"
+      , "arrays"
+      , "colors"
+      , "console"
+      , "css"
+      , "dom-indexed"
+      , "effect"
+      , "either"
+      , "halogen"
+      , "halogen-components"
+      , "halogen-css"
+      , "integers"
+      , "js-fileio"
+      , "lists"
+      , "maybe"
+      , "media-types"
+      , "partial"
+      , "prelude"
+      , "soundfonts"
+      , "string-parsers"
+      , "strings"
+      ]
     , repo = "https://github.com/newlandsvalley/purescript-abc-editor.git"
-    , version = "master"
+    , version = "v1.1.0"
     }
   with abc-tutorial =
-    { dependencies = [ "abc-melody"
-                     , "abc-parser"
-                     , "console"
-                     , "css"
-                     , "effect"
-                     , "halogen"
-                     , "halogen-css"
-                     , "halogen-components"
-                     , "soundfonts" ]
+    { dependencies =
+      [ "abc-melody"
+      , "abc-parser"
+      , "aff"
+      , "arrays"
+      , "colors"
+      , "const"
+      , "css"
+      , "either"
+      , "halogen"
+      , "halogen-components"
+      , "halogen-css"
+      , "lists"
+      , "maybe"
+      , "ordered-collections"
+      , "prelude"
+      , "soundfonts"
+      , "string-parsers"
+      , "strings"
+      ]
     , repo = "https://github.com/newlandsvalley/purescript-abc-tutorial.git"
-    , version = "master"
+    , version = "v1.1.0"
     }
   with expand-links =
     { dependencies = [ "console", "effect", "prelude", "strings" ]
     , repo = "https://github.com/newlandsvalley/purescript-expand-links.git"
-    , version = "master"
+    , version = "v0.2.0"
     }
   with halogen-components =
     { dependencies =
-      [ "console"
+      [ "aff"
+      , "arrays"
       , "css"
+      , "datetime"
+      , "dom-indexed"
       , "effect"
-      , "js-fileio"
       , "halogen"
       , "halogen-css"
+      , "integers"
+      , "js-fileio"
+      , "lists"
+      , "maybe"
+      , "nonempty"
+      , "prelude"
       , "soundfonts"
+      , "transformers"
+      , "web-dom"
+      , "web-html"
+      , "web-uievents"
       ]
     , repo =
         "https://github.com/newlandsvalley/purescript-halogen-components.git"
-    , version = "master"
+    , version = "v0.6.0"
     }
   with polska-metronome =
-    { dependencies = [ "affjax"
-                     , "behaviors"
-                     , "console"
-                     , "css"
-                     , "drawing"
-                     , "effect"
-                     , "halogen"
-                     , "prelude"
-                     , "psci-support"
-                     , "webaudio"]
+    { dependencies =
+      [ "aff"
+      , "affjax"
+      , "affjax-web"
+      , "arrays"
+      , "canvas"
+      , "colors"
+      , "datetime"
+      , "drawing"
+      , "effect"
+      , "either"
+      , "foldable-traversable"
+      , "halogen"
+      , "http-methods"
+      , "hyrule"
+      , "integers"
+      , "js-timers"
+      , "maybe"
+      , "newtype"
+      , "numbers"
+      , "ordered-collections"
+      , "parallel"
+      , "partial"
+      , "prelude"
+      , "transformers"
+      , "tuples"
+      , "webaudio"
+      ]    
     , repo = "https://github.com/newlandsvalley/purescript-polska-metronome.git"
-    , version = "master"
+    , version = "v0.2.0"
     }
   with webaudio =
-    { dependencies = [ "aff"
-                     , "arraybuffer"
-                     , "arraybuffer-types"
-                     , "arrays"
-                     , "effect"
-                     , "foldable-traversable"
-                     , "lists"
-                     , "math"
-                     , "maybe"
-                     , "strings"
-                     , "tuples"
-                     , "web-events"]
-    , repo = "https://github.com/adkelley/purescript-webaudio.git"
-    , version = "v0.2.1"
+    { dependencies =
+      [ "aff"
+      , "arraybuffer"
+      , "arraybuffer-types"
+      , "effect"
+      , "maybe"
+      , "prelude"
+      , "psci-support"
+      , "web-events"
+      ]
+    , repo = "https://github.com/newlandsvalley/purescript-webaudio.git"
+    , version = "ps015"
     }
+  with drawing =
+    { dependencies = [ "canvas", "lists", "numbers", "integers", "colors" ]
+    , repo = "https://github.com/newlandsvalley/purescript-drawing"
+    , version = "v6.0.0"
+    }
+  with html-parser-halogen =
+    { dependencies =    
+      [ "arrays"
+      , "control"
+      , "dom-indexed"
+      , "foldable-traversable"
+      , "effect"
+      , "halogen"
+      , "maybe"
+      , "prelude"
+      , "psci-support"
+      , "jest"
+      ]
+    , repo = "https://github.com/rnons/purescript-html-parser-halogen"
+    , version = "master"
+    }
+

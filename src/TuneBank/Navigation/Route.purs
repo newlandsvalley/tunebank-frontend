@@ -6,9 +6,9 @@ module TuneBank.Navigation.Route where
 
 import Prelude hiding ((/))
 
-import Data.Maybe (Maybe)
 import Data.Generic.Rep (class Generic)
-import Data.Generic.Rep.Show (genericShow)
+import Data.Show.Generic (genericShow)
+import Data.Maybe (Maybe)
 import Routing.Duplex (RouteDuplex', optional, root, segment, string, int, as)
 import Routing.Duplex.Generic (noArgs, sum)
 import Routing.Duplex.Generic.Syntax ((/), (?))

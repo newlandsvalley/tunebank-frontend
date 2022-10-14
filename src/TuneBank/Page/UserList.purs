@@ -34,6 +34,7 @@ data Query a =
 type Input =
   { pageParams :: PageParams }
 
+type ChildSlots :: forall k. Row k
 type ChildSlots = ()
 
 data Action
@@ -45,7 +46,7 @@ component
     . MonadAff m
    => MonadAsk { session :: Session, baseURL :: BaseURL | r } m
    => Navigate m
-   => H.Component HH.HTML Query Input o m
+   => H.Component Query Input o m
 component =
   H.mkComponent
     { initialState
@@ -91,7 +92,7 @@ component =
               ]
 
   renderUserList :: State -> Array UserRef -> H.ComponentHTML Action ChildSlots m
-  renderUserList state users =
+  renderUserList _state users =
     let
       f userRef =
           tableRow userRef
@@ -113,7 +114,6 @@ component =
   handleAction ∷ Action -> H.HalogenM State Action ChildSlots o m Unit
   handleAction = case _ of
     Initialize -> do
-      state <- H.get
       mUser <- getUser
       _ <- H.modify (\st -> st { currentUser = mUser } )
       _ <- handleQuery (FetchResults unit)

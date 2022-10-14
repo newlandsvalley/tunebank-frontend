@@ -7,7 +7,7 @@ import Prelude (($), (<>))
 about :: forall i p. HH.HTML i p
 about =
   HH.div
-    [ HP.id_ "aboutdiv" ]
+    [ HP.id "aboutdiv" ]
     [ HH.h2_
         [ HH.text "TradTuneDb version 0.1.0" ]
     , HH.p_

@@ -9,7 +9,7 @@ import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
-import Prelude (Unit, Void, ($), (==), (<<<), (>), (/=), bind, identity, pure, map, unit)
+import Prelude (Unit, Void, ($), (==), (>), (/=), bind, identity, pure, map, unit)
 import TuneBank.Data.Genre (Genre(..))
 import TuneBank.Data.Key (keySearchTerm)
 import TuneBank.Data.Key as K
@@ -36,8 +36,10 @@ type State =
   , ordering :: String
   }
 
+type Query :: forall k. k -> Type
 type Query = (Const Void)
 
+type ChildSlots :: forall k. Row k
 type ChildSlots = ()
 
 data Action
@@ -65,7 +67,7 @@ component
     . MonadAff m
    => MonadAsk { session :: Session, baseURL :: BaseURL | r } m
    => Navigate m
-   => H.Component HH.HTML Query i o m
+   => H.Component Query i o m
 component =
   H.mkComponent
     { initialState
@@ -92,7 +94,7 @@ component =
   render state =
     HH.div_
       [ HH.form
-        [ HP.id_ "searchform" ]
+        [ HP.id "searchform" ]
         [ HH.fieldset
             []
             [ HH.legend_ [HH.text "Tune Search"]
@@ -162,7 +164,7 @@ renderTuneName state =
       [ HH.text "name:" ]
     , HH.input
         [ css "textinput"
-        , HE.onValueInput  (Just <<< HandleTitle)
+        , HE.onValueInput  HandleTitle
         , HP.value (fromMaybe "" state.title)
         , HP.type_ HP.InputText
         ]
@@ -180,9 +182,9 @@ renderKeyMenu state =
          [ HH.text "key:" ]
          , HH.select
             [ css "dropdown-selection"
-            , HP.id_  "key-menu"
+            , HP.id  "key-menu"
             , HP.value (fromMaybe defaultOtherMenu state.key)
-            , HE.onValueChange  (Just <<< HandleKey)
+            , HE.onValueChange  HandleKey
             ]
             (keyOptions defaultKey)
         ]
@@ -211,9 +213,9 @@ renderRhythmMenu state =
          [ HH.text "rhythm:" ]
          , HH.select
             [ css "dropdown-selection"
-            , HP.id_  "rhythm-menu"
+            , HP.id  "rhythm-menu"
             , HP.value (fromMaybe defaultOtherMenu state.rhythm)
-            , HE.onValueChange  (Just <<< HandleRhythm)
+            , HE.onValueChange  HandleRhythm
             ]
             (rhythmOptions state.genre default)
         ]
@@ -246,9 +248,9 @@ renderOrderingMenu state =
          [ HH.text "ordering:" ]
          , HH.select
             [ css "dropdown-selection"
-            , HP.id_  "ordering-menu"
+            , HP.id  "ordering-menu"
             , HP.value default
-            , HE.onValueChange  (Just <<< HandleOrdering)
+            , HE.onValueChange  HandleOrdering
             ]
             (orderingOptions default)
         ]
@@ -262,7 +264,7 @@ orderingOptions default =
 renderSearchButton :: forall m. State -> H.ComponentHTML Action ChildSlots m
 renderSearchButton state =
     HH.button
-      [ HE.onClick (Just <<< Search)
+      [ HE.onClick Search
       , css "hoverable"
       , HP.enabled true
       ]

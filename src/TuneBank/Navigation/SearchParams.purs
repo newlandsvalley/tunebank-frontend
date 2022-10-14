@@ -15,9 +15,9 @@ import Data.Either (Either)
 import Data.Foldable (foldl, intercalate)
 import Data.Bifunctor (lmap)
 import Data.Traversable (sequence)
-import Text.Parsing.StringParser (Parser, runParser)
-import Text.Parsing.StringParser.Combinators (sepBy)
-import Text.Parsing.StringParser.CodePoints (string, regex)
+import StringParser (Parser, runParser)
+import StringParser.Combinators (sepBy)
+import StringParser.CodePoints (string, regex)
 
 type SearchParams =
   { key :: Maybe String
