@@ -11,6 +11,8 @@
   },
   "dependencies": {
     "uglify": "^0.1.5",
-    "uglify-js": "^3.5.11"
+    "uglify-js": "^3.5.11",
+    "xhr2": "^0.2.1",
+    "xmlhttprequest": "^1.8.0"
   }
 }

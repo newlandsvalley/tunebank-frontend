@@ -2,9 +2,7 @@ module TuneBank.Api.Request where
 
 import Prelude
 
-
 import Affjax.Web (defaultRequest, request)
-import Affjax.ResponseFormat as ResponseFormat
 import Affjax (Request, printError)
 import Affjax.RequestBody (formURLEncoded)
 import Affjax.RequestHeader (RequestHeader(..))
@@ -20,7 +18,6 @@ import Data.Maybe (Maybe(..))
 import Data.MediaType (MediaType(..))
 import Data.MediaType.Common (applicationJSON)
 import Data.Tuple (Tuple(..))
-import Debug (spy)
 import Effect.Aff.Class (class MonadAff)
 import Halogen as H
 import Routing.Duplex (print)
@@ -30,7 +27,7 @@ import TuneBank.Api.Codec.Register (Submission, encodeFormData) as Register
 import TuneBank.Api.Codec.Tune (TuneMetadata, decodeTune)
 import TuneBank.Api.Codec.TunesPage (TunesPage, decodeTunesPage)
 import TuneBank.Api.Codec.UsersPage (UsersPage, decodeUsersPage)
-import TuneBank.Api.Codec.Utils (encodeURIComponent)
+import TuneBank.Api.Codec.Utils (unsafeEncodeURIComponent)
 import TuneBank.Authorization.BasicAuth (authorizationHeader)
 import TuneBank.BugFix.Backend (fixSearchParams)
 import TuneBank.Data.CommentId (CommentId, CommentKey)
@@ -44,7 +41,7 @@ import TuneBank.Navigation.SearchParams (SearchParams)
 defaultJsonGetRequest :: BaseURL -> Maybe Credentials -> Endpoint -> Request Json
 defaultJsonGetRequest (BaseURL baseUrl) mCredentials endpoint =
   let
-    foo = spy "endpoint" $ fixSearchParams endpoint $ print endpointCodec endpoint
+    -- foo = spy "endpoint" $ fixSearchParams endpoint $ print endpointCodec endpoint
     url = baseUrl <> (fixSearchParams endpoint $ print endpointCodec endpoint)
     headers = [  Accept (MediaType "application/json; charset=UTF-8")
               ] <> (fromFoldable $ authorizationHeader mCredentials)
@@ -67,7 +64,7 @@ defaultStringGetRequest (BaseURL baseUrl) mCredentials endpoint mediaType =
 defaultJsonAsStrGetRequest :: BaseURL -> Maybe Credentials -> Endpoint -> Request String
 defaultJsonAsStrGetRequest (BaseURL baseUrl) mCredentials endpoint =
   let
-    foo = spy "endpoint" $ fixSearchParams endpoint $ print endpointCodec endpoint
+    -- foo = spy "endpoint" $ fixSearchParams endpoint $ print endpointCodec endpoint
     url = baseUrl <> (fixSearchParams endpoint $ print endpointCodec endpoint)
     headers = [Accept applicationJSON ]<>
                 (fromFoldable $ authorizationHeader mCredentials)
@@ -156,8 +153,6 @@ requestUsers baseUrl mCredentials pageParams = do
 checkUser :: forall m. MonadAff m => BaseURL -> Credentials-> m (Either String String)
 checkUser baseUrl credentials = do
   res <- H.liftAff $ requestTheBody $ defaultStringGetRequest baseUrl (Just credentials) UserCheck (MediaType "text/plain; charset=UTF-8")
-  let
-    foo = spy "check user response" res
   pure res 
 
 -- | check the MusicRest service is up by attempting to get a welcome message
@@ -183,7 +178,7 @@ requestComment :: forall m. MonadAff m => BaseURL -> Genre -> TuneId -> CommentK
 requestComment baseUrl genre tuneId key credentials =
   H.liftAff do
     let
-      encodedUser = encodeURIComponent key.user
+      encodedUser = unsafeEncodeURIComponent key.user
     res <- requestTheBody $ defaultJsonGetRequest baseUrl (Just credentials) (Comment genre tuneId encodedUser key.commentId)
     case res of
       Left err ->
@@ -243,7 +238,7 @@ deleteComment :: forall m. MonadAff m => BaseURL -> Genre -> TuneId -> CommentId
 deleteComment baseUrl genre tuneId commentId credentials =
   H.liftAff do
     let
-      encodedUser = encodeURIComponent credentials.user
+      encodedUser = unsafeEncodeURIComponent credentials.user
     res <- requestTheBody $ defaultDeleteRequest baseUrl (Just credentials) (Comment genre tuneId encodedUser commentId)
     pure res
 
@@ -254,15 +249,3 @@ requestTheBody r = H.liftAff do
   res <- request r 
   pure $ bimap printError _.body res
 
-{- These functions are no longer needed - we now ger pagination information
-   directly from the JSON and not from the custom pagination header
-
-getPagination :: Array ResponseHeader-> Pagination
-getPagination headers =
-  fromMaybe defaultPagination $ map decodePagination $ paginationResponse headers
-
-paginationResponse :: Array ResponseHeader -> Maybe String
-paginationResponse headers =
-  map value $ head $ filter (\h -> name h == "musicrest-pagination") headers
-
-  -}

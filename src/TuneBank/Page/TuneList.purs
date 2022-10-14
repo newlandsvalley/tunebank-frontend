@@ -12,7 +12,6 @@ import Data.Maybe (Maybe(..), maybe)
 import Data.Traversable (traverse)
 import Data.TraversableWithIndex (traverseWithIndex)
 import Data.Tuple (Tuple(..))
-import Debug (spy)
 import Effect (Effect)
 import Effect.Aff.Class (class MonadAff)
 import Effect.Aff (delay)
@@ -104,18 +103,6 @@ defaultThumbnailConfig index =
     , scale = scale
     , titled = false 
     }
-
-
-{-}
-defaultThumbnailConfig :: Int -> Config
-defaultThumbnailConfig index =
-  { parentElementId : ("canvas" <> show index)
-  , width : canvasWidth
-  , height : 10       -- set to a small value so we can reduce to this between pages
-  , scale : scale
-  , isSVG : true      -- only use Canvas backends for debug  
-  }
--}
 
 component
    :: ∀ o m r
@@ -369,8 +356,6 @@ component =
     -- because only then are the canvas Div elements established
     InitializeVex next -> do
       state <- H.get
-      let
-        foo = spy "INITIALIZEVEX" (length state.vexRenderers)
       if (length state.vexRenderers > 0)
         then do
           -- already initialized
@@ -388,19 +373,13 @@ component =
     Thumbnail idx next -> do
       -- we delay here to give the UI chance to re-render between each thumbnail
       _ <- H.liftAff $ delay (Milliseconds 25.0 )
-      let
-        bazz =
-          spy "Thumbnail Query for index: " idx
       state <- H.get
       case state.searchResult of
-        Left err ->
+        Left _err ->
           pure (Just next)
         Right tunesPage ->
           if (idx >= (length $ tunesPage.tunes) )
             then do
-              let
-                bar =
-                  spy "thumbnail index out of range: " idx
               pure (Just next)
             else do
               let
@@ -410,29 +389,12 @@ component =
                   let 
                     config = defaultThumbnailConfig idx
                   _ <- H.liftEffect $ renderThumbnail config renderer abcTune 
-
-                {-}
-                  let
-                    foo =
-                      spy "rendering thumbnail for" idx
-                    unjustifiedScore = createScore (defaultThumbnailConfig idx) (thumbnail abcTune)
-                    score = rightJustify canvasWidth scale unjustifiedScore
-                    config = justifiedScoreConfig score (defaultThumbnailConfig idx)
-                  _ <- H.liftEffect $ resizeCanvas renderer config
-                  _ <- H.liftEffect $ renderFinalTune config renderer abcTune
-                -}
                   -- try to force a re-render after each row
                   H.modify_ (\st -> st { genre = state.genre } )
                   handleQuery (Thumbnail (idx + 1) next)
                 (Tuple (Right _) Nothing)  -> do
-                  let
-                    baz =
-                      spy "no renderer for index: " idx
                   handleQuery (Thumbnail (idx + 1) next)
                 (Tuple (Left _) _)  -> do
-                  let
-                    baz =
-                      spy "tuneRef not parsed for index: " idx
                   handleQuery (Thumbnail (idx + 1) next)
 
     ClearThumbnails next -> do

@@ -7,7 +7,6 @@ import Data.Maybe (Maybe(..))
 import Data.Either (Either(..))
 import Data.Bifunctor (rmap)
 import Effect (Effect)
-import Global.Unsafe (unsafeDecodeURIComponent, unsafeEncodeURIComponent)
 import Test.Unit (Test, TestF, suite, test, failure, success)
 import Test.Unit.Assert as Assert
 import Test.Unit.Main (runTest)
@@ -19,12 +18,12 @@ import TuneBank.Data.Credentials (Role(..), Credentials)
 import TuneBank.Api.Request (requestTune, requestTuneAbc, requestTuneStr,
        requestTuneSearch, requestTuneSearchStr, checkUser, requestUsers, requestComments,
        requestCommentsStr)
+import TuneBank.Api.Codec.Utils ( unsafeEncodeURIComponent, unsafeDecodeURIComponent) 
 import TuneBank.Navigation.Endpoint (PageParams)
 import TuneBank.Navigation.Route (Route(..), routeCodec)
 import TuneBank.Navigation.SearchParams (SearchParams, defaultSearchParams, parseParams)
 
-
-import Debug.Trace (spy, trace)
+import Debug (spy, trace)
 
 assertRight :: forall a b. Either a b -> Test
 assertRight either =
@@ -34,7 +33,8 @@ assertRight either =
 
 baseURL :: BaseURL
 -- production server
-baseURL = BaseURL "http://192.168.0.3:8080/musicrest"
+baseURL = BaseURL "http://212.71.250.216:8080/musicrest"
+-- baseURL = BaseURL "http://192.168.0.3:8080/musicrest"
 -- baseURL = BaseURL "http://192.168.0.113:8080/musicrest"  (London)
 -- baseURL = BaseURL "http://192.168.0.3:8080/musicrest"  (Edinburgh)
 
@@ -149,7 +149,7 @@ apiSuite =
 
     test "complex search str" do
       response <- requestTuneSearchStr baseURL "scandi" complexSearch
-      foo <- case response of
+      _foo <- case response of
           Right tunes ->
             pure $ spy "tunes list" tunes
           Left _ ->

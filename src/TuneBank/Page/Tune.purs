@@ -490,11 +490,6 @@ component =
       renderer <- H.liftEffect $ Score.initialiseCanvas vexConfig
       case state.tuneResult of
         Right tune -> do
-          {-}
-          let
-            vexScore = Score.createScore vexConfig tune
-          _ <- H.liftEffect $ Score.setCanvasDimensionsToScore vexScore vexConfig renderer
-          -}
           _ <- displayScore renderer tune
           pure unit
         _ -> 
@@ -589,7 +584,6 @@ displayScore :: ∀ o m.
 displayScore renderer tune = do
   _ <- H.liftEffect $ Score.clearCanvas $ renderer
   _rendered <- H.liftEffect $ Score.renderFinalTune vexConfig renderer tune
-  -- rendered <- H.liftEffect $ Score.renderScore vexConfig renderer justifiedScore
   pure unit  
 
 -- expand YouTube watch links to embedded iframes and geberal links to anchor tags

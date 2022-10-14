@@ -10,13 +10,12 @@ import Prelude
 
 import Data.Either (Either(..))
 import Data.Generic.Rep (class Generic)
-import Data.Maybe (Maybe(..), fromMaybe)
+import Data.Maybe (Maybe(..))
 import Data.String (replaceAll)
 import Data.String.CodePoints (lastIndexOf, length)
 import Data.String.CodeUnits (slice)
 import Data.String.Pattern (Pattern(..), Replacement(..))
-import Data.Tuple (Tuple(..))
-import TuneBank.Api.Codec.Utils (decodeURIComponent, encodeURIComponent, safeSlice)
+import TuneBank.Api.Codec.Utils (unsafeDecodeURIComponent, unsafeEncodeURIComponent, safeSlice)
 
 newtype TuneId = TuneId { title :: String, tuneType :: String }
 
@@ -40,13 +39,6 @@ tuneIdFromString s =
         tuneType = slice (ix + 1) (length s) s
       in
         Right $ TuneId $ {title, tuneType}
-      {-}
-        case Tuple mTitle mTuneType of
-          Tuple (Just title) (Just tuneType) ->
-            Right $ TuneId $ {title, tuneType}
-          _ ->
-            Left $ "Not a TuneId: " <> s
-      -}
     _ ->
       Left $ "Not a TuneId: " <> s
 
@@ -57,7 +49,7 @@ decodeTuneIdURIComponent :: String -> TuneId
 decodeTuneIdURIComponent s =
   let
     decodedS :: String
-    decodedS = fromMaybe "" $ decodeURIComponent s
+    decodedS = unsafeDecodeURIComponent s
   in
     case lastIndexOf (Pattern "-") decodedS of
       Just ix ->
@@ -76,4 +68,4 @@ cleanTuneTitle =
 
 encodeTuneIdURIComponent :: TuneId -> String
 encodeTuneIdURIComponent =
-  encodeURIComponent <<< tuneIdToString
+  unsafeEncodeURIComponent <<< tuneIdToString

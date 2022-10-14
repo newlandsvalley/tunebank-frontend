@@ -2,7 +2,6 @@ module Main where
 
 import Prelude
 
-
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Array (singleton)
 import Effect (Effect)
@@ -11,7 +10,6 @@ import Effect.Class (liftEffect)
 import Effect.Ref as Ref
 import Halogen as H
 import Halogen.Aff as HA
-import Halogen.HTML as HH
 import Halogen.VDom.Driver (runUI)
 import Web.HTML (window)
 import Web.HTML.Window (localStorage)
@@ -27,7 +25,6 @@ import Routing.Hash (matchesWith)
 import Audio.SoundFont (loadPianoSoundFont)
 import AppM (runAppM)
 
-import Debug (spy)
 
 -- | production Musicrest server
 -- |  baseURL = BaseURL "http://www.tradtunedb.org.uk:8080/musicrest"
@@ -92,8 +89,6 @@ main = HA.runHalogenAff do
   -- https://github.com/natefaubion/purescript-routing-duplex/blob/v0.2.0/README.md
   void $ liftEffect $ matchesWith (parse routeCodec) \old new ->
     when (old /= Just new) do
-      let
-        foo = spy "main instructing router to" 
       launchAff_ do 
         _response <- halogenIO.query $ H.mkTell $ Router.Navigate new
         pure unit

@@ -42,8 +42,6 @@ import Routing.Duplex as RD
 import Routing.Hash (getHash)
 import Type.Proxy (Proxy(..))
 
-import Debug (spy)
-
 type State =
   { route :: Maybe Route
   , genre :: Genre
@@ -104,8 +102,10 @@ component =
     Initialize -> do
       -- we'll get the route the user landed on
       initialRoute <- hush <<< (RD.parse routeCodec) <$> H.liftEffect getHash
+      {-
       let
         foo = spy "Initialize Router route" initialRoute
+      -}
       -- and, finally, we'll navigate to the new route (also setting the hash)
       navigate $ fromMaybe Home initialRoute
 
@@ -143,9 +143,11 @@ component =
   -- | child slot names AND the route codec initial URI name.
   renderRoute :: State -> H.ComponentHTML Action ChildSlots m
   renderRoute state =
+    {-}
     let
       foo = spy "rendering route: " $ show state.route
     in
+    -}
       case state.route of
         Just r -> case r of
           Home ->

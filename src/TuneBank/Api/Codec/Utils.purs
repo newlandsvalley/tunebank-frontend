@@ -1,22 +1,24 @@
 module TuneBank.Api.Codec.Utils
   ( containsDigit
-  , encodeURIComponent
-  , decodeURIComponent
+  , unsafeEncodeURIComponent
+  , unsafeDecodeURIComponent
   , safeSlice) where
 
-import Prelude ((<<<), ($), (>=), (<=), (&&))
-import Data.Maybe (Maybe)
+import Prelude (($), (>=), (<=), (&&))
+import Data.Maybe (fromJust)
 import Data.Foldable (any)
-import Data.Nullable as Nullable
 import Data.String.CodeUnits (slice)
 import Data.String.CodePoints (CodePoint, codePointFromChar, toCodePointArray)
+import Partial.Unsafe (unsafePartial)
+import JSURI (decodeURIComponent, encodeURIComponent)
 
-foreign import encodeURIComponent :: String -> String
+unsafeEncodeURIComponent :: String -> String
+unsafeEncodeURIComponent s = 
+  unsafePartial $ fromJust $ encodeURIComponent s
 
-foreign import decodeURIComponentImpl :: String -> Nullable.Nullable String
-
-decodeURIComponent :: String -> Maybe String
-decodeURIComponent = Nullable.toMaybe <<< decodeURIComponentImpl
+unsafeDecodeURIComponent :: String -> String
+unsafeDecodeURIComponent s = 
+  unsafePartial $ fromJust $ decodeURIComponent s
 
 safeSlice :: Int -> Int -> String -> String
 safeSlice from to str =
