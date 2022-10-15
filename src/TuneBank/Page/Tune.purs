@@ -32,7 +32,7 @@ import TuneBank.Data.CommentId (CommentId, commentIdToString)
 import TuneBank.Data.Credentials (Credentials, Role(..))
 import TuneBank.Data.Genre (Genre, asUriComponent)
 import TuneBank.Data.Session (Session)
-import TuneBank.Data.TuneId (TuneId(..), tuneIdToString)
+import TuneBank.Data.TuneId (TuneId, tuneIdToString)
 import TuneBank.Data.Types (BaseURL(..))
 import TuneBank.HTML.Utils (css, safeHref, renderKV, showRatio, tsToDateString)
 import TuneBank.Navigation.Navigate (class Navigate, navigate)
@@ -144,38 +144,30 @@ component =
 
   render :: State -> H.ComponentHTML Action ChildSlots m
   render state =
-    let
-      (TuneId {title, tuneType}) = state.tuneId
-    in
-      HH.div
-        [ ]
-        [ renderScore state title
-        , HH.div
-            [ css "tune-metadata" ]
-            [ renderTuneMetadata state
-            , renderTempoSlider state
-            , renderPlayer state
-            , renderIntroButton state
-            , renderComments state
-            , renderDebug state
-            ]
-        ]
-
+    HH.div_
+      [ renderScore 
+      , HH.div
+          [ css "tune-metadata" ]
+          [ renderTuneMetadata state
+          , renderTempoSlider state
+          , renderPlayer state
+          , renderIntroButton state
+          , renderComments state
+          , renderDebug state
+          ]
+      ]
   
-  renderScore :: State -> String -> H.ComponentHTML Action ChildSlots m
-  renderScore _state title =
+  renderScore :: H.ComponentHTML Action ChildSlots m
+  renderScore =
     HH.div
       [ HP.id "score"
       , HP.class_ (H.ClassName "center")  
       ]
-      [ HH.h1_
-           [HH.text title ]
-      , HH.div
-           [ HP.class_ (H.ClassName "canvasDiv")
-           , HP.id "vexflow"
-           ] []
+      [ HH.div
+        [ HP.class_ (H.ClassName "canvasDiv")
+        , HP.id "vexflow"
+        ] []
       ]   
-
 
   {- get the tune image from the server instead
   renderTuneScore :: State -> String -> H.ComponentHTML Action ChildSlots m
