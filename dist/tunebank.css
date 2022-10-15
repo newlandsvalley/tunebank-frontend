@@ -576,10 +576,9 @@ div.thumbnail-highlighted > svg {
 }
 
 .instruction-component {
-  float: left;
   display: inline;
   margin: 0 0 0 30px;
-  font-size: 1.2em;
+  font-size: 1.1em;
   font-family: Georgia, serif;
 }
 
@@ -587,7 +586,7 @@ div.thumbnail-highlighted > svg {
   display: inline-block;
   text-align: right;
   width: 150px;
-  font-size: 1.0em;
+  font-size: 1.25em;
 }
 
 .instruction-component > .instruction-text {
@@ -600,8 +599,17 @@ div.thumbnail-highlighted > svg {
   margin: auto;
 }
 
+/* start/stop, silent/sounded */
+#button-group {
+  display: block;
+  width: 700px;
+  margin: auto;
+}
+
+/* other instruction e.g. tempo */
 #instruction-group {
   display: block;
+  width: 1200px;
   margin: auto;
 }
 
@@ -609,7 +617,7 @@ div.thumbnail-highlighted > svg {
 
 #tempo-slider {
   width: 160px;
-	margin-top: 10px;
+	margin-top: 15px;
 	margin-bottom: 10px;
 }
 

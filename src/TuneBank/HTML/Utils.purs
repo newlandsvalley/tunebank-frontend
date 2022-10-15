@@ -2,15 +2,14 @@ module TuneBank.HTML.Utils where
 
 import Prelude
 import TuneBank.Navigation.Route (Route, routeCodec)
-import Partial.Unsafe (unsafePartial)
 import Data.Maybe (Maybe(..), fromMaybe, maybe)
-import Data.Either (Either(..), either, fromRight)
+import Data.Either (either)
 import Data.Number (fromString) as Number
 import Data.String (length, take)
 import Data.DateTime.Instant (instant, toDateTime)
 import Data.Time.Duration (Milliseconds(..))
 import Data.Rational (Rational, numerator, denominator)
-import Data.Formatter.DateTime (Formatter, parseFormatString, format, formatDateTime)
+import Data.Formatter.DateTime (formatDateTime)
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP

@@ -102,7 +102,7 @@ component =
             , renderKeyMenu state
             , renderRhythmMenu state
             , renderOrderingMenu state
-            , renderSearchButton state
+            , renderSearchButton
             ]
         , renderLink
         , HH.p_
@@ -261,8 +261,8 @@ orderingOptions default =
   , menuOption default mostRecentOrdering   -- date
   ]
 
-renderSearchButton :: forall m. State -> H.ComponentHTML Action ChildSlots m
-renderSearchButton state =
+renderSearchButton :: forall m. H.ComponentHTML Action ChildSlots m
+renderSearchButton =
     HH.button
       [ HE.onClick Search
       , css "hoverable"

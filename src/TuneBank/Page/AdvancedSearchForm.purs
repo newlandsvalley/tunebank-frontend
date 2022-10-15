@@ -1,6 +1,6 @@
 module TuneBank.Page.AdvancedSearchForm where
 
-import Prelude (Unit, Void, ($), (<<<), (<>),  bind, const, pure, unit)
+import Prelude (Unit, Void, ($), (<>),  bind, const, pure, unit)
 import Data.Const (Const)
 import Data.String.Common (null)
 import Data.Maybe (Maybe(..))
