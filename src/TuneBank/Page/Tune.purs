@@ -76,8 +76,10 @@ type Input =
   , instruments :: Array Instrument
   }
 
+type Query :: forall k. k -> Type
 type Query = (Const Void)
 
+-- type ChildSlots :: ( Player :: Slot PlayableAbc Unit)
 type ChildSlots =
    (player :: (PC.Slot PlayableAbc) Unit)
 
@@ -161,7 +163,7 @@ component =
 
   
   renderScore :: State -> String -> H.ComponentHTML Action ChildSlots m
-  renderScore state title =
+  renderScore _state title =
     HH.div
       [ HP.id "score"
       , HP.class_ (H.ClassName "center")  
@@ -569,7 +571,8 @@ toPlayable abcTune generateIntro bpm =
   let
     props = defaultPlayableAbcProperties
       { tune = abcTune 
-      , phraseSize = 100.0 
+      , phraseSize = 0.7
+      , bpmOverride = Just bpm
       , generateIntro = generateIntro
       }
   in
