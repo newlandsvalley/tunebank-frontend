@@ -445,22 +445,9 @@ getThumbnailMelody abc =
     Right abcTune ->
       let
         thumbnailTune = (removeRepeatMarkers <<< thumbnail) abcTune
-        props = defaultPlayableAbcProperties
-          { tune = thumbnailTune
-          , phraseSize = 100.0 
-          }
+        props = defaultPlayableAbcProperties { tune = thumbnailTune }
         playableAbc = PlayableAbc props
       in
         toPlayableMelody playableAbc
     _ ->
       []
-
-{-}
-getThumbnailMelody :: String -> Melody
-getThumbnailMelody abc =
-  case (parse abc) of
-    Right abcTune ->
-      (toMelodyDefault <<< removeRepeatMarkers <<< thumbnail) abcTune
-    _ ->
-      []
--}
