@@ -309,7 +309,7 @@ in  upstream
       , "web-events"
       ]
     , repo = "https://github.com/newlandsvalley/purescript-webaudio.git"
-    , version = "ps015"
+    , version = "b2cf7c19314613834762680acadf397173978efd"
     }
   with drawing =
     { dependencies = [ "canvas", "lists", "numbers", "integers", "colors" ]
@@ -330,6 +330,6 @@ in  upstream
       , "jest"
       ]
     , repo = "https://github.com/rnons/purescript-html-parser-halogen"
-    , version = "master"
+    , version = "035a51d02ba9f8b70c3ffd9fe31a3f5bed19941c"
     }
 
