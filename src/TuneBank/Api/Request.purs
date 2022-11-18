@@ -34,6 +34,7 @@ import TuneBank.Data.CommentId (CommentId, CommentKey)
 import TuneBank.Data.Credentials (Credentials)
 import TuneBank.Data.Genre (Genre)
 import TuneBank.Data.TuneId (TuneId)
+import TuneBank.Data.UserId (UserId)
 import TuneBank.Data.Types (BaseURL(..))
 import TuneBank.Navigation.Endpoint (PageParams, Endpoint(..), endpointCodec)
 import TuneBank.Navigation.SearchParams (SearchParams)
@@ -93,6 +94,7 @@ defaultDeleteRequest (BaseURL baseUrl) mCredentials endpoint  =
   let 
     method = Left DELETE
     url = baseUrl <> print endpointCodec endpoint
+    -- _foo = spy "delete URL" url
     headers = fromFoldable $ authorizationHeader mCredentials
     responseFormat = RF.string
   in  
@@ -241,6 +243,12 @@ deleteComment baseUrl genre tuneId commentId credentials =
       encodedUser = unsafeEncodeURIComponent credentials.user
     res <- requestTheBody $ defaultDeleteRequest baseUrl (Just credentials) (Comment genre tuneId encodedUser commentId)
     pure res
+
+deleteUser :: forall m. MonadAff m => BaseURL -> UserId -> Credentials -> m (Either String String)
+deleteUser baseUrl userId credentials =
+  H.liftAff do
+    res <- requestTheBody $ defaultDeleteRequest baseUrl (Just credentials) (User userId)
+    pure res    
 
 -- | The default manner of attempting a request. We're only interested in the
 -- | response body and all errors will be converted to strings

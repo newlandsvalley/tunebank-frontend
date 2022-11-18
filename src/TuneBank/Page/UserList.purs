@@ -7,12 +7,14 @@ import Data.Maybe (Maybe(..))
 import Effect.Aff.Class (class MonadAff)
 import Halogen as H
 import Halogen.HTML as HH
-import Prelude (Unit, Void, ($), (<>), (<<<), bind, discard, map, pure, show, unit)
+import Halogen.HTML.Events as HE
+import Prelude (Unit, Void, ($), (<>), (<<<), (/=), bind, discard, map, pure, show, unit)
 import TuneBank.Api.Codec.UsersPage (UsersPage, UserRef)
-import TuneBank.Api.Request (requestUsers)
+import TuneBank.Api.Request (requestUsers, deleteUser)
 import TuneBank.Data.Credentials (Credentials)
 import TuneBank.Data.Session (Session)
 import TuneBank.Data.Types (BaseURL)
+import TuneBank.Data.UserId (UserId(..))
 import TuneBank.HTML.Utils (css)
 import TuneBank.Navigation.Endpoint (PageParams)
 import TuneBank.Navigation.Navigate (class Navigate)
@@ -40,6 +42,7 @@ type ChildSlots = ()
 data Action
   = Initialize
   | HandleInput Input
+  | DeleteUser UserId
 
 component
    :: ∀ o m r
@@ -108,7 +111,23 @@ component =
             [ HH.text userRef.email]
           , HH.td_
             [ HH.text userRef.valid]
+          , HH.td_ 
+            [ renderDeleteUser userRef ]
           ]
+
+  -- | only the administrator can see this page, and we'll give him the option 
+  -- | of deleting a user, but won't offer him the possibility of deleting himself
+  renderDeleteUser :: UserRef -> H.ComponentHTML Action ChildSlots m
+  renderDeleteUser userRef =
+    if (userRef.name /= "administrator") then
+      HH.a
+        [ css "a-internal-link"
+        , HE.onClick \_ -> DeleteUser (UserId userRef.name)
+        ]
+        [ HH.text "delete user"]
+    else
+      HH.text ""
+  
 
 
   handleAction ∷ Action -> H.HalogenM State Action ChildSlots o m Unit
@@ -121,6 +140,23 @@ component =
     HandleInput input -> do
       H.modify_ (\st -> st { pageParams = input.pageParams } )
       _ <- handleQuery (FetchResults unit)
+      pure unit
+    DeleteUser userId -> do
+      baseURL <- getBaseURL
+      currentUser <- getUser
+      case currentUser of
+        Just credentials -> do
+          result <- deleteUser baseURL userId credentials
+          case result of
+            Right _ -> do
+              _ <- handleQuery (FetchResults unit)
+              pure unit
+            Left err -> do
+              -- let 
+              -- _foo = spy "error on deleting user" err
+              pure unit
+        Nothing ->
+          pure unit
       pure unit
 
   handleQuery :: ∀ a. Query a -> H.HalogenM State Action ChildSlots o m (Maybe a)

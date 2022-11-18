@@ -459,7 +459,7 @@ component =
       comments <- requestComments baseURL state.genre state.tuneId
 
       let
-        foo = spy "any load comments errors? " $
+        _foo = spy "any load comments errors? " $
           either (identity) (const "") comments
       H.modify_ (\st -> st
         { currentUser = currentUser
