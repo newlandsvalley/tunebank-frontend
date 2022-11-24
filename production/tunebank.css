@@ -51,6 +51,11 @@ h2 {
   height: 40px;
 }
 
+/* register and login appear at the RHS of the menu bar */
+.nav-menu-right {
+  float: right
+}
+
 /* an li used as a navigation link */
 .nav .nav-item {
 	float: left;
@@ -91,9 +96,7 @@ h2 {
 }
 
 /* the second masthead line showing login state */
-
 .masthead2-genre {
-	float: left;
   text-align: left;
   padding-left: 80px;
 	display: inline-block;
@@ -101,16 +104,11 @@ h2 {
 }
 
 .masthead2-user {
-	float: right;
   text-align: right;
   padding-right: 20px;
   display: inline-block;
   color: blue;
 }
-
-
-
-
 
 /* buttons */
 
@@ -201,7 +199,6 @@ h2 {
    margin: 0;
    font-family: 'Fondamento', cursive;
    display:block;
-   vertical-align: bottom;
 	 font-weight: bold;
 }
 

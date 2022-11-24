@@ -31,7 +31,11 @@ header mCredentials genre route =
              [ HH.text "metronome" ]
           , navItem (Editor { initialAbc : Nothing })
              [ HH.text "abc editor" ]
-          , navLogInOut
+          , HH.div 
+             [ css "nav-menu-right"]
+             [ navRegister
+             , navLogInOut
+             ]
           ]
         ]
       ]
@@ -85,7 +89,28 @@ header mCredentials genre route =
         [ HH.text $ show genre ]
       ]
 
+  -- | a navigation item for Register which appears if there's no login
+  -- | and is situated on the right of the menu bar before the Login
+  navRegister :: HH.HTML i p
+  navRegister  =
+    case mCredentials of
+      Just _credentials ->
+        HH.li
+         [ css "nav-item" ]
+         [ HH.div_           
+           [ HH.text "" ]]
+      Nothing ->
+         HH.li
+          [ css "nav-item" ]
+          [ HH.a
+            [ css $ guard (route == Register) "current"
+            , safeHref Register
+            ]
+            [ HH.text "register" ]
+          ]
+
   -- | a 'special' navigation item for Login/Logout
+  -- | which is situated on the right of the menu bar after Register
   navLogInOut :: HH.HTML i p
   navLogInOut  =
     case mCredentials of
@@ -110,3 +135,4 @@ header mCredentials genre route =
             ]
             [ HH.text "login" ]
           ]
+
