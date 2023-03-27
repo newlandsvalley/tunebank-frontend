@@ -8,6 +8,7 @@ import Data.Abc (AbcTune)
 import Data.Abc.Parser (parse)
 import Data.Abc.Tempo (defaultTempo, getAbcTempo, getBpm)
 import Data.Abc.Melody (PlayableAbc(..), defaultPlayableAbcProperties)
+import Data.Abc.Utils (getTitle)
 import Data.Array (filter, length)
 import Data.Bifunctor (lmap)
 import Data.Const (Const)
@@ -38,12 +39,10 @@ import TuneBank.HTML.Utils (css, safeHref, renderKV, showRatio, tsToDateString)
 import TuneBank.Navigation.Navigate (class Navigate, navigate)
 import TuneBank.Navigation.Route (Route(..))
 import TuneBank.Page.Utils.Environment (getBaseURL, getUser)
-import Editor.Window (print)
+import Tunebank.HTML.Window (print)
 import VexFlow.Score (Renderer, clearCanvas, initialiseCanvas, renderFinalTune) as Score
 import VexFlow.Types (Config, defaultConfig)
 import Type.Proxy (Proxy(..))
-
-
 
 -- | there is no tune yet
 nullParsedTune :: Either String AbcTune
@@ -542,7 +541,8 @@ component =
         Nothing ->
           pure unit
     PrintScore -> do
-      _ <-  H.liftEffect print
+      state <- H.get
+      _ <-  H.liftEffect $ print $ getDocumentNameForPrinting state
       pure unit
 
 -- refresh the state of the player by passing it the tune result and the tempo
@@ -602,8 +602,21 @@ removeComment cId state =
   in
     state { comments = newComments }
 
--- return tru if the user is allowed to edit the tune
+-- return true if the user is allowed to edit the tune
 canEdit :: TuneMetadata -> Credentials -> Boolean
 canEdit tuneMetadata credentials =
   credentials.role == Administrator
   || credentials.user == tuneMetadata.submitter
+
+
+-- get the document name for printing - this is the tune title if it exists
+-- but if not, the app name
+getDocumentNameForPrinting :: State -> String
+getDocumentNameForPrinting state =
+  case state.tuneResult of
+    Right abcTune ->
+      fromMaybe "tradtunedb tune bank" $ getTitle abcTune 
+    _ ->
+      -- shouldn't happen
+      "tradtunedb tune bank"
+

@@ -6,7 +6,8 @@
     "optimise": "npm run uglify --s dist/tunebank.js --output dist/tunebankmin.js --compress --mangle"
   },
   "devDependencies": {
-    "purescript": "^0.15.4",
+    "esbuild": "^0.14.54",
+    "purescript": "^0.15.8",
     "spago": "0.20.9"
   },
   "dependencies": {
