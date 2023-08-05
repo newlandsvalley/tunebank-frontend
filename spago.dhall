@@ -31,6 +31,7 @@ You can edit this file as you like.
   , "formatters"
   , "halogen"
   , "halogen-components"
+  , "halogen-svg-elems"
   , "html-parser-halogen"
   , "http-methods"
   , "integers"

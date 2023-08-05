@@ -1,0 +1,72 @@
+
+/* Site Nav - the upper navigation bar */
+
+/* Banner Navigation in the first masthead line */
+.nav {
+	overflow: hidden;
+	list-style-type: none;  /* don't display the bullets in the nav bar */
+  clear: both;
+  float: left;
+  background-color: #224422; /* hard dark green */
+  width: 97%;
+  height: 40px;
+}
+
+/* register and login appear at the RHS of the menu bar */
+.nav-menu-right {
+  float: right
+}
+
+/* an li used as a navigation link */
+.nav .nav-item {
+	float: left;
+	font-size: .75em;  /* makes the bullets smaller */
+	padding: 3.3px 3px 3.3px 25px;
+}
+
+/* used as additional text to a nav item */
+.nav .nav-item .additional-info {
+	font-size: 1.7em;
+	color: #e69900;
+	display: inline-block;
+	padding: 6.3px 23px 3.3px 2px;
+}
+
+.nav li a {
+  display: inline-block;
+	font-size: 1.8em;  /* makes the linked text larger than the bullets */
+  color: #cccc99; /* light greenish grey */
+  text-decoration: none;
+  list-style-type: none;
+}
+
+.nav li:first-child {
+	list-style: none;
+	padding-left: 2px;
+}
+
+.nav li:last-child {
+  float: right;
+	padding-right: 30px;
+}
+
+.nav li a.current,
+.nav li a:hover {
+  color: white;
+  background-color: #224422; /* hard dark green */
+}
+
+/* the second masthead line showing login state */
+.masthead2-genre {
+  text-align: left;
+  padding-left: 80px;
+	display: inline-block;
+  color: blue;
+}
+
+.masthead2-user {
+  text-align: right;
+  padding-right: 20px;
+  display: inline-block;
+  color: blue;
+}

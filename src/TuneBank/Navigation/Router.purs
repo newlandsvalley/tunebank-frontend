@@ -11,7 +11,9 @@ import Control.Monad.Reader (class MonadAsk)
 import Halogen as H
 import Halogen.HTML as HH
 import TuneBank.Navigation.Route (Route(..), routeCodec)
+import TuneBank.Navigation.RouterTypes (Action(..), Input)
 import TuneBank.Navigation.Navigate (class Navigate, navigate)
+import TuneBank.Navigation.Toggle (resetHamburgerMenu, toggleHamburgerMenu)
 import TuneBank.Page.Login as Login
 import TuneBank.Page.SearchForm as SearchForm
 import TuneBank.Page.AdvancedSearchForm as AdvancedSearchForm
@@ -51,13 +53,6 @@ type State =
 
 data Query a
   = Navigate Route a
-
-data Action
-  = Initialize
-  | HandleInput Input
-
-type Input =
-  { instruments :: Array Instrument }
 
 type ChildSlots =
   ( home ::  SearchForm.Slot  Unit
@@ -112,6 +107,9 @@ component =
     HandleInput input -> do
       H.modify_ _ { instruments = input.instruments }
       pure unit
+    ToggleHamburgerMenu -> do 
+      _ <- H.liftEffect toggleHamburgerMenu
+      pure unit
 
   handleQuery :: forall a. Query a -> H.HalogenM State Action ChildSlots Void m (Maybe a)
   handleQuery = case _ of
@@ -123,7 +121,8 @@ component =
       when ( (state.route /= Just dest)
            || (state.genre /= genre)
            || (state.currentUser /= user)
-           ) do
+           ) do 
+         _ <- H.liftEffect resetHamburgerMenu
          H.modify_ _ { route = Just dest, genre = genre, currentUser = user }
       pure (Just a)
 
@@ -132,6 +131,7 @@ component =
     let
       -- the route we give to the header defaults to Home which we use
       -- simply to highlight the menu options appropriately
+      headerRoute :: Route
       headerRoute = maybe Home identity state.route
     HH.div_
         [  header state.currentUser state.genre headerRoute

@@ -18,6 +18,7 @@ import Web.DOM.Node (setTextContent)
 import Web.Storage.Storage (getItem)
 import TuneBank.Navigation.Route (routeCodec)
 import TuneBank.Navigation.Router as Router
+import TuneBank.Navigation.RouterTypes (Input) as RouterTypes
 import TuneBank.Data.Types (BaseURL(..), LogLevel(..), Env)
 import TuneBank.Data.Genre (Genre(..))
 import Routing.Duplex (parse)
@@ -70,7 +71,7 @@ main = HA.runHalogenAff do
     environment = { session, baseURL, logLevel }
 
 
-    rootComponent :: H.Component Router.Query Router.Input Void Aff
+    rootComponent :: H.Component Router.Query RouterTypes.Input Void Aff
     rootComponent = H.hoist (runAppM environment) Router.component
 
   halogenIO <- runUI rootComponent { instruments : singleton instrument } body

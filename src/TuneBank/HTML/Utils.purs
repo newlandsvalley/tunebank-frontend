@@ -13,12 +13,17 @@ import Data.Formatter.DateTime (formatDateTime)
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
+import Halogen.Svg.Attributes as SA
 import Routing.Duplex (print)
 
 -- | I get annoyed writing `class_ $ ClassName "..."` over and over again. This small utility saves
 -- | a few characters all over our HTML.
 css :: forall r i. String -> HH.IProp ( class :: String | r ) i
 css = HP.class_ <<< HH.ClassName
+
+-- ditto for the SVG element
+svgcss :: forall r i. String -> HH.IProp ( class :: String | r ) i
+svgcss = SA.class_ <<< HH.ClassName   
 
 -- | We must provide a `String` to the "href" attribute, but we represent routes with the much
 -- | better `Route` type. This utility is a drop-in replacement for `href` that uses `Route`.
