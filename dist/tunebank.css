@@ -54,7 +54,7 @@ h2 {
   display: flex;
   background-color: #224422; /* hard dark green */
   color: #cccc99; /* light greenish grey */
-  list-style-type: none;  /* don't display the bullets in the nav bar */
+  list-style-type: none; /* don't display the bullets in the nav bar itself */
   height: 40px;
   padding-top: 10px;
 }
@@ -88,22 +88,24 @@ h2 {
 /* don't display the main navigation bar on default small screens */
 .main-menu {
   background-color: #224422; /* hard dark green */
-overflow: hidden;
+  overflow: hidden;
   display: none;
-list-style-type: none;  /* don't display the bullets in the nav bar */
+  list-style-type: none;  /* don't display the bullets in the nav bar */
   height: 40px;
 }
 
 /* don't display the hamburger menu by default - it needs to be switched on by the icon*/
 .hamburger-menu {
   display: none;
-  list-style-type: none;  /* don't display the bullets in the nav bar */
   flex-direction: column;
   font-weight: bold;
 }
 
+.hamburger-menu-list {
+  list-style-type: none;  /* don't display the bullets in the nav bar */
+}
+
 /* links in the navigation bar big screens */
-/* .navitem > a { */
 .navdiv > li > a { 
   color: #cccc99; /* light greenish grey */
   display: inline;
@@ -115,26 +117,18 @@ list-style-type: none;  /* don't display the bullets in the nav bar */
 } 
 
 /* links in the navigation bar small (mobile) screens */
-.mobnavitem>a {
+.mobile-navdiv > li > a {
   color: #224422; /* hard dark green */
   display: inline;
-  margin: 0 10px 0 10px;
   font-size: 1.5em;
   text-decoration: none;    
   transition-delay: 250ms;
   transition-timing-function: ease-in-out;
 }
 
-/*
-.navitem>a:hover {
-  color: white;
-}
-*/
-
 .mobnavitem>a:hover {
   color: #cccc99; /* light greenish grey */
 }
-
 
 /* set the text and background colour for main menu items when selected */
 .navdiv > li > a.current,
@@ -142,7 +136,6 @@ list-style-type: none;  /* don't display the bullets in the nav bar */
   color: white;
   background-color: #224422; /* hard dark green */
 }
-
 
 /* used as additional text to a nav item in the main menu */
 .navdiv > li > .additional-info {

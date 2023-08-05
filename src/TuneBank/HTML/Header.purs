@@ -18,14 +18,6 @@ import TuneBank.HTML.Utils (css, safeHref, svgcss)
 import TuneBank.Navigation.Route (Route(..))
 import TuneBank.Navigation.RouterTypes (Action(..))
 
--- | CSS selector for menu items in large screen displays
-bigScreenSelector :: String 
-bigScreenSelector = "navitem"
-
--- | CSS selector for menu items in small screen displays (mobiles)
-smallScreenSelector :: String 
-smallScreenSelector = "mobnavitem"
-
 header  :: forall m childSlots. Maybe Credentials -> Genre -> Route -> H.ComponentHTML Action childSlots m
 header mCredentials genre route =
     HH.div_
@@ -38,7 +30,7 @@ header mCredentials genre route =
             [ css "navdiv"]
             [ navItem Home
                [ HH.text "home" ]
-            , navGenre bigScreenSelector
+            , navGenre
             , loggedInUserNavItem Upload
                [ HH.text "upload" ]
             , adminUserNavItem (UserList { page: 1 })
@@ -51,8 +43,8 @@ header mCredentials genre route =
           , HH.div 
             -- main menu right-hand side options
             [ css "navdiv"]
-            [ navRegister bigScreenSelector
-            , navLogInOut bigScreenSelector
+            [ navRegister
+            , navLogInOut
             ]
           ]
           -- hamburger navigation - small screens only
@@ -132,35 +124,34 @@ header mCredentials genre route =
         ]
 
         -- hamburger menu pops up when selected by the icom and disappears when deselected
+        -- all controlled by css and Toggle
         , HH.div 
           [ css "hamburger-menu"
           , HP.id "hamburger-menu"
           ]
           [ HH.ul
-            []
-            [ mobnavItem Home  [ HH.text "home" ]
-            , mobnavItem Login [ HH.text "login" ]
-            , mobnavItem Register  [ HH.text "register" ]
+            [ css "hamburger-menu-list"]
+            [ HH.div 
+              [ css "mobile-navdiv"]
+              [ navItem Home  [ HH.text "home" ]
+              , navItem Metronome  [ HH.text "metronome" ]
+              , navRegister
+              , navLogInOut
+              {-}
+              , navItem Login [ HH.text "login" ]
+              , navItem Register  [ HH.text "register" ]
+              -}
+              ]
             ]
           ]
       ]
 
   where
 
-  -- | a navigation item available at any time in the main (large screen) menu
+  -- | a navigation item available at any time in either menu 
   navItem :: Route -> Array (H.ComponentHTML Action childSlots m) -> H.ComponentHTML Action childSlots m
-  navItem r html =
-    item r bigScreenSelector html
-
-  -- | a navigation item available in the mobile hamburger menu
-  mobnavItem :: Route -> Array (H.ComponentHTML Action childSlots m) -> H.ComponentHTML Action childSlots m
-  mobnavItem r html =
-    item r smallScreenSelector html
- 
-  item :: Route -> String -> Array (H.ComponentHTML Action childSlots m) -> H.ComponentHTML Action childSlots m
-  item r cssSelector html = 
-    HH.li
-      [ css cssSelector ]
+  navItem r html = 
+    HH.li_
       [ HH.a
         [ css $ guard (route == r) "current"
         , safeHref r
@@ -188,10 +179,9 @@ header mCredentials genre route =
 
 
   -- | a 'special' navigation item for the Genre where we display the current genre in the masthead
-  navGenre :: String -> H.ComponentHTML Action childSlots m
-  navGenre cssSelector =
-    HH.li
-      [ css cssSelector ]
+  navGenre :: H.ComponentHTML Action childSlots m
+  navGenre =
+    HH.li_
       [ HH.a
         [ css $ guard (route == Genre) "current"
         , safeHref Genre
@@ -204,17 +194,16 @@ header mCredentials genre route =
 
   -- | a navigation item for Register which appears if there's no login
   -- | and is situated on the right of the menu bar before the Login
-  navRegister :: String -> H.ComponentHTML Action childSlots m
-  navRegister cssSelector =
+  navRegister :: H.ComponentHTML Action childSlots m
+  navRegister =
     case mCredentials of
       Just _credentials ->
-        HH.li
-         [ css cssSelector ]
+        HH.li_
          [ HH.div_           
-           [ HH.text "" ]]
+           [ HH.text "" ]
+         ]
       Nothing ->
-         HH.li
-          [ css cssSelector ]
+         HH.li_
           [ HH.a
             [ css $ guard (route == Register) "current"
             , safeHref Register
@@ -224,12 +213,11 @@ header mCredentials genre route =
 
   -- | a 'special' navigation item for Login/Logout
   -- | which is situated on the right of the menu bar after Register
-  navLogInOut :: String -> H.ComponentHTML Action childSlots m
-  navLogInOut cssSelector =
+  navLogInOut :: H.ComponentHTML Action childSlots m
+  navLogInOut  =
     case mCredentials of
       Just credentials ->
-        HH.li
-         [ css cssSelector ]
+        HH.li_
          [ HH.a
            [ css $ guard (route == Login) "current"
            , safeHref Login
@@ -240,17 +228,13 @@ header mCredentials genre route =
            [ HH.text credentials.user ]
          ]
       Nothing ->
-         HH.li
-          [ css cssSelector ]
+         HH.li_
           [ HH.a
             [ css $ guard (route == Login) "current"
             , safeHref Login
             ]
             [ HH.text "login" ]
           ]
-
-
-
 
 white :: Color
 white = 
