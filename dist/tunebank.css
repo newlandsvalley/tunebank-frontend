@@ -68,6 +68,13 @@ h2 {
   font-size: 1.5em;
 }
 
+.hamburger-genre {
+  font-size: 1.3em;
+  margin-left: 10px;
+  padding-top: 3px;
+	color: #e69900;
+}
+
 /* set the hamburger icon towards the RHS of the bar */
 .hamburger-icon {
   margin-left: auto;
@@ -102,26 +109,27 @@ h2 {
 }
 
 .hamburger-menu-list {
-  list-style-type: none;  /* don't display the bullets in the nav bar */
+  list-style-type: none;  /* don't display the bullets in the menu*/
 }
 
-/* links in the navigation bar big screens */
+/* links in the navigation - big screens */
 .navdiv > li > a { 
   color: #cccc99; /* light greenish grey */
   display: inline;
-  margin: 0 10px 0 10px;
+  margin: 0 8px 0 8px;
   font-size: 1.5em;
   text-decoration: none;    
+  white-space: nowrap;
   transition-delay: 250ms;
   transition-timing-function: ease-in-out;
 } 
 
-/* links in the navigation bar small (mobile) screens */
+/* links in the navigation - small (mobile) screens */
 .mobile-navdiv > li > a {
   color: #224422; /* hard dark green */
-  display: inline;
   font-size: 1.5em;
-  text-decoration: none;    
+  text-decoration: none;   
+  margin-bottom: 10px;
   transition-delay: 250ms;
   transition-timing-function: ease-in-out;
 }
@@ -139,10 +147,10 @@ h2 {
 
 /* used as additional text to a nav item in the main menu */
 .navdiv > li > .additional-info {
-	font-size: 1.1em;
+	font-size: 1.3em; 
 	color: #e69900;
 	display: inline-block;
-	padding: 6.3px 23px 3.3px 2px;
+  margin-right: 5px;
 }
 
 /* allow visibility on mobile devices to be toggled easily.  This hides the display  */

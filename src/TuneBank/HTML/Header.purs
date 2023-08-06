@@ -54,6 +54,9 @@ header mCredentials genre route =
           [ HH.li
              [ css "hamburger-appname"]
              [ HH.text "tradtunedb"]
+          , HH.li
+             [ css "hamburger-genre"]
+             [ HH.text (show genre)]
              -- hamburger icon
           , HH.li 
             [ css "hamburger-icon"] 
@@ -134,6 +137,7 @@ header mCredentials genre route =
             [ HH.div 
               [ css "mobile-navdiv"]
               [ navItem Home  [ HH.text "home" ]
+              , navItem Genre [ HH.text "genre" ]
               , navItem Metronome  [ HH.text "metronome" ]
               , navRegister
               , navLogInOut
