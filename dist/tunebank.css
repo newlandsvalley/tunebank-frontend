@@ -145,12 +145,9 @@ h2 {
   background-color: #224422; /* hard dark green */
 }
 
-/* used as additional text to a nav item in the main menu */
-.navdiv > li > .additional-info {
-	font-size: 1.3em; 
+/* Additional information (such as current genre) in the nav bar to the links themselves */
+.navdiv > li {
 	color: #e69900;
-	display: inline-block;
-  margin-right: 5px;
 }
 
 /* allow visibility on mobile devices to be toggled easily.  This hides the display  */

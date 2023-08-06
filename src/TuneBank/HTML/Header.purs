@@ -185,15 +185,14 @@ header mCredentials genre route =
   -- | a 'special' navigation item for the Genre where we display the current genre in the masthead
   navGenre :: H.ComponentHTML Action childSlots m
   navGenre =
-    HH.li_
+    HH.li
+      [ css "nav-genre"]
       [ HH.a
         [ css $ guard (route == Genre) "current"
         , safeHref Genre
         ]
         [ HH.text "genre" ]
-      , HH.span
-        [ css "additional-info" ]
-        [ HH.text $ show genre ]
+      , HH.text $ show genre
       ]
 
   -- | a navigation item for Register which appears if there's no login
@@ -215,7 +214,7 @@ header mCredentials genre route =
             [ HH.text "register" ]
           ]
 
-  -- | a 'special' navigation item for Login/Logout
+  -- | a 'special' navigation item for Login/Logout (including logged user if he/she exists)
   -- | which is situated on the right of the menu bar after Register
   navLogInOut :: H.ComponentHTML Action childSlots m
   navLogInOut  =
@@ -227,9 +226,7 @@ header mCredentials genre route =
            , safeHref Login
            ]
            [ HH.text "logout" ]
-         , HH.span
-           [ css "additional-info" ]
-           [ HH.text credentials.user ]
+         , HH.text credentials.user 
          ]
       Nothing ->
          HH.li_
