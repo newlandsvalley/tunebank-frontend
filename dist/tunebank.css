@@ -176,6 +176,16 @@ h2 {
     justify-content: space-between;
     align-items: center;
   }
+
+
+  #advancedsearchform {
+    width: 640px;
+  }
+
+  /* center search examples in advanced search page */
+  #search-examples-div {
+    width: 640px;
+  }
   
 }
 
@@ -433,7 +443,7 @@ input[type='submit'] {
 }
 
 #advancedsearchform {
-  width: 640px;
+  width: 500px;
   text-align: middle;
   margin-left: auto;
   margin-right: auto;
@@ -441,7 +451,7 @@ input[type='submit'] {
 
 /* center search examples in advanced search page */
 #search-examples-div {
-  width: 640px;
+  width: 500px;
 	margin-top: 10px;
   margin-left: auto;
   margin-right: auto;
