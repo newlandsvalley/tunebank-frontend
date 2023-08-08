@@ -35,7 +35,7 @@ import TuneBank.Navigation.Route (Route(..))
 import TuneBank.Navigation.SearchParams (SearchParams, paramsSummary)
 import TuneBank.Page.Utils.Environment (getBaseURL, getCurrentGenre)
 import VexFlow.Score (Renderer, clearCanvas, initialiseCanvas, renderThumbnail, resizeCanvas)
-import VexFlow.Types (Config, defaultConfig)
+import VexFlow.Types (Config, Titling(..), defaultConfig )
 import Audio.SoundFont (Instrument)
 import Audio.SoundFont.Melody (Melody)
 import Type.Proxy (Proxy(..))
@@ -101,7 +101,7 @@ defaultThumbnailConfig index =
     , height = 10
     , isSVG = true 
     , scale = scale
-    , titled = false 
+    , titling = NoTitle
     }
 
 component

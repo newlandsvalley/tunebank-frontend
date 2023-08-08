@@ -105,12 +105,12 @@ in  upstream
 -------------------------------
 -}
 let upstream =
-      https://github.com/purescript/package-sets/releases/download/psc-0.15.4-20221013/packages.dhall
-        sha256:21000b190e1ef14c92feb1400816022319bc40a30280d20f24c0dcacfb85e966
+      https://github.com/purescript/package-sets/releases/download/psc-0.15.10-20230808/packages.dhall
+        sha256:1f2f8be27ed474d333848bfae9db43790202e3b4da8d73584b1029260677d7e1
 
 in  upstream
   with abc-melody =
-    { dependencies = 
+    { dependencies =
       [ "abc-parser"
       , "arrays"
       , "bifunctors"
@@ -129,8 +129,8 @@ in  upstream
       , "tuples"
       ]
     , repo = "https://github.com/newlandsvalley/purescript-abc-melody.git"
-    , version = "v0.3.0"
-    }  
+    , version = "v0.3.1"
+    }
   with rhythm-guitar =
     { dependencies =
       [ "aff"
@@ -153,10 +153,10 @@ in  upstream
       , "tuples"
       ]
     , repo = "https://github.com/newlandsvalley/RhythmGuitar.git"
-    , version = "v0.2.0"
+    , version = "v0.2.1"
     }
   with abc-scores =
-    { dependencies = 
+    { dependencies =
       [ "abc-parser"
       , "arrays"
       , "effect"
@@ -178,7 +178,7 @@ in  upstream
       , "unfoldable"
       ]
     , repo = "https://github.com/newlandsvalley/purescript-abc-scores.git"
-    , version = "v0.6.0"
+    , version = "v0.6.4"
     }
   with abc-editor =
     { dependencies =
@@ -208,7 +208,7 @@ in  upstream
       , "strings"
       ]
     , repo = "https://github.com/newlandsvalley/purescript-abc-editor.git"
-    , version = "v1.1.0"
+    , version = "v1.1.1"
     }
   with abc-tutorial =
     { dependencies =
@@ -232,7 +232,7 @@ in  upstream
       , "strings"
       ]
     , repo = "https://github.com/newlandsvalley/purescript-abc-tutorial.git"
-    , version = "v1.1.0"
+    , version = "v1.1.1"
     }
   with expand-links =
     { dependencies = [ "console", "effect", "prelude", "strings" ]
@@ -293,9 +293,9 @@ in  upstream
       , "transformers"
       , "tuples"
       , "webaudio"
-      ]    
+      ]
     , repo = "https://github.com/newlandsvalley/purescript-polska-metronome.git"
-    , version = "v0.2.1"
+    , version = "v0.3.0"
     }
   with webaudio =
     { dependencies =
@@ -317,7 +317,7 @@ in  upstream
     , version = "v6.0.0"
     }
   with html-parser-halogen =
-    { dependencies =    
+    { dependencies =
       [ "arrays"
       , "control"
       , "dom-indexed"
@@ -332,4 +332,3 @@ in  upstream
     , repo = "https://github.com/rnons/purescript-html-parser-halogen"
     , version = "035a51d02ba9f8b70c3ffd9fe31a3f5bed19941c"
     }
-
