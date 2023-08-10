@@ -43,6 +43,8 @@ import Tunebank.HTML.Window (print)
 import VexFlow.Score (Renderer, clearCanvas, initialiseCanvas, renderFinalTune) as Score
 import VexFlow.Types (Config, defaultConfig)
 import Type.Proxy (Proxy(..))
+import Web.HTML (window) as HTML
+import Web.HTML.Window (Window, innerWidth) as Window
 
 -- | there is no tune yet
 nullParsedTune :: Either String AbcTune
@@ -66,6 +68,7 @@ type State =
   , comments :: Comments
   , instruments :: Array Instrument
   , generateIntro :: Boolean
+  , vexConfig :: Config
   }
 
 
@@ -96,15 +99,7 @@ data Action
   | PrintScore
 
 
-vexConfig :: Config
-vexConfig =
-  defaultConfig 
-    { parentElementId = "vexflow"
-    , width = 1300
-    , height = 100
-    , scale = 0.8
-    , isSVG = true
-    }  
+
 
 component
    :: ∀ o m r
@@ -139,14 +134,26 @@ component =
     , comments : []
     , instruments : input.instruments
     , generateIntro : false
+    , vexConfig : vexConfig
     }
+
+    where 
+    vexConfig :: Config
+    vexConfig =
+      defaultConfig 
+        { parentElementId = "vexflow"
+        , width = 1300
+        , height = 100
+        , scale = 0.8
+        , isSVG = true
+      }  
 
   render :: State -> H.ComponentHTML Action ChildSlots m
   render state =
     HH.div_
       [ renderScore 
       , HH.div
-          [ css "tune-metadata" ]
+          [ HP.id "tune-metadata" ]
           [ renderTuneMetadata state
           , renderTempoSlider state
           , renderPlayer state
@@ -457,6 +464,15 @@ component =
           either (const "1/4") (showRatio <<< _.tempoNoteLength <<< getAbcTempo) tuneResult
       comments <- requestComments baseURL state.genre state.tuneId
 
+      -- set the scale of the score display according to the window size
+      window <- H.liftEffect HTML.window
+      windowWidth <- H.liftEffect $ Window.innerWidth window
+      let
+        vexScale = 
+          if (windowWidth <= 600) then 0.45 else 0.8
+        vexConfig = state.vexConfig { scale = vexScale }
+
+
       let
         _foo = spy "any load comments errors? " $
           either (identity) (const "") comments
@@ -469,6 +485,7 @@ component =
         , originalBpm = bpm
         , tempoNoteLength = tempoNoteLength
         , comments = either (const []) identity comments
+        , vexConfig = vexConfig
         } )
 
       handleAction RenderScore
@@ -480,10 +497,10 @@ component =
     RenderScore -> do 
       state <- H.get
       -- initialise the VexFlow score renderer 
-      renderer <- H.liftEffect $ Score.initialiseCanvas vexConfig
+      renderer <- H.liftEffect $ Score.initialiseCanvas state.vexConfig
       case state.tuneResult of
         Right tune -> do
-          _ <- displayScore renderer tune
+          _ <- displayScore state renderer tune
           pure unit
         _ -> 
           pure unit
@@ -573,12 +590,13 @@ toPlayable abcTune generateIntro bpm =
 
 displayScore :: ∀ o m.
        MonadAff m
-    => Score.Renderer
+    => State 
+    -> Score.Renderer    
     -> AbcTune
     -> H.HalogenM State Action ChildSlots o m Unit
-displayScore renderer tune = do
+displayScore state renderer tune = do
   _ <- H.liftEffect $ Score.clearCanvas $ renderer
-  _rendered <- H.liftEffect $ Score.renderFinalTune vexConfig renderer tune
+  _rendered <- H.liftEffect $ Score.renderFinalTune state.vexConfig renderer tune
   pure unit  
 
 -- expand YouTube watch links to embedded iframes and geberal links to anchor tags

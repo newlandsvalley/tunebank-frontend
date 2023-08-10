@@ -589,9 +589,10 @@ table.textalign tr td  {
   margin-right: auto;
 }
 
-.tune-metadata {
-	margin: 0 auto;
-	width: 40%;
+#tune-metadata {
+	margin-left: auto;
+	margin-right: auto;
+	width: 400px; 
 	display: block;
 }
 
