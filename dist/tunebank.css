@@ -161,33 +161,6 @@ h2 {
 }
 
 
-/* on larger screens, deactivate the hamburger stuff and activate the normal navigation bar */
-@media (min-width: 600px) {
-  .hamburger-menu {
-    display: none;
-  }
-
-  .hamburger-nav {
-    display: none
-  }
-
-  .main-menu {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-
-  #advancedsearchform {
-    width: 640px;
-  }
-
-  /* center search examples in advanced search page */
-  #search-examples-div {
-    width: 640px;
-  }
-  
-}
 
 /* buttons */
 
@@ -709,7 +682,6 @@ div.thumbnail-highlighted > svg {
   font-family: "Times New Roman", "monospace";
   text-align:  left;
   margin: 10px 80px 20px 40px;
-  height: 4.0em;
   display: block;
 }
 
@@ -727,7 +699,25 @@ div.thumbnail-highlighted > svg {
   margin: 10px 0px 10px 50px;
 }
 
-/* ABC Editpr */
+#abcTutorial .rightPanelComponent {
+  margin-left: 20px;
+}
+
+#abcTutorial Textarea {
+  height: 5em;
+  width: 20em;
+}
+
+#tutorialPlayer {
+  display: block;
+}
+
+
+#tutorialButtons {
+  margin-left: 50px;
+}
+
+/* ABC Editor */
 
 #transposition-menu {
   background-color: #cccc99;
@@ -769,5 +759,44 @@ div.thumbnail-highlighted > svg {
 /* the ABC editor text area */
 .abcEdit {
 	border:2px solid green;
+}
+
+
+/* mobile first stuff */
+
+/* on larger screens, deactivate the default values and replace with these.
+   It mostly affects the headers and hamburger menu and the layout of some other pages
+*/
+@media (min-width: 600px) {
+  .hamburger-menu {
+    display: none;
+  }
+
+  .hamburger-nav {
+    display: none
+  }
+
+  .main-menu {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  #advancedsearchform {
+    width: 640px;
+  }
+
+  /* center search examples in advanced search page */
+  #search-examples-div {
+    width: 640px;
+  }
+
+  /* in the ABC tutorial, allow larger edit windows */
+  #abcTutorial Textarea {
+    height: 13em;
+    width: 25em;
+  }
+
+  
 }
 

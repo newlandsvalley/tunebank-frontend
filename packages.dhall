@@ -232,7 +232,7 @@ in  upstream
       , "strings"
       ]
     , repo = "https://github.com/newlandsvalley/purescript-abc-tutorial.git"
-    , version = "v1.1.1"
+    , version = "v1.1.2"
     }
   with expand-links =
     { dependencies = [ "console", "effect", "prelude", "strings" ]
