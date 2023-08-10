@@ -150,6 +150,10 @@ h2 {
 	color: #e69900;
 }
 
+.navdiv li:last-child {
+	padding-right: 30px;
+}
+
 /* allow visibility on mobile devices to be toggled easily.  This hides the display  */
 .hidden {
   display: none;

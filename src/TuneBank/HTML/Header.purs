@@ -138,13 +138,10 @@ header mCredentials genre route =
               [ css "mobile-navdiv"]
               [ navItem Home  [ HH.text "home" ]
               , navItem Genre [ HH.text "genre" ]
+              , loggedInUserNavItem Upload [ HH.text "upload" ]
               , navItem Metronome  [ HH.text "metronome" ]
               , navRegister
               , navLogInOut
-              {-}
-              , navItem Login [ HH.text "login" ]
-              , navItem Register  [ HH.text "register" ]
-              -}
               ]
             ]
           ]
