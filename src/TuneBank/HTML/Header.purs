@@ -183,7 +183,7 @@ header mCredentials genre route =
   navGenre :: H.ComponentHTML Action childSlots m
   navGenre =
     HH.li
-      [ css "nav-genre"]
+      [ HP.id "nav-genre"]
       [ HH.a
         [ css $ guard (route == Genre) "current"
         , safeHref Genre
@@ -217,7 +217,8 @@ header mCredentials genre route =
   navLogInOut  =
     case mCredentials of
       Just credentials ->
-        HH.li_
+        HH.li
+         [ HP.id "nav-logout"]
          [ HH.a
            [ css $ guard (route == Login) "current"
            , safeHref Login

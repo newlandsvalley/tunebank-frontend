@@ -44,6 +44,12 @@ h2 {
   color: #cccc99; /* light greenish grey */
 }
 
+/* give a bit of clearance to menu letters in big screen nav bars*/
+.nav > .main-menu {
+  padding-top: 2px;
+  padding-bottom: 5px;
+}
+
 /* the children of this div separate the LHS and RHS elements.  Separate them with flex. */
 .navdiv {
   display: flex;
@@ -112,6 +118,27 @@ h2 {
   list-style-type: none;  /* don't display the bullets in the menu*/
 }
 
+.mobnavitem>a:hover {
+  color: #cccc99; /* light greenish grey */
+}
+
+/* set the text and background colour for main menu items when selected */
+.navdiv > li > a.current,
+.navdiv > li > a:hover {
+  color: white;
+  background-color: #224422; /* hard dark green */
+}
+
+/* Additional information (such as current genre) in the nav bar to the links themselves */
+.navdiv > li {
+	color: #e69900;
+  font-size: 1.3em;
+}
+
+.navdiv li:last-child {
+	padding-right: 30px;
+}
+
 /* links in the navigation - big screens */
 .navdiv > li > a { 
   color: #cccc99; /* light greenish grey */
@@ -134,25 +161,7 @@ h2 {
   transition-timing-function: ease-in-out;
 }
 
-.mobnavitem>a:hover {
-  color: #cccc99; /* light greenish grey */
-}
 
-/* set the text and background colour for main menu items when selected */
-.navdiv > li > a.current,
-.navdiv > li > a:hover {
-  color: white;
-  background-color: #224422; /* hard dark green */
-}
-
-/* Additional information (such as current genre) in the nav bar to the links themselves */
-.navdiv > li {
-	color: #e69900;
-}
-
-.navdiv li:last-child {
-	padding-right: 30px;
-}
 
 /* allow visibility on mobile devices to be toggled easily.  This hides the display  */
 .hidden {
