@@ -2,43 +2,45 @@ module TuneBank.Page.TuneList where
 
 import Prelude
 
+import Audio.SoundFont (Instrument)
+import Audio.SoundFont.Melody (Melody)
 import Control.Monad.Reader (class MonadAsk)
-import Data.Abc.Utils (thumbnail, removeRepeatMarkers)
-import Data.Abc.Parser (parse)
 import Data.Abc.Melody (PlayableAbc(..), defaultPlayableAbcProperties, toPlayableMelody)
+import Data.Abc.Parser (parse)
+import Data.Abc.Utils (thumbnail, removeRepeatMarkers)
 import Data.Array (index, length, mapWithIndex, range, unsafeIndex)
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..), maybe)
+import Data.Time.Duration (Milliseconds(..))
 import Data.Traversable (traverse)
 import Data.TraversableWithIndex (traverseWithIndex)
 import Data.Tuple (Tuple(..))
 import Effect (Effect)
-import Effect.Aff.Class (class MonadAff)
 import Effect.Aff (delay)
-import Data.Time.Duration (Milliseconds(..))
+import Effect.Aff.Class (class MonadAff)
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
 import Halogen.ThumbnailPlayerComponent (Query(..), Slot, component) as TNP
 import Partial.Unsafe (unsafePartial)
-import TuneBank.Api.Codec.TunesPage (TunesPage, TuneRefArray)
+import TuneBank.Api.Codec.TunesPage (TunesPage, TuneRef, TuneRefArray)
 import TuneBank.Api.Request (requestTuneSearch)
 import TuneBank.Data.Genre (Genre(..), asUriComponent)
 import TuneBank.Data.Session (Session)
 import TuneBank.Data.TuneId (TuneId(..), decodeTuneIdURIComponent)
 import TuneBank.Data.Types (BaseURL)
+import TuneBank.HTML.PaginationRendering (renderPagination)
 import TuneBank.HTML.Utils (css, safeHref, truncateTo, tsToDateString)
-import TuneBank.HTML.PaginationRendering  (renderPagination)
 import TuneBank.Navigation.Navigate (class Navigate)
 import TuneBank.Navigation.Route (Route(..))
 import TuneBank.Navigation.SearchParams (SearchParams, paramsSummary)
 import TuneBank.Page.Utils.Environment (getBaseURL, getCurrentGenre)
-import VexFlow.Score (Renderer, clearCanvas, initialiseCanvas, renderThumbnail, resizeCanvas)
-import VexFlow.Types (Config, Titling(..), defaultConfig )
-import Audio.SoundFont (Instrument)
-import Audio.SoundFont.Melody (Melody)
 import Type.Proxy (Proxy(..))
+import VexFlow.Score (Renderer, clearCanvas, initialiseCanvas, renderThumbnail, resizeCanvas)
+import VexFlow.Types (Config, Titling(..), defaultConfig)
+import Web.HTML (window) as HTML
+import Web.HTML.Window (innerWidth) as Window
 
 type Slot = H.Slot Query Void
 
@@ -50,6 +52,7 @@ type State =
   , vexRenderers :: Array Renderer
   , hasThumbnails :: Boolean
   , selectedThumbnail :: Maybe Int
+  , windowWidth :: Int
   }
 
 type Input =
@@ -133,6 +136,7 @@ component =
      , vexRenderers : []
      , hasThumbnails : false
      , selectedThumbnail : Nothing
+     , windowWidth : 0
      }
 
   render :: State -> H.ComponentHTML Action ChildSlots m
@@ -180,61 +184,62 @@ component =
 
   renderTuneList :: State -> TuneRefArray -> H.ComponentHTML Action ChildSlots m
   renderTuneList state tunes =
-    let
-      -- f :: forall w i. TuneRef -> HH.HTML w i
-      f i tuneRef =
+    HH.div
+      [css "tunelist"]
+      [ HH.table_ $
+        (mapWithIndex buildRow tunes) <>
+        (renderPhantomRows $ length tunes)
+      ]
+
+    where
+
+      isLargeScreen = state.windowWidth > 600        
+      
+      -- build one row of the tune list table
+      buildRow :: Int -> TuneRef -> H.ComponentHTML Action ChildSlots m
+      buildRow i tuneRef =
         let
           tuneId = decodeTuneIdURIComponent tuneRef.uri
           dateString = tsToDateString tuneRef.ts
         in
           tableRow tuneId dateString i
-    in
-      HH.div
-        [css "tunelist"]
-        [ HH.table_ $
-          (mapWithIndex f tunes) <>
-          (renderPhantomRows $ length tunes)
-        ]
-    where
 
-      -- render the rows where we have results from the search
+      -- render a row where we have results from the search
+      -- on large screens we display the tune type and date columns, on mobiles, we don't
       tableRow :: TuneId -> String -> Int -> H.ComponentHTML Action ChildSlots m
       tableRow tuneId dateString index =
-        let
-          (TuneId {title,  tuneType}) = tuneId
-          route :: Route
-          route = Tune state.genre tuneId
-          -- route = Tune state.genre tuneId
-        in
-          HH.tr
-            [  ]
-            [ HH.td
+        HH.tr
+          [  ]
+          ( [ HH.td
               []
               [ HH.a
                 [ safeHref route ]
                 [ HH.text $ truncateTo 36 title]
               ]
-            , HH.td
-              []
-              [ HH.text tuneType]
-            , HH.td
-              []
-              [ HH.text dateString]
-            , HH.td
+            ]
+
+            <>
+            -- maybe include tune type and date
+            tuneTypeAndDateCells isLargeScreen tuneType dateString
+
+            <>
+
+            [ HH.td
               []
               [ renderThumbnailCanvas index ]
-            {-}
-            , HH.td
-              []
-              [ HH.text $ debugHref route ]
-            -}
             ]
+          )
+        where
+          (TuneId {title,  tuneType}) = tuneId
+          -- route = Tune state.genre tuneId
+          route :: Route
+          route = Tune state.genre tuneId
 
       -- render further 'phantom' rows up to the max rows per page
       -- in order to give a regular number of rows for each page and thus
       -- preserve canvas slots for the thumbnails
       renderPhantomRows :: Int -> Array (H.ComponentHTML Action ChildSlots m)
-      renderPhantomRows start =
+      renderPhantomRows start  =
         if
           start >= (maxRowsPerPage -1 ) then
             []
@@ -243,6 +248,35 @@ component =
             rows = range start (maxRowsPerPage -1)
           in
             map renderPhantomRow rows
+
+      -- | if we have less than a full page of 15 rows, generate phantoms
+      -- | for the rest with workable but empty canvas references
+      renderPhantomRow :: ∀ i p. Int -> HH.HTML i p
+      renderPhantomRow index =
+        HH.tr
+          [ ]
+          ( [ HH.td
+              []
+              [ HH.text ""]
+            ]
+
+            <> 
+
+            tuneTypeAndDateCells isLargeScreen "" ""
+
+            <>
+
+            [ HH.td
+              []
+              [ HH.div
+                [ HP.id ("canvas" <> show index)
+                , css "thumbnail"
+                ]
+                []
+              ]
+            ] 
+          )
+
 
       -- render the thumbnail canvas.  This canvas is empty, but populated by
       -- side-effect if AddThumbnails is pressed.  We don't want to have
@@ -292,7 +326,12 @@ component =
   handleAction = case _ of
     Initialize -> do
       genre <- getCurrentGenre
-      H.modify_ (\state -> state { genre = genre } )
+      window <- H.liftEffect HTML.window
+      windowWidth <- H.liftEffect $ Window.innerWidth window
+      H.modify_ (\state -> state 
+        { genre = genre
+        , windowWidth = windowWidth 
+        } )
       _ <- handleQuery (FetchResults unit)
       pure unit
 
@@ -414,30 +453,7 @@ resultRows = case _ of
   _ ->
     0
 
--- | if we have less than a full page of 15 rows, generate phantoms
--- | for the rest with workable but empty canvas references
-renderPhantomRow :: ∀ i p. Int -> HH.HTML i p
-renderPhantomRow index =
-  HH.tr
-    [ ]
-    [ HH.td
-      []
-      [ HH.text ""]
-    , HH.td
-      []
-      [ HH.text ""]
-    , HH.td
-      []
-      [ HH.text ""]
-    , HH.td
-      []
-      [ HH.div
-        [ HP.id ("canvas" <> show index)
-        , css "thumbnail"
-        ]
-        []
-      ]
-    ]
+
 
 getThumbnailMelody :: String -> Melody
 getThumbnailMelody abc =
@@ -451,3 +467,17 @@ getThumbnailMelody abc =
         toPlayableMelody playableAbc
     _ ->
       []
+
+-- include the tune type and date cells dependent on whether or not it's a large screen
+tuneTypeAndDateCells :: forall i p. Boolean -> String -> String-> Array (HH.HTML i p)
+tuneTypeAndDateCells isLargeScreen tuneTypeString tuneDateString =
+  if isLargeScreen then
+    [ HH.td
+        []
+        [ HH.text tuneTypeString]
+    , HH.td
+        []
+        [ HH.text tuneDateString]
+    ]
+  else
+    []

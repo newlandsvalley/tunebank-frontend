@@ -44,7 +44,7 @@ import VexFlow.Score (Renderer, clearCanvas, initialiseCanvas, renderFinalTune) 
 import VexFlow.Types (Config, defaultConfig)
 import Type.Proxy (Proxy(..))
 import Web.HTML (window) as HTML
-import Web.HTML.Window (Window, innerWidth) as Window
+import Web.HTML.Window (innerWidth) as Window
 
 -- | there is no tune yet
 nullParsedTune :: Either String AbcTune
