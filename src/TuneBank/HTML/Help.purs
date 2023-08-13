@@ -58,7 +58,7 @@ help =
        ("This allows you to build up your ABC text gradually.  If it is correct, a player will appear allowing " <>
         "you to hear what you've written and see the score ; if incorrect, you  will see an error message.  " <>
         "You can also use it to change octave or transpose to a different key.  Once you are happy, you can save " <>
-        "the ABC to file and load it to tradtunedb.")
+        "the ABC to file and load it to tradtunedb. This option is not available on mobile phones.")
     , HH.h2_
         [ HH.text "What restrictions are there in acceptable ABC?" ]
     , HH.ul_

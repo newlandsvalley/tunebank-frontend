@@ -30,13 +30,22 @@ h2 {
 	text-align: center;
 }
 
-
 .center-image {
   display: block;
   margin-left: auto;
   margin-right: auto;
 	width: 40%
 }
+
+/* Solid borders - for example to discriminate hamburger menu from actual page */
+#section-divider { 
+  width:100%; 
+  height:5px; 
+  background: black;
+  content:"";
+  margin-bottom: 20px;
+}
+
 
 /* navigation */
 

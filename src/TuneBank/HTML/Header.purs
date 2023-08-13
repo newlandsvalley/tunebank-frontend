@@ -133,7 +133,7 @@ header mCredentials genre route =
           , HP.id "hamburger-menu"
           ]
           [ HH.ul
-            [ css "hamburger-menu-list"]
+            [ css "hamburger-menu-list" ]
             [ HH.div 
               [ css "mobile-navdiv"]
               [ navItem Home  [ HH.text "home" ]
@@ -144,6 +144,10 @@ header mCredentials genre route =
               , navLogInOut
               ]
             ]
+          -- solid border to demarcate the hamburger menu from the page
+          , HH.div 
+             [ HP.id "section-divider" ]
+             []
           ]
       ]
 
