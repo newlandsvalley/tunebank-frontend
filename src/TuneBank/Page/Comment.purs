@@ -170,14 +170,12 @@ component =
   renderText :: State -> H.ComponentHTML Action ChildSlots m
   renderText state =
     HH.div
-      [ css "textinput-div" ]
+      [ HP.id "comment-textinput-div" ]
       [ HH.label
-        [ css "textinput-label" ]
+        [ HP.id "comment-textinput-label" ]
         [ HH.text "text:" ]
       , HH.textarea
-         [ HP.rows 8
-         , HP.cols 45
-         , HP.autofocus true
+         [ HP.autofocus true
          , HP.value state.submission.text
          , css "comment-edit"
          , HE.onValueInput HandleText
