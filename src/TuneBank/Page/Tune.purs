@@ -68,6 +68,7 @@ type State =
   , comments :: Comments
   , instruments :: Array Instrument
   , generateIntro :: Boolean
+  , windowWidth :: Int
   , vexConfig :: Config
   }
 
@@ -134,6 +135,7 @@ component =
     , comments : []
     , instruments : input.instruments
     , generateIntro : false
+    , windowWidth : 0
     , vexConfig : vexConfig
     }
 
@@ -268,9 +270,10 @@ component =
 
 
   -- | a user can edit the ABC if he submitted the tune or is the administrator
+  -- | but this option is only available on larger screen devices (not mobiles)
   renderEditAbc :: State -> Credentials -> H.ComponentHTML Action ChildSlots m
   renderEditAbc state credentials =
-    if (canEdit state.tuneMetadata credentials) then
+    if (canEdit state.tuneMetadata credentials) && (state.windowWidth > 600) then
       HH.a
         [ safeHref $ Editor { initialAbc : Just state.tuneMetadata.abc }  ]
         [ HH.text "edit tune"]
@@ -485,6 +488,7 @@ component =
         , originalBpm = bpm
         , tempoNoteLength = tempoNoteLength
         , comments = either (const []) identity comments
+        , windowWidth = windowWidth
         , vexConfig = vexConfig
         } )
 
