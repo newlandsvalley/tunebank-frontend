@@ -314,12 +314,15 @@ component =
     if (state.hasThumbnails) then
       HH.text ""
     else
-      HH.button
-        [ HE.onClick \_ -> AddThumbnails
-        , css "hoverable"
-        , HP.enabled true
+      HH.div 
+        [ HP.id "add-thumbnails" ]
+        [ HH.button
+          [ HE.onClick \_ -> AddThumbnails
+          , css "hoverable"
+          , HP.enabled true
+          ]
+          [ HH.text "add thumbnails" ]
         ]
-        [ HH.text "add thumbnails" ]
 
 
   handleAction ∷ Action -> H.HalogenM State Action ChildSlots o m Unit

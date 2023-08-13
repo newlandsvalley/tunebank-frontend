@@ -161,8 +161,6 @@ h2 {
   transition-timing-function: ease-in-out;
 }
 
-
-
 /* allow visibility on mobile devices to be toggled easily.  This hides the display  */
 .hidden {
   display: none;
@@ -172,8 +170,6 @@ h2 {
 .flex {
   display: flex;
 }
-
-
 
 /* buttons */
 
@@ -511,7 +507,7 @@ dl {
 	width: 600px;
 }
 
-/* override dl settings for credots page examples */
+/* override dl settings for credits page examples */
 #credits-examples dt {
 	width: 250px;
 	padding: 0 0, 0.3em 0;
@@ -609,7 +605,7 @@ table.textalign tr td  {
 
 .tunelist {
 	margin: 0 auto;
-	width: 90%;
+	width: 95%;
 	text-align: left;
 }
 
@@ -624,6 +620,12 @@ div.thumbnail-highlighted > svg {
 
 .thumbnail > div {
   height: 60px;
+}
+
+/* the add thumbnails button */
+#add-thumbnails {
+  display: block;
+  margin-left: 50px;
 }
 
 /* polska metronome */
