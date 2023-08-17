@@ -263,31 +263,11 @@ h2 {
   padding-top: 1.5%;
 }
 
-/* Footer Logo */
+/* don't display footer logo on small screens */
 .mainlogo {
-   clear: both;
-   margin: 0;
-   font-family: 'Fondamento', cursive;
-   display:block;
-	 font-weight: bold;
-   height:56px; 
-   line-height:50px; 
+  display: none;
 }
 
-.mainlogo-prefix {
-   float: left;
-   color: green;
-   font-size: 250%;
-   vertical-align: bottom;
-}
-
-.mainlogo-suffix {
-	float: left;
-  color: black;
-	font-size: 125%;
-  vertical-align: bottom;
-	margin-top: 6px;
-}
 
 /* FORMS
 ---------------------------------------------- */
@@ -847,6 +827,33 @@ div.thumbnail-highlighted > svg {
   .tunelist {
     width: 90%;
   }
+  
+  /* Footer Logo */
+  .mainlogo {
+     clear: both;
+     margin: 0;
+     font-family: 'Fondamento', cursive;
+     display:block;
+     font-weight: bold;
+     height:56px; 
+     line-height:50px; 
+  }
+  
+  .mainlogo-prefix {
+     float: left;
+     color: green;
+     font-size: 250%;
+     vertical-align: bottom;
+  }
+  
+  .mainlogo-suffix {
+    float: left;
+    color: black;
+    font-size: 125%;
+    vertical-align: bottom;
+    margin-top: 6px;
+  }
+  
 
   
 }
