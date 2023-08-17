@@ -161,7 +161,7 @@ component =
           , renderPlayer state
           , renderIntroButton state
           , renderComments state
-          , renderDebug state
+          , renderParseError state
           ]
       ]
   
@@ -324,12 +324,13 @@ component =
     in
       if (isVisible) then
         HH.div
-          [ HP.class_ (H.ClassName "leftPanelComponent")
+          [ css "leftPanelComponent"
           , HP.id "tempo-slider-div"
           ]
           [ HH.text "set tempo: "
           , HH.input
-            [ HE.onValueInput  (HandleTempoInput <<< toTempo)
+            [ css "slider"
+            , HE.onValueInput  (HandleTempoInput <<< toTempo)
             , HP.type_ HP.InputRange
             , HP.id "tempo-slider"
             , HP.min (toNumber $ div state.originalBpm 2)
@@ -337,7 +338,9 @@ component =
             , HP.value (show state.currentBpm)
             , HP.disabled state.isPlaying
             ]
-          , HH.text ("  " <> state.tempoNoteLength <> "=" <> (show state.currentBpm))
+          , HH.div
+             [ HP.class_ (H.ClassName "slider-state")]
+             [ HH.text ("  " <> state.tempoNoteLength <> "=" <> (show state.currentBpm)) ]
           ]
       else
         HH.text ""
@@ -432,14 +435,24 @@ component =
       false ->
         HH.text ""
 
-  renderDebug ::  State -> H.ComponentHTML Action ChildSlots m
-  renderDebug state =
+  renderParseError ::  State -> H.ComponentHTML Action ChildSlots m
+  renderParseError state =
     let
       -- instrumentCount = length state.instruments
       tuneResult = either (\r -> "tune parse error: " <> r) (const "") state.tuneResult
     in
       HH.div_
         [ HH.text tuneResult ]
+
+  
+  {- in case we need to track the window width
+  renderDebugWindowWidth ::  State -> H.ComponentHTML Action ChildSlots m
+  renderDebugWindowWidth state =
+    HH.div_ 
+      [ HH.text "window width:"
+      , HH.text (show state.windowWidth)
+      ]
+  -}
 
   handleAction ∷ Action -> H.HalogenM State Action ChildSlots o m Unit
   handleAction = case _ of
@@ -472,7 +485,7 @@ component =
       windowWidth <- H.liftEffect $ Window.innerWidth window
       let
         vexScale = 
-          if (windowWidth <= 600) then 0.45 else 0.8
+          if (windowWidth <= 600) then 0.4 else 0.8
         vexConfig = state.vexConfig { scale = vexScale }
 
 

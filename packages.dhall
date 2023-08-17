@@ -208,7 +208,7 @@ in  upstream
       , "strings"
       ]
     , repo = "https://github.com/newlandsvalley/purescript-abc-editor.git"
-    , version = "v1.1.1"
+    , version = "v1.1.2"
     }
   with abc-tutorial =
     { dependencies =
@@ -295,7 +295,7 @@ in  upstream
       , "webaudio"
       ]
     , repo = "https://github.com/newlandsvalley/purescript-polska-metronome.git"
-    , version = "v0.3.2"
+    , version = "v0.3.3"
     }
   with webaudio =
     { dependencies =
