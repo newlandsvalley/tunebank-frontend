@@ -5,9 +5,9 @@ import Prelude
 import Audio.SoundFont (Instrument)
 import Control.Monad.Reader (class MonadAsk, asks)
 import Data.Abc (AbcTune)
+import Data.Abc.Melody (PlayableAbc(..), defaultPlayableAbcProperties)
 import Data.Abc.Parser (parse)
 import Data.Abc.Tempo (defaultTempo, getAbcTempo, getBpm)
-import Data.Abc.Melody (PlayableAbc(..), defaultPlayableAbcProperties)
 import Data.Abc.Utils (getTitle)
 import Data.Array (filter, length)
 import Data.Bifunctor (lmap)
@@ -17,8 +17,8 @@ import Data.Int (fromString, toNumber)
 import Data.Link (expandLinks, expandYouTubeWatchLinks)
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.MediaType (MediaType(..))
-import Debug (spy)
 import Effect.Aff.Class (class MonadAff)
+import Effect.Console (log)
 import Effect.Ref as Ref
 import Halogen as H
 import Halogen.HTML as HH
@@ -46,7 +46,7 @@ import Type.Proxy (Proxy(..))
 import Web.HTML (window) as HTML
 import Web.HTML.Window (innerWidth) as Window
 
--- | there is no tune yet
+
 nullParsedTune :: Either String AbcTune
 nullParsedTune =
   Left "no tune yet"
@@ -144,8 +144,8 @@ component =
     vexConfig =
       defaultConfig 
         { parentElementId = "vexflow"
-        , width = 1300
-        , height = 100
+        , width = 1400
+        , height = 200
         , scale = 0.8
         , isSVG = true
       }  
@@ -487,11 +487,8 @@ component =
         vexScale = 
           if (windowWidth <= 600) then 0.4 else 0.8
         vexConfig = state.vexConfig { scale = vexScale }
-
-
-      let
-        _foo = spy "any load comments errors? " $
-          either (identity) (const "") comments
+      
+      _ <- either (\i -> H.liftEffect $ log $ "load error: " <> i) (\_ -> pure unit) comments
       H.modify_ (\st -> st
         { currentUser = currentUser
         , baseURL = baseURL
@@ -613,7 +610,14 @@ displayScore :: ∀ o m.
     -> H.HalogenM State Action ChildSlots o m Unit
 displayScore state renderer tune = do
   _ <- H.liftEffect $ Score.clearCanvas $ renderer
-  _rendered <- H.liftEffect $ Score.renderFinalTune state.vexConfig renderer tune
+  mRendered <- H.liftEffect $ Score.renderFinalTune state.vexConfig renderer tune
+  -- log any errors in attempting to produce a score  
+  case mRendered of
+    Just error -> 
+      H.liftEffect $ log (" score error: " <> error)
+    _ ->
+      pure unit
+  
   pure unit  
 
 -- expand YouTube watch links to embedded iframes and geberal links to anchor tags

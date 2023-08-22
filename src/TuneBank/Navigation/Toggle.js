@@ -2,7 +2,6 @@
 
 
 export function resetHamburgerMenu () {
-    console.log("hamburger menu reset");
     const hamburgerMenu = document.getElementById('hamburger-menu');
     const hamburgerLines = document.getElementById('hamburger-lines');
     const hamburgerCross = document.getElementById('hamburger-cross');
@@ -17,7 +16,6 @@ export function resetHamburgerMenu () {
 }
 
 export function toggleHamburgerMenu () {
-    console.log("hamburger button clicked");
     const hamburgerMenu = document.getElementById('hamburger-menu');
     const hamburgerLines = document.getElementById('hamburger-lines');
     const hamburgerCross = document.getElementById('hamburger-cross');
