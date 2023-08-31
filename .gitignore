@@ -1,4 +1,3 @@
-/bower_components/
 /node_modules/
 /.pulp-cache/
 /output/
@@ -10,6 +9,7 @@
 /production/tunebank.css
 /production/assets
 /production-responsive/
+/production-v114/
 /dist/tunebank.js
 /dist/tunebank-haskell.js
 /.psc-package/

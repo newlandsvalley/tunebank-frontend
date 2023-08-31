@@ -151,7 +151,7 @@ component =
             Right _ -> do
               _ <- handleQuery (FetchResults unit)
               pure unit
-            Left err -> do
+            Left _err -> do
               -- let 
               -- _foo = spy "error on deleting user" err
               pure unit

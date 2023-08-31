@@ -100,7 +100,7 @@ component =
          [ HH.text "you must log in before submitting comments"]
        ]
     else
-      renderForm state
+      renderForm state      
 
   renderForm :: State -> H.ComponentHTML Action ChildSlots m
   renderForm state =
