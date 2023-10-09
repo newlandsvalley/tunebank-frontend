@@ -778,7 +778,7 @@ div.thumbnail-highlighted > svg {
 /* on larger screens, deactivate the default values and replace with these.
    It mostly affects the headers and hamburger menu and the layout of some other pages
 */
-@media (min-width: 600px) {
+@media (min-width: 725px) {
   .hamburger-menu {
     display: none;
   }
