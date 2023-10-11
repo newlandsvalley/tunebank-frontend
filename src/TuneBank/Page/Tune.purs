@@ -162,7 +162,6 @@ component =
           , renderIntroButton state
           , renderComments state
           , renderParseError state
-          , renderDebugWindowWidth state
           ]
       ]
   
@@ -446,16 +445,15 @@ component =
     in
       HH.div_
         [ HH.text tuneResult ]
-
   
-  {- in case we need to track the window width -}
+  {- in case we need to track the window width 
   renderDebugWindowWidth ::  State -> H.ComponentHTML Action ChildSlots m
   renderDebugWindowWidth state =
     HH.div_ 
       [ HH.text "window width:"
       , HH.text (show state.windowWidth)
       ]
-  {-  -}
+  -}
 
   handleAction ∷ Action -> H.HalogenM State Action ChildSlots o m Unit
   handleAction = case _ of
