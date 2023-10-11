@@ -13,7 +13,7 @@ import Data.Array (filter, length)
 import Data.Bifunctor (lmap)
 import Data.Const (Const)
 import Data.Either (Either(..), either, isRight)
-import Data.Int (fromString, toNumber)
+import Data.Int (floor, fromString, toNumber)
 import Data.Link (expandLinks, expandYouTubeWatchLinks)
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.MediaType (MediaType(..))
@@ -40,7 +40,7 @@ import TuneBank.Navigation.Navigate (class Navigate, navigate)
 import TuneBank.Navigation.Route (Route(..))
 import TuneBank.Page.Utils.Environment (getBaseURL, getUser)
 import Tunebank.HTML.Window (print)
-import VexFlow.Score (Renderer, clearCanvas, initialiseCanvas, renderFinalTune) as Score
+import VexFlow.Score (Renderer, clearCanvas, initialiseCanvas, renderFinalTune, renderFinalTuneAtWidth) as Score
 import VexFlow.Types (Config, defaultConfig)
 import Type.Proxy (Proxy(..))
 import Web.HTML (window) as HTML
@@ -162,6 +162,7 @@ component =
           , renderIntroButton state
           , renderComments state
           , renderParseError state
+          , renderDebugWindowWidth state
           ]
       ]
   
@@ -176,6 +177,8 @@ component =
         , HP.id "vexflow"
         ] []
       ]   
+
+  
 
   {- get the tune image from the server instead
   renderTuneScore :: State -> String -> H.ComponentHTML Action ChildSlots m
@@ -445,14 +448,14 @@ component =
         [ HH.text tuneResult ]
 
   
-  {- in case we need to track the window width
+  {- in case we need to track the window width -}
   renderDebugWindowWidth ::  State -> H.ComponentHTML Action ChildSlots m
   renderDebugWindowWidth state =
     HH.div_ 
       [ HH.text "window width:"
       , HH.text (show state.windowWidth)
       ]
-  -}
+  {-  -}
 
   handleAction ∷ Action -> H.HalogenM State Action ChildSlots o m Unit
   handleAction = case _ of
@@ -601,7 +604,6 @@ toPlayable abcTune generateIntro bpm =
   in
     PlayableAbc props
 
-
 displayScore :: ∀ o m.
        MonadAff m
     => State 
@@ -610,7 +612,17 @@ displayScore :: ∀ o m.
     -> H.HalogenM State Action ChildSlots o m Unit
 displayScore state renderer tune = do
   _ <- H.liftEffect $ Score.clearCanvas $ renderer
-  mRendered <- H.liftEffect $ Score.renderFinalTune state.vexConfig renderer tune
+  mRendered <- 
+    -- on smallish screens, try to fill most of the screen width with the score
+    -- by fitting the score to 98% of the screen width
+    if state.windowWidth < 725 then do
+      let 
+        desiredWidth = floor $ (toNumber state.windowWidth) * 0.98
+      H.liftEffect $ Score.renderFinalTuneAtWidth state.vexConfig desiredWidth renderer tune
+    -- on large screens, the default scale of 0.8 looks pretty good for most scores
+    else 
+      H.liftEffect $ Score.renderFinalTune state.vexConfig renderer tune
+
   -- log any errors in attempting to produce a score  
   case mRendered of
     Just error -> 

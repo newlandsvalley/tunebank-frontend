@@ -51,6 +51,7 @@ h2 {
 
 .nav {
   color: #cccc99; /* light greenish grey */
+  width: 100%;
 }
 
 /* give a bit of clearance to menu letters in big screen nav bars*/
@@ -630,11 +631,10 @@ div.thumbnail-highlighted > svg {
 /* polska metronome */
 
 #polskaMetronome > .leftPane {
-  width: 500px;
+  width: 440px;
   float: left;
   margin-left: 10px;
 }
-
 
 #polska-menu {
   background-color: #cccc99;
@@ -643,16 +643,15 @@ div.thumbnail-highlighted > svg {
 
 #canvas {
   display: block;
-  margin-left: 40px;
+  margin-left: 10px;
 }
 
 #polskaMetronome .labelAlignment {
   /* align labels at the LHS of a frame */
   display: inline-block;
-  width: 200px;
+  width: 150px;
   font-size: 1.1em;
 }
-
 
 /* common to Metronome, ABC Editor and Tune page */
 
