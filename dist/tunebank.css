@@ -51,6 +51,7 @@ h2 {
 
 .nav {
   color: #cccc99; /* light greenish grey */
+  display: block;
   width: 100%;
 }
 
@@ -396,8 +397,14 @@ input[type='submit'] {
 #loginform,
 #logout,
 #registrationform,
-#uploadform,
 #searchform {
+  width: 350px;
+  text-align: middle;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#uploadform {
   width: 400px;
   text-align: middle;
   margin-left: auto;
@@ -411,14 +418,8 @@ input[type='submit'] {
   margin-right: auto;
 }
 
-/* moniles - wifth is overridden for larger screens */
-#commentform {
-  width: 500px;
-  text-align: middle;
-  margin-left: auto;
-  margin-right: auto;
-}
-
+/* mobiles - width is overridden for larger screens */
+#commentform,
 #advancedsearchform {
   width: 500px;
   text-align: middle;
