@@ -72,3 +72,7 @@ getInstruments= do
   session <- asks _.session
   instruments <- (Ref.read >>> liftEffect) session.instruments
   pure instruments
+
+-- | get the cutoff viewport width that defines a small device (e.g. a mobile)
+smallDeviceViewportWidthCutoff :: Int
+smallDeviceViewportWidthCutoff = 725

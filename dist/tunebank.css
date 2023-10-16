@@ -625,6 +625,12 @@ div.thumbnail-highlighted > svg {
 }
 
 /* the tune page */
+
+/* set the maximum width on the generated SVG score */
+#score > div > svg {
+  max-width: 100vw;
+}
+
 #player-div {
   margin-top: 15px;
 }
@@ -645,6 +651,7 @@ div.thumbnail-highlighted > svg {
 #canvas {
   display: block;
   margin-left: 10px;
+  max-width: 90vw;
 }
 
 #polskaMetronome .labelAlignment {

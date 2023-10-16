@@ -13,7 +13,7 @@ import Data.Array (filter, length)
 import Data.Bifunctor (lmap)
 import Data.Const (Const)
 import Data.Either (Either(..), either, isRight)
-import Data.Int (floor, fromString, toNumber)
+import Data.Int (fromString, toNumber)
 import Data.Link (expandLinks, expandYouTubeWatchLinks)
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.MediaType (MediaType(..))
@@ -38,9 +38,9 @@ import TuneBank.Data.Types (BaseURL(..))
 import TuneBank.HTML.Utils (css, safeHref, renderKV, showRatio, tsToDateString)
 import TuneBank.Navigation.Navigate (class Navigate, navigate)
 import TuneBank.Navigation.Route (Route(..))
-import TuneBank.Page.Utils.Environment (getBaseURL, getUser)
+import TuneBank.Page.Utils.Environment (getBaseURL, getUser, smallDeviceViewportWidthCutoff)
 import Tunebank.HTML.Window (print)
-import VexFlow.Score (Renderer, clearCanvas, initialiseCanvas, renderFinalTune, renderFinalTuneAtWidth) as Score
+import VexFlow.Score (Renderer, clearCanvas, initialiseCanvas, renderFinalTune) as Score
 import VexFlow.Types (Config, defaultConfig)
 import Type.Proxy (Proxy(..))
 import Web.HTML (window) as HTML
@@ -68,10 +68,9 @@ type State =
   , comments :: Comments
   , instruments :: Array Instrument
   , generateIntro :: Boolean
-  , windowWidth :: Int
+  , deviceViewportWidth :: Int
   , vexConfig :: Config
   }
-
 
 type Input =
   { genre :: Genre
@@ -98,9 +97,6 @@ data Action
   | DeleteTune TuneId
   | DeleteComment CommentId
   | PrintScore
-
-
-
 
 component
    :: ∀ o m r
@@ -135,7 +131,7 @@ component =
     , comments : []
     , instruments : input.instruments
     , generateIntro : false
-    , windowWidth : 0
+    , deviceViewportWidth : 0
     , vexConfig : vexConfig
     }
 
@@ -162,6 +158,7 @@ component =
           , renderIntroButton state
           , renderComments state
           , renderParseError state
+          -- , renderDebugViewportWidth state
           ]
       ]
   
@@ -275,7 +272,7 @@ component =
   -- | but this option is only available on larger screen devices (not mobiles)
   renderEditAbc :: State -> Credentials -> H.ComponentHTML Action ChildSlots m
   renderEditAbc state credentials =
-    if (canEdit state.tuneMetadata credentials) && (state.windowWidth > 600) then
+    if (canEdit state.tuneMetadata credentials) && (state.deviceViewportWidth > 400) then
       HH.a
         [ safeHref $ Editor { initialAbc : Just state.tuneMetadata.abc }  ]
         [ HH.text "edit tune"]
@@ -446,12 +443,12 @@ component =
       HH.div_
         [ HH.text tuneResult ]
   
-  {- in case we need to track the window width 
-  renderDebugWindowWidth ::  State -> H.ComponentHTML Action ChildSlots m
-  renderDebugWindowWidth state =
+  {- in case we need to track the viewport width 
+  renderDebugViewportWidth ::  State -> H.ComponentHTML Action ChildSlots m
+  renderDebugViewportWidth state =
     HH.div_ 
       [ HH.text "window width:"
-      , HH.text (show state.windowWidth)
+      , HH.text (show state.deviceViewportWidth)
       ]
   -}
 
@@ -481,12 +478,13 @@ component =
           either (const "1/4") (showRatio <<< _.tempoNoteLength <<< getAbcTempo) tuneResult
       comments <- requestComments baseURL state.genre state.tuneId
 
-      -- set the scale of the score display according to the window size
+      -- set the scale of the score display according to the viewport width      
       window <- H.liftEffect HTML.window
-      windowWidth <- H.liftEffect $ Window.innerWidth window
+      deviceViewportWidth <- H.liftEffect $ Window.innerWidth window
+
       let
         vexScale = 
-          if (windowWidth <= 600) then 0.4 else 0.8
+          if (deviceViewportWidth <= smallDeviceViewportWidthCutoff) then 0.5 else 0.8 
         vexConfig = state.vexConfig { scale = vexScale }
       
       _ <- either (\i -> H.liftEffect $ log $ "load error: " <> i) (\_ -> pure unit) comments
@@ -499,7 +497,7 @@ component =
         , originalBpm = bpm
         , tempoNoteLength = tempoNoteLength
         , comments = either (const []) identity comments
-        , windowWidth = windowWidth
+        , deviceViewportWidth = deviceViewportWidth
         , vexConfig = vexConfig
         } )
 
@@ -610,24 +608,14 @@ displayScore :: ∀ o m.
     -> H.HalogenM State Action ChildSlots o m Unit
 displayScore state renderer tune = do
   _ <- H.liftEffect $ Score.clearCanvas $ renderer
-  mRendered <- 
-    -- on smallish screens, try to fill most of the screen width with the score
-    -- by fitting the score to 98% of the screen width
-    if state.windowWidth < 725 then do
-      let 
-        desiredWidth = floor $ (toNumber state.windowWidth) * 0.98
-      H.liftEffect $ Score.renderFinalTuneAtWidth state.vexConfig desiredWidth renderer tune
-    -- on large screens, the default scale of 0.8 looks pretty good for most scores
-    else 
-      H.liftEffect $ Score.renderFinalTune state.vexConfig renderer tune
+  mRendered <- H.liftEffect $ Score.renderFinalTune state.vexConfig renderer tune
 
   -- log any errors in attempting to produce a score  
   case mRendered of
     Just error -> 
       H.liftEffect $ log (" score error: " <> error)
     _ ->
-      pure unit
-  
+      pure unit  
   pure unit  
 
 -- expand YouTube watch links to embedded iframes and geberal links to anchor tags
