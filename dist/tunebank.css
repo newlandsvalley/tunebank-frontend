@@ -219,7 +219,6 @@ h2 {
 
 #canvas:hover {
   box-shadow: 0 0;
-  /* background-color: #d2ed97;  */  /* very light green */
   background-color: #daffa4;   /* very light green */
   transition: 750ms;
 }
@@ -293,7 +292,6 @@ legend ul {
 
 
 fieldset ul li {
-  /* margin: 0.5em o; */
   margin: 5px auto 5px auto;
   list-style-type: none;
 }
@@ -312,9 +310,16 @@ label {
 	margin-top: 8px; /* match with select (dropdown) */
 }
 
+/* reduce the width for advanced search and comment form labels
+   we need to preserve space for mobiles 
+*/
+#advancedsearchform fieldset div label, 
+#commentform fieldset div label {
+  width: 80px;
+}
+
 
 /* label alignment in forms */
-
 legend {
   background-color: #669966; /* dark green */
   border-top: 1px solid #d4d4d4;
@@ -338,19 +343,9 @@ input[type="text"] {
   font-size: 1.25em;
 }
 
-/* override default text input width for search criteria */
+/* override default text input width for advanced search criteria */
 #search-criteria {
-	width: 450px;
-}
-
-/* comment textarea */
-#comment-textinput-div textarea {
-  height: 13em;
-  width: 21em;
-	padding: 2px 3px;
-	background: #f3f6c6;
-	margin-top: 8px;   /* match with label */
-  font-size: 1.25em;
+	width: 200px;
 }
 
 /* select dropdown on forms */
@@ -366,7 +361,7 @@ select {
 	text-align: left;
 }
 
-/* the upload file button */
+/* the upload file label */
 #uploadselectfile label {
 	width: 150px;
 }
@@ -421,10 +416,20 @@ input[type='submit'] {
 /* mobiles - width is overridden for larger screens */
 #commentform,
 #advancedsearchform {
-  width: 500px;
+  width: 335px;
   text-align: middle;
   margin-left: auto;
   margin-right: auto;
+}
+
+/* comment textarea */
+#comment-textinput-div textarea {
+  height: 9em;
+  width: 12.5em;
+	padding: 2px 3px;
+	background: #f3f6c6;
+	margin-top: 8px;   /* match with label */
+  font-size: 1.25em;
 }
 
 /* center search examples in advanced search page */
@@ -509,9 +514,7 @@ dl {
 	padding: 0 0, 0.3em 0;
 }
 
-
 /* links alignment */
-
 #download {
     float: left;
 }
@@ -780,11 +783,33 @@ div.thumbnail-highlighted > svg {
 }
 
 
-/* mobile first stuff */
-
-/* on larger screens, deactivate the default values and replace with these.
+/* mobile first stuff 
+   on larger screens, deactivate the default values and replace with these.
    It mostly affects the headers and hamburger menu and the layout of some other pages
 */
+
+/* tablets */
+@media (min-width: 520px) {
+
+  #commentform,
+  #advancedsearchform {
+    width: 500px;
+  }
+  
+  /* comment textarea */
+  #comment-textinput-div textarea {
+    height: 13em;
+    width: 21em;
+  }
+
+  /* advanced search crieria */
+  #search-criteria {
+    width: 340px;
+  }
+}
+
+
+/* laptops. desktops etc */
 @media (min-width: 725px) {
   .hamburger-menu {
     display: none;
@@ -802,6 +827,10 @@ div.thumbnail-highlighted > svg {
 
   #advancedsearchform {
     width: 640px;
+  }
+
+  #search-criteria {
+    width: 480px;
   }
 
   /* center search examples in advanced search page */
@@ -859,9 +888,6 @@ div.thumbnail-highlighted > svg {
     font-size: 125%;
     vertical-align: bottom;
     margin-top: 6px;
-  }
-  
-
-  
+  }  
 }
 

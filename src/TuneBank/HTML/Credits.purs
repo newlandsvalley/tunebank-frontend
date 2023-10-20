@@ -35,7 +35,7 @@ credits =
               [ HH.text "abcm2ps" ]
            ]
         , HH.dt_
-           [ HH.text "postscript to various formats " ]
+           [ HH.text "postscript to various" ]
         , HH.dd_
           [ HH.a
               [ HP.href "http://linux.about.com/od/commands/l/blcmdl1_convert.htm" ]
