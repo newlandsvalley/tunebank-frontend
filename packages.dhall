@@ -295,7 +295,7 @@ in  upstream
       , "webaudio"
       ]
     , repo = "https://github.com/newlandsvalley/purescript-polska-metronome.git"
-    , version = "v0.3.3"
+    , version = "v0.3.4"
     }
   with webaudio =
     { dependencies =
