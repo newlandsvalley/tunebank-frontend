@@ -640,14 +640,6 @@ div.thumbnail-highlighted > svg {
 
 /* polska metronome */
 
-/*
-#polskaMetronome > .leftPane {
-  width: 440px;
-  float: left;
-  margin-left: 10px;
-}
-*/
-
 /* metronome center encompasses both the controls and the display */
 .metronome-center {
   display: block;
@@ -709,7 +701,6 @@ div.thumbnail-highlighted > svg {
   font-family: "Times New Roman", "monospace";
   background-color: rgb 243 246 198;
   text-align: left;
-  margin: 0px 2px 0px 2px;
   display: block;
 }
 
@@ -719,7 +710,7 @@ div.thumbnail-highlighted > svg {
   font-size: 1.3em;
   font-family: "Times New Roman", "monospace";
   text-align:  left;
-  margin: 10px 80px 20px 40px;
+  margin: 10px 5px 20px 5px;
   display: block;
 }
 
@@ -734,27 +725,27 @@ div.thumbnail-highlighted > svg {
 
 #abcTutorial .leftPanelComponent {
   float: left;
-  margin: 0px 0px 10px 50px;
+  margin: 0px 0px 10px 5px;
 }
-
-/*
-#abcTutorial .rightPanelComponent {
-  margin-left: 20px;
-}
-*/
 
 #abcTutorial Textarea {
   height: 5em;
-  width: 18em;
+  width: 16em;
+  max-width: 90vw;
 }
 
 #tutorialPlayer {
-  display: block;
+  clear: left;
+  padding-left: 0px;
 }
 
+#tutorialScore {
+  display: block;
+  max-width: 95vw;
+}
 
 #tutorialButtons {
-  margin-left: 50px;
+  padding-left: 0px;
 }
 
 /* ABC Editor */
@@ -828,6 +819,18 @@ div.thumbnail-highlighted > svg {
 
   #metronome-display {
     width: 450px;
+  }  
+  
+  #abcTutorial .leftPanelComponent {
+    margin: 0px 0px 10px 50px;
+  }
+
+  #tutorialPlayer {
+    padding-left: 24px;
+  }
+
+  #tutorialButtons {
+    padding-left: 24px;
   }
 }
 
@@ -870,6 +873,11 @@ div.thumbnail-highlighted > svg {
   #abcTutorial Textarea {
     height: 13em;
     width: 25em;
+  }
+
+  /* hints and instructions in the tutorial */
+  #instruction, #hint {
+    margin: 10px 20px 20px 20px;
   }
 
   #commentform {
