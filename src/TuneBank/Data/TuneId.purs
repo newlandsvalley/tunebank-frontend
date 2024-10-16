@@ -32,7 +32,7 @@ tuneIdToString (TuneId { title, tuneType }) =
 
 tuneIdFromString :: String -> Either String TuneId
 tuneIdFromString s =
-  case lastIndexOf (Pattern "-") s of
+  case indexOfRhythmSeparator s of
     Just ix ->
       let
         title = slice 0 ix s
@@ -51,21 +51,30 @@ decodeTuneIdURIComponent s =
     decodedS :: String
     decodedS = unsafeDecodeURIComponent s
   in
-    case lastIndexOf (Pattern "-") decodedS of
+    case indexOfRhythmSeparator decodedS of
       Just ix ->
-        TuneId { title : cleanTuneTitle $ safeSlice 0 ix decodedS
-               , tuneType : safeSlice (ix + 1) (length decodedS) decodedS
+        TuneId { title : cleanPlusCharacters $ safeSlice 0 ix decodedS
+               , tuneType : cleanPlusCharacters $ safeSlice (ix + 1) (length decodedS) decodedS
                }
       Nothing ->
-        TuneId { title : cleanTuneTitle decodedS
+        TuneId { title : cleanPlusCharacters decodedS
                , tuneType : ""
                }
 
--- | this is a hack to tidy up tune titles retruned from tune lists in musicrest
-cleanTuneTitle :: String -> String
-cleanTuneTitle =
+-- | this is a hack to tidy up any + characters left in the URI string
+cleanPlusCharacters :: String -> String
+cleanPlusCharacters=
   replaceAll (Pattern "+") (Replacement " ")
 
 encodeTuneIdURIComponent :: TuneId -> String
 encodeTuneIdURIComponent =
   unsafeEncodeURIComponent <<< tuneIdToString
+
+-- | the rhythm is separated from the title in the URI by the final dash except for three-twos!
+indexOfRhythmSeparator :: String -> Maybe Int
+indexOfRhythmSeparator s = 
+  case lastIndexOf (Pattern "-three-two") s of
+    Just ix ->
+      Just ix
+    _ ->
+      lastIndexOf (Pattern "-") s

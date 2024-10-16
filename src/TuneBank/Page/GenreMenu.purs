@@ -122,7 +122,7 @@ renderGenreMenu state =
 
 genreOptions :: forall i p. Genre -> Array (HH.HTML i p)
 genreOptions default =
-  map (\o -> genreOption o default) $ enumFromTo Irish Scottish
+  map (\o -> genreOption o default) $ enumFromTo English Scottish
 
 genreOption :: forall i p. Genre -> Genre -> HH.HTML i p
 genreOption next default =

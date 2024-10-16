@@ -14,12 +14,14 @@ import Data.String.Common (toLower)
 
 -- | the supported genres
 data Genre =
-    Irish
+    English
+  | Irish
   | Klezmer
   | Scandi
   | Scottish
 
 instance showGenre :: Show Genre where
+  show English  = "English"
   show Irish    = "Irish"
   show Klezmer  = "Klezmer"
   show Scandi   = "Scandi"
@@ -30,24 +32,26 @@ derive instance ordGenre :: Ord Genre
 
 instance boundedGenre :: Bounded Genre where
   top = Scottish
-  bottom = Irish
+  bottom = English
 
 instance enumGenre :: Enum Genre where
   succ = succ
   pred = pred
 
 instance boundedEnumGenre :: BoundedEnum Genre where
-  cardinality = Cardinality 4
+  cardinality = Cardinality 5
   toEnum = toEnum
   fromEnum = fromEnum
 
 readGenre :: String -> Maybe Genre
 readGenre genreStr =
   case genreStr of
+    "English"  -> Just English
     "Irish"    -> Just Irish
     "Klezmer"  -> Just Klezmer
     "Scandi"   -> Just Scandi
     "Scottish" -> Just Scottish
+    "english"  -> Just English
     "irish"    -> Just Irish
     "klezmer"  -> Just Klezmer
     "scandi"   -> Just Scandi
@@ -57,10 +61,11 @@ readGenre genreStr =
 toEnum :: Int -> Maybe Genre
 toEnum i =
  case i of
-    0  -> Just Irish
-    1  -> Just Klezmer
-    2  -> Just Scandi
-    3  -> Just Scottish
+    0  -> Just English
+    1  -> Just Irish
+    2  -> Just Klezmer
+    3  -> Just Scandi
+    4  -> Just Scottish
     _ -> Nothing
 
 genreToString :: Genre -> String
@@ -78,14 +83,16 @@ genreFromString s =
 fromEnum :: Genre -> Int
 fromEnum genre =
   case genre of
-    Irish    -> 0
-    Klezmer  -> 1
-    Scandi   -> 2
-    Scottish -> 3
+    English  -> 0
+    Irish    -> 1
+    Klezmer  -> 2
+    Scandi   -> 3
+    Scottish -> 4
 
 succ :: Genre -> Maybe Genre
 succ genre =
   case genre of
+    English  -> Just Irish
     Irish    -> Just Klezmer
     Klezmer  -> Just Scandi
     Scandi   -> Just Scottish
@@ -94,7 +101,8 @@ succ genre =
 pred :: Genre -> Maybe Genre
 pred genre =
   case genre of
-    Irish    -> Nothing
+    English  -> Nothing
+    Irish    -> Just English
     Klezmer  -> Just Irish
     Scandi   -> Just Klezmer
     Scottish -> Just Scandi

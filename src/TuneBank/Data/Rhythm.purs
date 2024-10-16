@@ -15,6 +15,8 @@ derive instance ordRhythm :: Ord Rhythm
 rhythms :: Genre -> Array String
 rhythms genre =
   case genre of
+    English ->
+      englishRhythms
     Scandi ->
       scandiRhythms
     Irish ->
@@ -90,4 +92,17 @@ scottishRhythms =
   celticRhythms <>
   [ "schottische"
   , "strathspey"
+  ]
+
+englishRhythms :: Array String
+englishRhythms =
+  [ "any"
+  , "jig"
+  , "reel"
+  , "hornpipe"
+  , "march"
+  , "minuet"
+  , "polka"
+  , "three-two"
+  , "waltz"
   ]
