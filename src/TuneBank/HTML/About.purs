@@ -9,7 +9,7 @@ about =
   HH.div
     [ HP.id "aboutdiv" ]
     [ HH.h2_
-        [ HH.text "TradTuneDb version 2.0.1" ]
+        [ HH.text "TradTuneDb version 2.0.2" ]
     , HH.p_
        [ HH.text $
          ("TradTuneDb is a database of English, Irish, Scottish, Scandinavian and klezmer tunes. You can search for tunes and then view the scores " <>

@@ -2,11 +2,11 @@ module TuneBank.Api.Request where
 
 import Prelude
 
-import Affjax.Web (defaultRequest, request)
 import Affjax (Request, printError)
 import Affjax.RequestBody (formURLEncoded)
 import Affjax.RequestHeader (RequestHeader(..))
 import Affjax.ResponseFormat as RF
+import Affjax.Web (defaultRequest, request)
 import Data.Argonaut.Core (Json)
 import Data.Argonaut.Decode.Error (printJsonDecodeError)
 import Data.Array (fromFoldable)
@@ -17,6 +17,7 @@ import Data.HTTP.Method (Method(..))
 import Data.Maybe (Maybe(..))
 import Data.MediaType (MediaType(..))
 import Data.MediaType.Common (applicationJSON)
+import Data.Newtype (unwrap)
 import Data.Tuple (Tuple(..))
 import Effect.Aff.Class (class MonadAff)
 import Halogen as H
@@ -34,10 +35,12 @@ import TuneBank.Data.CommentId (CommentId, CommentKey)
 import TuneBank.Data.Credentials (Credentials)
 import TuneBank.Data.Genre (Genre)
 import TuneBank.Data.TuneId (TuneId)
-import TuneBank.Data.UserId (UserId)
 import TuneBank.Data.Types (BaseURL(..))
+import TuneBank.Data.UserId (UserId)
 import TuneBank.Navigation.Endpoint (PageParams, Endpoint(..), endpointCodec)
 import TuneBank.Navigation.SearchParams (SearchParams)
+import Unsafe.Coerce (unsafeCoerce)
+import Web.HTML.Event.HashChangeEvent (oldURL)
 
 defaultJsonGetRequest :: BaseURL -> Maybe Credentials -> Endpoint -> Request Json
 defaultJsonGetRequest (BaseURL baseUrl) mCredentials endpoint =
@@ -254,6 +257,26 @@ deleteUser baseUrl userId credentials =
 -- | response body and all errors will be converted to strings
 requestTheBody :: ∀ a m. MonadAff m => Request a -> m (Either String a)
 requestTheBody r = H.liftAff do
-  res <- request r 
-  pure $ bimap printError _.body res
+  response <- request r 
+  case response of 
+    -- Aff error (unlikely)
+    Left err ->
+      pure $ Left $ printError err 
+    Right result ->
+      let 
+        -- get the HTTP status range - e.g. 2xx is represented as 2
+        statusRange :: Int
+        statusRange = (unwrap result.status) / 100
+      in
+      -- HTTP error ranges
+      case statusRange of 
+        -- bad request 4xx.  likely in uploading ABC tunes which induce validation on the server
+        4 ->
+          pure $ Left $ unsafeCoerce result.body
+        -- success 2xx.
+        2 ->
+          pure $ Right result.body
+        -- other stuff - chaos or less likely
+        _ ->
+          pure $ Left $ result.statusText
 

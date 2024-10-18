@@ -56,6 +56,7 @@ You can edit this file as you like.
   , "transformers"
   , "tuples"
   , "type-equality"
+  , "unsafe-coerce"
   , "validation"
   , "web-dom"
   , "web-events"

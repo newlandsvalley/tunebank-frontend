@@ -27,7 +27,7 @@ import TuneBank.Data.TuneId (tuneIdFromString)
 import TuneBank.Data.Types (BaseURL(..))
 import TuneBank.HTML.Utils (css)
 import TuneBank.Navigation.Navigate (class Navigate, navigate)
-import TuneBank.Navigation.Route (Route(..))
+import TuneBank.Navigation.Route (Route(Tune))
 import TuneBank.Page.Utils.Environment (getBaseURL, getCurrentGenre, getUser)
 import Type.Proxy (Proxy(..))
 
