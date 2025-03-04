@@ -66,6 +66,8 @@ type State =
   , tempoNoteLength :: String
   , isPlaying :: Boolean
   , comments :: Comments
+  , commentsLoadError :: String
+  , debugCommentsJSON :: String
   , instruments :: Array Instrument
   , generateIntro :: Boolean
   , deviceViewportWidth :: Int
@@ -129,6 +131,8 @@ component =
     , tempoNoteLength : "1/4"
     , isPlaying : false
     , comments : []
+    , commentsLoadError : ""
+    , debugCommentsJSON : ""
     , instruments : input.instruments
     , generateIntro : false
     , deviceViewportWidth : 0
@@ -381,7 +385,12 @@ component =
     HH.div_
       [
         HH.text header
+        -- render the comments
       , HH.div_ $ map (renderComment state) state.comments
+        -- but if the load has failed, render the comments load error
+      , HH.text state.commentsLoadError
+        -- and render the JSON as a String (if we ever need to debug)
+      , HH.text state.debugCommentsJSON
       ]
 
   renderComment :: State -> Comment -> H.ComponentHTML Action ChildSlots m
@@ -477,7 +486,9 @@ component =
         tempoNoteLength =
           either (const "1/4") (showRatio <<< _.tempoNoteLength <<< getAbcTempo) tuneResult
       comments <- requestComments baseURL state.genre state.tuneId
-
+      -- in case we want to trace any bad JSON returned from the server, restore this line
+      -- eCommentsError <- requestCommentsStr baseURL state.genre state.tuneId
+      
       -- set the scale of the score display according to the viewport width      
       window <- H.liftEffect HTML.window
       deviceViewportWidth <- H.liftEffect $ Window.innerWidth window
@@ -497,6 +508,8 @@ component =
         , originalBpm = bpm
         , tempoNoteLength = tempoNoteLength
         , comments = either (const []) identity comments
+        , commentsLoadError = either identity (const "") comments
+        --, debugCommentsJSON = either (const "") identity eCommentsError
         , deviceViewportWidth = deviceViewportWidth
         , vexConfig = vexConfig
         } )

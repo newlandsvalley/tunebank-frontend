@@ -6,8 +6,7 @@ import Control.Monad.Reader (class MonadAsk)
 import Data.Const (Const)
 import Data.Either (Either(..), either)
 import Data.Maybe (Maybe(..), isNothing)
-import Data.String (length, replaceAll)
-import Data.String.Pattern (Pattern(..), Replacement(..))
+import Data.String (length)
 import Effect.Aff.Class (class MonadAff)
 import Halogen as H
 import Halogen.HTML as HH
@@ -15,7 +14,7 @@ import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
 import Web.Event.Event (preventDefault)
 import Web.UIEvent.MouseEvent (MouseEvent, toEvent)
-import TuneBank.Api.Codec.Comments (Comment, defaultComment)
+import TuneBank.Api.Codec.Comments (Comment, cleanComment, defaultComment)
 import TuneBank.Api.Request (postComment, requestComment)
 import TuneBank.Data.Credentials (Credentials)
 import TuneBank.Data.Genre (Genre)
@@ -88,7 +87,7 @@ component =
     , baseURL : BaseURL ""
     , key : input.key
     , submission : defaultComment
-    , submitCommentResult : Left ""
+    , submitCommentResult : Right ""
     }
 
   render :: State -> H.ComponentHTML Action ChildSlots m
@@ -159,14 +158,14 @@ component =
         [ css "textinput-label" ]
         [ HH.text "subject:" ]
       , HH.input
-          [ css "textinput"
+          [ css "comment-textinput-subject"
           , HE.onValueInput  HandleSubject
           , HP.value state.submission.subject
           , HP.type_ HP.InputText
           ]
       ]
 
-  -- we allow any text but embedded doube quotes are problematic
+  -- we allow any text but embedded double quotes are problematic
   renderText :: State -> H.ComponentHTML Action ChildSlots m
   renderText state =
     HH.div
@@ -201,10 +200,10 @@ component =
   renderSubmissionError ::  State -> H.ComponentHTML Action ChildSlots m
   renderSubmissionError state =
     let
-      submissionText = either identity (const "") state.submitCommentResult
+      errorText = either (\c -> "comment update failed: " <> c) (const "") state.submitCommentResult
     in
       HH.div_
-        [ HH.text submissionText ]
+        [ HH.text errorText ]
 
   handleAction ∷ Action -> H.HalogenM State Action ChildSlots o m Unit
   handleAction = case _ of
@@ -256,18 +255,20 @@ component =
           baseURL <- getBaseURL
           commentId <- H.liftEffect fromNow
           let
-            submission =
+            rawSubmission =
               case state.key of
                 Nothing ->
                   -- new comment
                   state.submission
                     { user = credentials.user
                     , commentId = commentId
-                    , text = cleanCommentText state.submission.text
+                    , text = state.submission.text
                     }
                 Just _ ->
                    -- edit comment
                    state.submission
+            -- clean the comment of any characters which may ruin the eventual JSON - particularly double quotes
+            submission = cleanComment rawSubmission
           submitCommentResult <- H.liftAff $ postComment baseURL state.genre state.tuneId submission credentials
           H.modify_ (\st -> st { submitCommentResult = submitCommentResult } )
           case submitCommentResult of
@@ -277,7 +278,9 @@ component =
               -- go back to the tune page which should now show the comment
               navigate $ Tune state.genre state.tuneId
 
+{-}
 -- | replace any double quotes with single quotes
-cleanCommentText :: String -> String
-cleanCommentText =
+cleanSubmittedText :: String -> String
+cleanSubmittedText =
   replaceAll (Pattern "\"") (Replacement "'")
+-}

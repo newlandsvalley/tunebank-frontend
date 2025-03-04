@@ -40,7 +40,6 @@ import TuneBank.Data.UserId (UserId)
 import TuneBank.Navigation.Endpoint (PageParams, Endpoint(..), endpointCodec)
 import TuneBank.Navigation.SearchParams (SearchParams)
 import Unsafe.Coerce (unsafeCoerce)
-import Web.HTML.Event.HashChangeEvent (oldURL)
 
 defaultJsonGetRequest :: BaseURL -> Maybe Credentials -> Endpoint -> Request Json
 defaultJsonGetRequest (BaseURL baseUrl) mCredentials endpoint =

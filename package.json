@@ -1,13 +1,13 @@
 {
   "private": true,
   "scripts": {
-    "build": "spago bundle-app --to dist/tunebank.js",
-    "test": "spago -x ./test.dhall test",
+    "build-legacy": "spago-legacy bundle-app --to dist/tunebank.js",
+    "test-legacy": "spago-legacy -x ./test.dhall test",
     "optimise": "npm run uglify --s dist/tunebank.js --output dist/tunebankmin.js --compress --mangle"
   },
   "devDependencies": {
-    "esbuild": "^0.14.54",
-    "purescript": "^0.15.10",
+    "esbuild": "^0.25.0",
+    "purescript": "^0.15.15",
     "spago": "0.21.0"
   },
   "dependencies": {

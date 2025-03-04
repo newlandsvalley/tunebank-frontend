@@ -890,6 +890,11 @@ div.thumbnail-highlighted > svg {
     width: 30em;
   }
 
+  /* comment text input (subject) */
+  input.comment-textinput-subject {
+    width: 23em;
+  }
+
   /* produces wider left-hand margins */
   .tunelist {
     width: 90%;

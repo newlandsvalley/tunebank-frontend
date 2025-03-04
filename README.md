@@ -12,14 +12,14 @@ The latest release attempts to provide a responsive design, making it accessible
 To Build
 --------
 
-    npm run build
+    npm run build-legacy
 
 To Test
 -------
 
     fire up a tradtunedb development server then:
 
-    npm run test 
+    npm run test-legacy
 
 Still to do (possibly requiring further server changes)
 -------------------------------------------------------

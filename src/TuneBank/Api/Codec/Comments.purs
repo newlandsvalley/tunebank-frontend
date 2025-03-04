@@ -1,6 +1,7 @@
 module TuneBank.Api.Codec.Comments
   ( Comments
   , Comment
+  , cleanComment
   , defaultComment
   , decodeComment
   , decodeComments
@@ -14,6 +15,8 @@ import Data.Argonaut.Decode.Error (JsonDecodeError)
 import Data.Either (Either)
 import Data.FormURLEncoded (FormURLEncoded, fromArray)
 import Data.Maybe (Maybe(..))
+import Data.String (replaceAll)
+import Data.String.Pattern (Pattern(..), Replacement(..))
 import Data.Traversable (traverse)
 import Data.Tuple (Tuple(..))
 import TuneBank.Data.CommentId (CommentId(..))
@@ -26,6 +29,21 @@ type Comment =
   , text :: String
   }
 
+-- | remove any unwanted text which may invalidate any JSON representation
+cleanComment :: Comment -> Comment
+cleanComment comment =
+  let 
+    subject = cleanText comment.subject
+    text = cleanText comment.text
+  in 
+    comment { subject = subject 
+            , text = text
+            }
+  where 
+  -- | replace any double quotes with single quotes
+  cleanText :: String -> String
+  cleanText =
+     replaceAll (Pattern "\"") (Replacement "'")
 
 defaultComment :: Comment
 defaultComment =
@@ -44,6 +62,8 @@ decodeComment json = do
     subject <- obj .: "subject"
     text <- obj .: "text"
     pure $ { user, commentId : CommentId timestamp, subject, text }
+
+
 
 type Comments = Array Comment
 
