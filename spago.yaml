@@ -1,0 +1,283 @@
+package:
+  dependencies:
+    - abc-editor
+    - abc-melody
+    - abc-parser
+    - abc-scores
+    - abc-tutorial
+    - aff
+    - affjax
+    - affjax-web
+    - argonaut
+    - argonaut-codecs
+    - argonaut-core
+    - arrays
+    - b64
+    - bifunctors
+    - console
+    - const
+    - datetime
+    - dom-indexed
+    - effect
+    - either
+    - enums
+    - expand-links
+    - foldable-traversable
+    - form-urlencoded
+    - formatters
+    - halogen
+    - halogen-components
+    - halogen-svg-elems
+    - html-parser-halogen
+    - http-methods
+    - integers
+    - js-uri
+    - lists
+    - maybe
+    - media-types
+    - newtype
+    - now
+    - numbers
+    - ordered-collections
+    - partial
+    - polska-metronome
+    - prelude
+    - rationals
+    - refs
+    - routing
+    - routing-duplex
+    - soundfonts
+    - string-parsers
+    - strings
+    - transformers
+    - tuples
+    - type-equality
+    - unsafe-coerce
+    - validation
+    - web-dom
+    - web-events
+    - web-html
+    - web-storage
+    - web-uievents
+  name: tunebank-frontend
+  test:
+    main: Test.Main
+    dependencies:
+      - console
+      - effect
+      - test-unit
+workspace:
+  extraPackages:
+    abc-editor:
+      dependencies:
+        - abc-melody
+        - abc-parser
+        - abc-scores
+        - aff
+        - arrays
+        - colors
+        - console
+        - css
+        - dom-indexed
+        - effect
+        - either
+        - halogen
+        - halogen-components
+        - halogen-css
+        - integers
+        - js-fileio
+        - lists
+        - maybe
+        - media-types
+        - partial
+        - prelude
+        - soundfonts
+        - string-parsers
+        - strings
+      git: https://github.com/newlandsvalley/purescript-abc-editor.git
+      ref: v1.1.2
+    abc-melody:
+      dependencies:
+        - abc-parser
+        - arrays
+        - bifunctors
+        - either
+        - foldable-traversable
+        - integers
+        - lists
+        - maybe
+        - newtype
+        - ordered-collections
+        - prelude
+        - rationals
+        - rhythm-guitar
+        - soundfonts
+        - transformers
+        - tuples
+      git: https://github.com/newlandsvalley/purescript-abc-melody.git
+      ref: v0.3.1
+    abc-scores:
+      dependencies:
+        - abc-parser
+        - arrays
+        - effect
+        - either
+        - foldable-traversable
+        - integers
+        - lists
+        - maybe
+        - newtype
+        - ordered-collections
+        - prelude
+        - profunctor-lenses
+        - rationals
+        - safe-coerce
+        - strings
+        - stringutils
+        - transformers
+        - tuples
+        - unfoldable
+      git: https://github.com/newlandsvalley/purescript-abc-scores.git
+      ref: v0.6.6
+    abc-tutorial:
+      dependencies:
+        - abc-melody
+        - abc-parser
+        - aff
+        - arrays
+        - colors
+        - const
+        - css
+        - either
+        - halogen
+        - halogen-components
+        - halogen-css
+        - lists
+        - maybe
+        - ordered-collections
+        - prelude
+        - soundfonts
+        - string-parsers
+        - strings
+      git: https://github.com/newlandsvalley/purescript-abc-tutorial.git
+      ref: v1.1.3
+    drawing:
+      dependencies:
+        - canvas
+        - colors
+        - integers
+        - lists
+        - numbers
+      git: https://github.com/newlandsvalley/purescript-drawing
+      ref: v6.0.0
+    expand-links:
+      dependencies:
+        - console
+        - effect
+        - prelude
+        - strings
+      git: https://github.com/newlandsvalley/purescript-expand-links.git
+      ref: v0.2.0
+    halogen-components:
+      dependencies:
+        - aff
+        - arrays
+        - css
+        - datetime
+        - dom-indexed
+        - effect
+        - halogen
+        - halogen-css
+        - integers
+        - js-fileio
+        - lists
+        - maybe
+        - nonempty
+        - prelude
+        - soundfonts
+        - transformers
+        - web-dom
+        - web-html
+        - web-uievents
+      git: https://github.com/newlandsvalley/purescript-halogen-components.git
+      ref: v0.6.0
+    html-parser-halogen:
+      dependencies:
+        - arrays
+        - control
+        - dom-indexed
+        - effect
+        - foldable-traversable
+        - halogen
+        - jest
+        - maybe
+        - prelude
+        - psci-support
+      git: https://github.com/rnons/purescript-html-parser-halogen
+      ref: 035a51d02ba9f8b70c3ffd9fe31a3f5bed19941c
+    polska-metronome:
+      dependencies:
+        - aff
+        - affjax
+        - affjax-web
+        - arrays
+        - canvas
+        - colors
+        - datetime
+        - drawing
+        - effect
+        - either
+        - foldable-traversable
+        - halogen
+        - http-methods
+        - hyrule
+        - integers
+        - js-timers
+        - maybe
+        - newtype
+        - numbers
+        - ordered-collections
+        - parallel
+        - partial
+        - prelude
+        - transformers
+        - tuples
+        - webaudio
+      git: https://github.com/newlandsvalley/purescript-polska-metronome.git
+      ref: v0.3.4
+    rhythm-guitar:
+      dependencies:
+        - aff
+        - affjax
+        - affjax-web
+        - arrays
+        - console
+        - control
+        - effect
+        - either
+        - foreign
+        - http-methods
+        - maybe
+        - ordered-collections
+        - prelude
+        - simple-json
+        - soundfonts
+        - string-parsers
+        - strings
+        - tuples
+      git: https://github.com/newlandsvalley/RhythmGuitar.git
+      ref: v0.2.1
+    webaudio:
+      dependencies:
+        - aff
+        - arraybuffer
+        - arraybuffer-types
+        - effect
+        - maybe
+        - prelude
+        - psci-support
+        - web-events
+      git: https://github.com/newlandsvalley/purescript-webaudio.git
+      ref: b2cf7c19314613834762680acadf397173978efd
+  packageSet:
+    registry: 63.0.0

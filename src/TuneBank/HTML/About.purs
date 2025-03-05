@@ -9,7 +9,7 @@ about =
   HH.div
     [ HP.id "aboutdiv" ]
     [ HH.h2_
-        [ HH.text "TradTuneDb version 2.0.2" ]
+        [ HH.text "TradTuneDb version 2.0.3" ]
     , HH.p_
        [ HH.text $
          ("TradTuneDb is a database of English, Irish, Scottish, Scandinavian and klezmer tunes. You can search for tunes and then view the scores " <>
@@ -21,7 +21,7 @@ about =
        [
          HH.text "The Scandi section has been developed in cooperation with the "
        , HH.a
-          [ HP.href "https://www.londonscandisession.co.uk/"]
+          [ HP.href "https://www.facebook.com/londonscandisession/"]
           [ HH.text "London Scandi Session"]
        , HH.text ". It represents a fair cross-section of tunes that are regularly played at the session."
        ]
