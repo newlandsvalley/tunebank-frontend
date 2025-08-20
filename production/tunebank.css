@@ -787,6 +787,10 @@ div.thumbnail-highlighted > svg {
   margin: 10px 0 0 0;
 }
 
+#deprecation {
+  display:inline-block;
+}
+
 /* the ABC editor text area */
 .abcEdit {
 	border:2px solid green;

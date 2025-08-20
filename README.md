@@ -1,9 +1,9 @@
 tunebank-frontend
 =================
 
-[try it here](https://www.tradtunedb.org.uk)
+This is the browser frontend code for the [tradtunedb](https://www.tradtunedb.org.uk/) website written entirely in PureScript / Halogen. It will eventually be deprecated and shut down in favour of [tunebank-frontend-for-node](https://github.com/newlandsvalley/tunebank-frontend-for-node).
 
-This is the browser frontend code for the [tradtunedb](https://www.tradtunedb.org.uk/) website written entirely in PureScript / Halogen.
+[try it here](https://www.tradtunedb.org.uk)
 
 This has been made possible by adding CORS header protection to the MusicRest server to all resources that a JavaScript frontend needs to access.  Although now this is unnecessary because there is now a reverse proxy placed between it and MusicRest.
 

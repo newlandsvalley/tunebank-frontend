@@ -106,8 +106,14 @@ component =
             ]
         , renderLink
         , HH.p_
-          [ HH.text ("") ]  -- place for a news message
-        ]
+          [ HH.text "TradTuneDb is moving to a new domain and will eventually be shut down itself." ]  
+        , HH.p
+          [ HP.id "deprecation"]
+          [ HH.text "Please take a look at " ]
+          , HH.a
+            [ HP.href "https://tunebank.org.uk" ]
+            [ HH.text "The Tunebank" ]
+        ]        
       ]
 
   handleAction ∷ Action -> H.HalogenM State Action ChildSlots o m Unit
