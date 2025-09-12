@@ -106,13 +106,16 @@ component =
             ]
         , renderLink
         , HH.p_
-          [ HH.text "TradTuneDb is moving to a new domain and will eventually be shut down itself." ]  
-        , HH.p
-          [ HP.id "deprecation"]
-          [ HH.text "Please take a look at " ]
-          , HH.a
-            [ HP.href "https://tunebank.org.uk" ]
-            [ HH.text "The Tunebank" ]
+          [ HH.text "TradTuneDb is moving to a new domain and will probably be shut down at the end of September."  
+          , HH.div
+            [ HP.id "deprecation"]
+            [ HH.text "Please take a look at " 
+            , HH.a
+              [ HP.href "https://tunebank.org.uk" ]
+              [ HH.text "The Tunebank." ]
+            ]
+          , HH.text " You can install it as a web app on an android phone." 
+          ]
         ]        
       ]
 
